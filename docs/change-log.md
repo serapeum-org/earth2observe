@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.23.0 (2026-09-06)
+
+### Fix
+
+- **base**: arm the transport-retry engine and verify downloads (#1162)
+
 ## 0.22.0 (2026-09-05)
 
 ### Feat
