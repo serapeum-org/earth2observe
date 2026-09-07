@@ -652,8 +652,12 @@ class SentinelHub(AbstractDataSource):
 
         Splits the request bbox into ≤2500 px Process tiles, renders each tile,
         and mosaics them into one GeoTIFF per product with
-        `pyramids.dataset.merge.merge_rasters`. Tile temporaries are written
-        under a per-product subdirectory and removed after the merge.
+        `pyramids.dataset.merge.merge_rasters`. The mosaic inherits whatever
+        no-data the rendered tiles declare rather than `merge_rasters`' `0`
+        default, which would mask a legitimate zero (a dark pixel, a
+        zero-valued index); tiles that declare nothing send `"none"`, leaving
+        the mosaic without one. Tile temporaries are written under a
+        per-product subdirectory and removed after the merge.
 
         Args:
             products: The list returned by :meth:`_search`.

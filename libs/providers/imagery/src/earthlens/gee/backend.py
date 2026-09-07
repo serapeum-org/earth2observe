@@ -2707,8 +2707,11 @@ class GEE(LazyClientMixin, AbstractDataSource):
         the per-tile tifs are mosaicked into `<prefix>.tif` with
         :func:`pyramids.dataset.merge.merge_rasters`, inheriting the tiles'
         declared no-data rather than `merge_rasters`' `0` default (which would
-        mask legitimate zeros — sea-level elevation, zero rainfall). Per-tile
-        tifs are deleted on success.
+        mask legitimate zeros — sea-level elevation, zero rainfall). Tiles that
+        declare no no-data of their own — the usual case here, since the
+        download path leaves it unset — send `"none"`, which unsets it on the
+        mosaic instead of stamping the `0`. Per-tile tifs are deleted on
+        success.
         """
         sub_extents = split_aoi_for_url(self.space, scale)
         logger.info(

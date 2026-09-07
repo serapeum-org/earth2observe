@@ -665,7 +665,9 @@ class GHSL(AbstractDataSource):
         bbox. The mosaic inherits the source tiles' declared no-data (JRC uses
         `-200`, or `65535` on the uint16 products) instead of `merge_rasters`'
         `0` default, which would mask every zero-population / zero-built-up
-        cell and promote the real sentinel to valid data. Categorical products
+        cell and promote the real sentinel to valid data. A tile that declares
+        nothing sends `"none"`, leaving the mosaic without a no-data value
+        rather than inheriting that `0`. Categorical products
         reproject with nearest-neighbour (so class codes are never blended);
         those with a curated legend also carry a
         colour table + a `.legend.json` sidecar, while a legend-less categorical
