@@ -67,6 +67,27 @@ _DEFAULT_BACKOFF: float = 2.0
 _DEFAULT_INITIAL_DELAY: float = 1.0
 
 
+def _callable_name(fn: Callable) -> str:
+    """Return a display name for any callable shape.
+
+    `__name__` exists on a plain function but not on a `functools.partial`, a
+    class instance with `__call__`, or an unnamed mock. The retry logger reads
+    this from inside an `except` block, so a bare `fn.__name__` there would
+    raise `AttributeError` in place of the error being retried. A partial is
+    unwrapped to the function it targets, which is the useful name to log.
+
+    Args:
+        fn: Any callable.
+
+    Returns:
+        The callable's `__name__` where it has one, else its type name.
+    """
+    target = fn
+    while (inner := getattr(target, "func", None)) is not None:
+        target = inner
+    return getattr(target, "__name__", None) or type(target).__name__
+
+
 def _retry_on_transient_errors(
     fn: Callable,
     *,
@@ -113,7 +134,7 @@ def _retry_on_transient_errors(
                 if attempt == tries:
                     raise
                 logger.warning(
-                    f"{fn.__name__} attempt {attempt}/{tries} failed "
+                    f"{_callable_name(fn)} attempt {attempt}/{tries} failed "
                     f"({type(exc).__name__}: {exc}); retrying in {delay:.1f}s"
                 )
                 # Resolve `sleep` lazily so tests can monkeypatch `io.time.sleep`.
