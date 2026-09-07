@@ -25812,7 +25812,14 @@ keys.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>libs/providers/hazards/src/earthlens/admin/catalog.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-200">200</a></span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-193">193</a></span>
+<span class="normal"><a href="#__codelineno-0-194">194</a></span>
+<span class="normal"><a href="#__codelineno-0-195">195</a></span>
+<span class="normal"><a href="#__codelineno-0-196">196</a></span>
+<span class="normal"><a href="#__codelineno-0-197">197</a></span>
+<span class="normal"><a href="#__codelineno-0-198">198</a></span>
+<span class="normal"><a href="#__codelineno-0-199">199</a></span>
+<span class="normal"><a href="#__codelineno-0-200">200</a></span>
 <span class="normal"><a href="#__codelineno-0-201">201</a></span>
 <span class="normal"><a href="#__codelineno-0-202">202</a></span>
 <span class="normal"><a href="#__codelineno-0-203">203</a></span>
@@ -25889,98 +25896,91 @@ keys.</p>
 <span class="normal"><a href="#__codelineno-0-274">274</a></span>
 <span class="normal"><a href="#__codelineno-0-275">275</a></span>
 <span class="normal"><a href="#__codelineno-0-276">276</a></span>
-<span class="normal"><a href="#__codelineno-0-277">277</a></span>
-<span class="normal"><a href="#__codelineno-0-278">278</a></span>
-<span class="normal"><a href="#__codelineno-0-279">279</a></span>
-<span class="normal"><a href="#__codelineno-0-280">280</a></span>
-<span class="normal"><a href="#__codelineno-0-281">281</a></span>
-<span class="normal"><a href="#__codelineno-0-282">282</a></span>
-<span class="normal"><a href="#__codelineno-0-283">283</a></span>
-<span class="normal"><a href="#__codelineno-0-284">284</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-200" name="__codelineno-0-200"></a><span class="k">class</span><span class="w"> </span><span class="nc">Catalog</span><span class="p">(</span><span class="n">AbstractCatalog</span><span class="p">[</span><span class="n">Dataset</span><span class="p">]):</span>
-<a id="__codelineno-0-201" name="__codelineno-0-201"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Administrative-boundary source catalog for the admin backend.</span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-193" name="__codelineno-0-193"></a><span class="k">class</span><span class="w"> </span><span class="nc">Catalog</span><span class="p">(</span><span class="n">AbstractCatalog</span><span class="p">[</span><span class="n">Dataset</span><span class="p">]):</span>
+<a id="__codelineno-0-194" name="__codelineno-0-194"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Administrative-boundary source catalog for the admin backend.</span>
+<a id="__codelineno-0-195" name="__codelineno-0-195"></a>
+<a id="__codelineno-0-196" name="__codelineno-0-196"></a><span class="sd">    Merges the bundled `catalog/` directory&#39;s per-provider `*.yaml` files and</span>
+<a id="__codelineno-0-197" name="__codelineno-0-197"></a><span class="sd">    exposes their `datasets:` blocks as a map of `Dataset` rows keyed by id</span>
+<a id="__codelineno-0-198" name="__codelineno-0-198"></a><span class="sd">    under the inherited `datasets` field (giving `cat[&quot;geoboundaries:adm1&quot;]`,</span>
+<a id="__codelineno-0-199" name="__codelineno-0-199"></a><span class="sd">    `&quot;tiger:county&quot; in cat`, `len(cat)`, and the did-you-mean error for free).</span>
+<a id="__codelineno-0-200" name="__codelineno-0-200"></a><span class="sd">    Instantiate with no arguments (`Catalog()`); `model_post_init` loads and</span>
+<a id="__codelineno-0-201" name="__codelineno-0-201"></a><span class="sd">    validates the catalog through the parse cache.</span>
 <a id="__codelineno-0-202" name="__codelineno-0-202"></a>
-<a id="__codelineno-0-203" name="__codelineno-0-203"></a><span class="sd">    Merges the bundled `catalog/` directory&#39;s per-provider `*.yaml` files and</span>
-<a id="__codelineno-0-204" name="__codelineno-0-204"></a><span class="sd">    exposes their `datasets:` blocks as a map of `Dataset` rows keyed by id</span>
-<a id="__codelineno-0-205" name="__codelineno-0-205"></a><span class="sd">    under the inherited `datasets` field (giving `cat[&quot;geoboundaries:adm1&quot;]`,</span>
-<a id="__codelineno-0-206" name="__codelineno-0-206"></a><span class="sd">    `&quot;tiger:county&quot; in cat`, `len(cat)`, and the did-you-mean error for free).</span>
-<a id="__codelineno-0-207" name="__codelineno-0-207"></a><span class="sd">    Instantiate with no arguments (`Catalog()`); `model_post_init` loads and</span>
-<a id="__codelineno-0-208" name="__codelineno-0-208"></a><span class="sd">    validates the catalog through the parse cache.</span>
+<a id="__codelineno-0-203" name="__codelineno-0-203"></a><span class="sd">    Attributes:</span>
+<a id="__codelineno-0-204" name="__codelineno-0-204"></a><span class="sd">        datasets: Map from dataset id to its `Dataset` row.</span>
+<a id="__codelineno-0-205" name="__codelineno-0-205"></a><span class="sd">        available_datasets: Every dataset id from `_index.yaml`. For admin the</span>
+<a id="__codelineno-0-206" name="__codelineno-0-206"></a><span class="sd">            curated set is the full shipped surface, so this equals the curated</span>
+<a id="__codelineno-0-207" name="__codelineno-0-207"></a><span class="sd">            keys.</span>
+<a id="__codelineno-0-208" name="__codelineno-0-208"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-209" name="__codelineno-0-209"></a>
-<a id="__codelineno-0-210" name="__codelineno-0-210"></a><span class="sd">    Attributes:</span>
-<a id="__codelineno-0-211" name="__codelineno-0-211"></a><span class="sd">        datasets: Map from dataset id to its `Dataset` row.</span>
-<a id="__codelineno-0-212" name="__codelineno-0-212"></a><span class="sd">        available_datasets: Every dataset id from `_index.yaml`. For admin the</span>
-<a id="__codelineno-0-213" name="__codelineno-0-213"></a><span class="sd">            curated set is the full shipped surface, so this equals the curated</span>
-<a id="__codelineno-0-214" name="__codelineno-0-214"></a><span class="sd">            keys.</span>
-<a id="__codelineno-0-215" name="__codelineno-0-215"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-216" name="__codelineno-0-216"></a>
-<a id="__codelineno-0-217" name="__codelineno-0-217"></a>    <span class="n">_catalog_kind</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;admin boundary catalog&quot;</span>
+<a id="__codelineno-0-210" name="__codelineno-0-210"></a>    <span class="n">_catalog_kind</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;admin boundary catalog&quot;</span>
+<a id="__codelineno-0-211" name="__codelineno-0-211"></a>
+<a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span class="n">datasets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<a id="__codelineno-0-213" name="__codelineno-0-213"></a>    <span class="n">_alias_index</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">PrivateAttr</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<a id="__codelineno-0-214" name="__codelineno-0-214"></a>
+<a id="__codelineno-0-215" name="__codelineno-0-215"></a>    <span class="nd">@classmethod</span>
+<a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_autoload</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-217" name="__codelineno-0-217"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the bundled catalog from disk.</span>
 <a id="__codelineno-0-218" name="__codelineno-0-218"></a>
-<a id="__codelineno-0-219" name="__codelineno-0-219"></a>    <span class="n">datasets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-<a id="__codelineno-0-220" name="__codelineno-0-220"></a>    <span class="n">_alias_index</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">PrivateAttr</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-<a id="__codelineno-0-221" name="__codelineno-0-221"></a>
-<a id="__codelineno-0-222" name="__codelineno-0-222"></a>    <span class="nd">@classmethod</span>
-<a id="__codelineno-0-223" name="__codelineno-0-223"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_autoload</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-224" name="__codelineno-0-224"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the bundled catalog from disk.</span>
-<a id="__codelineno-0-225" name="__codelineno-0-225"></a>
-<a id="__codelineno-0-226" name="__codelineno-0-226"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-227" name="__codelineno-0-227"></a><span class="sd">            dict[str, Any]: The `datasets`, `available_datasets` read from</span>
-<a id="__codelineno-0-228" name="__codelineno-0-228"></a><span class="sd">                the bundled catalog.</span>
-<a id="__codelineno-0-229" name="__codelineno-0-229"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-230" name="__codelineno-0-230"></a>        <span class="n">loaded</span> <span class="o">=</span> <span class="n">Catalog</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-<a id="__codelineno-0-231" name="__codelineno-0-231"></a>        <span class="k">return</span> <span class="p">{</span>
-<a id="__codelineno-0-232" name="__codelineno-0-232"></a>            <span class="s2">&quot;datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">datasets</span><span class="p">,</span>
-<a id="__codelineno-0-233" name="__codelineno-0-233"></a>            <span class="s2">&quot;available_datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">available_datasets</span><span class="p">,</span>
-<a id="__codelineno-0-234" name="__codelineno-0-234"></a>        <span class="p">}</span>
-<a id="__codelineno-0-235" name="__codelineno-0-235"></a>
-<a id="__codelineno-0-236" name="__codelineno-0-236"></a>    <span class="nd">@classmethod</span>
-<a id="__codelineno-0-237" name="__codelineno-0-237"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
-<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<a id="__codelineno-0-219" name="__codelineno-0-219"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-220" name="__codelineno-0-220"></a><span class="sd">            dict[str, Any]: The `datasets`, `available_datasets` read from</span>
+<a id="__codelineno-0-221" name="__codelineno-0-221"></a><span class="sd">                the bundled catalog.</span>
+<a id="__codelineno-0-222" name="__codelineno-0-222"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-223" name="__codelineno-0-223"></a>        <span class="n">loaded</span> <span class="o">=</span> <span class="n">Catalog</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+<a id="__codelineno-0-224" name="__codelineno-0-224"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-0-225" name="__codelineno-0-225"></a>            <span class="s2">&quot;datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">datasets</span><span class="p">,</span>
+<a id="__codelineno-0-226" name="__codelineno-0-226"></a>            <span class="s2">&quot;available_datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">available_datasets</span><span class="p">,</span>
+<a id="__codelineno-0-227" name="__codelineno-0-227"></a>        <span class="p">}</span>
+<a id="__codelineno-0-228" name="__codelineno-0-228"></a>
+<a id="__codelineno-0-229" name="__codelineno-0-229"></a>    <span class="nd">@classmethod</span>
+<a id="__codelineno-0-230" name="__codelineno-0-230"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a><span class="sd">            catalog_path: Catalog directory or single YAML file. Defaults to</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a><span class="sd">                the module-level `CATALOG_PATH`.</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="sd">            A fully-populated `Catalog`.</span>
 <a id="__codelineno-0-239" name="__codelineno-0-239"></a>
-<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">            catalog_path: Catalog directory or single YAML file. Defaults to</span>
-<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">                the module-level `CATALOG_PATH`.</span>
-<a id="__codelineno-0-243" name="__codelineno-0-243"></a>
-<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">            A fully-populated `Catalog`.</span>
-<a id="__codelineno-0-246" name="__codelineno-0-246"></a>
-<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">        Raises:</span>
-<a id="__codelineno-0-248" name="__codelineno-0-248"></a><span class="sd">            ValueError: If no file has a `datasets:` block, an id is declared</span>
-<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">                in two files, a row fails `Dataset` validation, or a curated id</span>
-<a id="__codelineno-0-250" name="__codelineno-0-250"></a><span class="sd">                is absent from `available_datasets:`.</span>
-<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-252" name="__codelineno-0-252"></a>        <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
-<a id="__codelineno-0-253" name="__codelineno-0-253"></a>        <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
-<a id="__codelineno-0-254" name="__codelineno-0-254"></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-<a id="__codelineno-0-255" name="__codelineno-0-255"></a>            <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
-<a id="__codelineno-0-256" name="__codelineno-0-256"></a>            <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
-<a id="__codelineno-0-257" name="__codelineno-0-257"></a>        <span class="p">)</span>
+<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">        Raises:</span>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">            ValueError: If no file has a `datasets:` block, an id is declared</span>
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">                in two files, a row fails `Dataset` validation, or a curated id</span>
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">                is absent from `available_datasets:`.</span>
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a>        <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a>        <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a>            <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a>            <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
+<a id="__codelineno-0-250" name="__codelineno-0-250"></a>        <span class="p">)</span>
+<a id="__codelineno-0-251" name="__codelineno-0-251"></a>
+<a id="__codelineno-0-252" name="__codelineno-0-252"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254"></a>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">            dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a><span class="sd">                `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
 <a id="__codelineno-0-258" name="__codelineno-0-258"></a>
-<a id="__codelineno-0-259" name="__codelineno-0-259"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="sd">            Dataset: The matching row.</span>
 <a id="__codelineno-0-261" name="__codelineno-0-261"></a>
-<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">            dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
-<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">                `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">        Raises:</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">            ValueError: If `dataset_id` is not a curated dataset; the message</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">                lists the known ids with a did-you-mean hint.</span>
 <a id="__codelineno-0-265" name="__codelineno-0-265"></a>
-<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">            Dataset: The matching row.</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a>
-<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">        Raises:</span>
-<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">            ValueError: If `dataset_id` is not a curated dataset; the message</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">                lists the known ids with a did-you-mean hint.</span>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">        Examples:</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">            - A known id resolves to its row:</span>
-<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">                ```python</span>
-<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">                &gt;&gt;&gt; from earthlens.admin import Catalog</span>
-<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
-<a id="__codelineno-0-278" name="__codelineno-0-278"></a><span class="sd">                &#39;geoboundaries&#39;</span>
-<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
-<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">                True</span>
-<a id="__codelineno-0-281" name="__codelineno-0-281"></a>
-<a id="__codelineno-0-282" name="__codelineno-0-282"></a><span class="sd">                ```</span>
-<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">        Examples:</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">            - A known id resolves to its row:</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">                ```python</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">                &gt;&gt;&gt; from earthlens.admin import Catalog</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">                &#39;geoboundaries&#39;</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">                True</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">                ```</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a>        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -26104,7 +26104,14 @@ lists the known ids with a did-you-mean hint.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>libs/providers/hazards/src/earthlens/admin/catalog.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-259">259</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-252">252</a></span>
+<span class="normal"><a href="#__codelineno-0-253">253</a></span>
+<span class="normal"><a href="#__codelineno-0-254">254</a></span>
+<span class="normal"><a href="#__codelineno-0-255">255</a></span>
+<span class="normal"><a href="#__codelineno-0-256">256</a></span>
+<span class="normal"><a href="#__codelineno-0-257">257</a></span>
+<span class="normal"><a href="#__codelineno-0-258">258</a></span>
+<span class="normal"><a href="#__codelineno-0-259">259</a></span>
 <span class="normal"><a href="#__codelineno-0-260">260</a></span>
 <span class="normal"><a href="#__codelineno-0-261">261</a></span>
 <span class="normal"><a href="#__codelineno-0-262">262</a></span>
@@ -26122,39 +26129,32 @@ lists the known ids with a did-you-mean hint.</p>
 <span class="normal"><a href="#__codelineno-0-274">274</a></span>
 <span class="normal"><a href="#__codelineno-0-275">275</a></span>
 <span class="normal"><a href="#__codelineno-0-276">276</a></span>
-<span class="normal"><a href="#__codelineno-0-277">277</a></span>
-<span class="normal"><a href="#__codelineno-0-278">278</a></span>
-<span class="normal"><a href="#__codelineno-0-279">279</a></span>
-<span class="normal"><a href="#__codelineno-0-280">280</a></span>
-<span class="normal"><a href="#__codelineno-0-281">281</a></span>
-<span class="normal"><a href="#__codelineno-0-282">282</a></span>
-<span class="normal"><a href="#__codelineno-0-283">283</a></span>
-<span class="normal"><a href="#__codelineno-0-284">284</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-252" name="__codelineno-0-252"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254"></a>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">        dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a><span class="sd">            `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
+<a id="__codelineno-0-258" name="__codelineno-0-258"></a>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="sd">        Dataset: The matching row.</span>
 <a id="__codelineno-0-261" name="__codelineno-0-261"></a>
-<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">        dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
-<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">            `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">        ValueError: If `dataset_id` is not a curated dataset; the message</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">            lists the known ids with a did-you-mean hint.</span>
 <a id="__codelineno-0-265" name="__codelineno-0-265"></a>
-<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">        Dataset: The matching row.</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a>
-<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">        ValueError: If `dataset_id` is not a curated dataset; the message</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">            lists the known ids with a did-you-mean hint.</span>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">    Examples:</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">        - A known id resolves to its row:</span>
-<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">            ```python</span>
-<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">            &gt;&gt;&gt; from earthlens.admin import Catalog</span>
-<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
-<a id="__codelineno-0-278" name="__codelineno-0-278"></a><span class="sd">            &#39;geoboundaries&#39;</span>
-<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
-<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">            True</span>
-<a id="__codelineno-0-281" name="__codelineno-0-281"></a>
-<a id="__codelineno-0-282" name="__codelineno-0-282"></a><span class="sd">            ```</span>
-<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-284" name="__codelineno-0-284"></a>    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">    Examples:</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">        - A known id resolves to its row:</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">            ```python</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">            &gt;&gt;&gt; from earthlens.admin import Catalog</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">            &#39;geoboundaries&#39;</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">            True</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">            ```</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a>    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -26261,7 +26261,14 @@ is absent from <code>available_datasets:</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>libs/providers/hazards/src/earthlens/admin/catalog.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-236">236</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-229">229</a></span>
+<span class="normal"><a href="#__codelineno-0-230">230</a></span>
+<span class="normal"><a href="#__codelineno-0-231">231</a></span>
+<span class="normal"><a href="#__codelineno-0-232">232</a></span>
+<span class="normal"><a href="#__codelineno-0-233">233</a></span>
+<span class="normal"><a href="#__codelineno-0-234">234</a></span>
+<span class="normal"><a href="#__codelineno-0-235">235</a></span>
+<span class="normal"><a href="#__codelineno-0-236">236</a></span>
 <span class="normal"><a href="#__codelineno-0-237">237</a></span>
 <span class="normal"><a href="#__codelineno-0-238">238</a></span>
 <span class="normal"><a href="#__codelineno-0-239">239</a></span>
@@ -26275,35 +26282,28 @@ is absent from <code>available_datasets:</code>.</p>
 <span class="normal"><a href="#__codelineno-0-247">247</a></span>
 <span class="normal"><a href="#__codelineno-0-248">248</a></span>
 <span class="normal"><a href="#__codelineno-0-249">249</a></span>
-<span class="normal"><a href="#__codelineno-0-250">250</a></span>
-<span class="normal"><a href="#__codelineno-0-251">251</a></span>
-<span class="normal"><a href="#__codelineno-0-252">252</a></span>
-<span class="normal"><a href="#__codelineno-0-253">253</a></span>
-<span class="normal"><a href="#__codelineno-0-254">254</a></span>
-<span class="normal"><a href="#__codelineno-0-255">255</a></span>
-<span class="normal"><a href="#__codelineno-0-256">256</a></span>
-<span class="normal"><a href="#__codelineno-0-257">257</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-236" name="__codelineno-0-236"></a><span class="nd">@classmethod</span>
-<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
-<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<span class="normal"><a href="#__codelineno-0-250">250</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-229" name="__codelineno-0-229"></a><span class="nd">@classmethod</span>
+<a id="__codelineno-0-230" name="__codelineno-0-230"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a><span class="sd">        catalog_path: Catalog directory or single YAML file. Defaults to</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a><span class="sd">            the module-level `CATALOG_PATH`.</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="sd">        A fully-populated `Catalog`.</span>
 <a id="__codelineno-0-239" name="__codelineno-0-239"></a>
-<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">        catalog_path: Catalog directory or single YAML file. Defaults to</span>
-<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">            the module-level `CATALOG_PATH`.</span>
-<a id="__codelineno-0-243" name="__codelineno-0-243"></a>
-<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">        A fully-populated `Catalog`.</span>
-<a id="__codelineno-0-246" name="__codelineno-0-246"></a>
-<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-248" name="__codelineno-0-248"></a><span class="sd">        ValueError: If no file has a `datasets:` block, an id is declared</span>
-<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">            in two files, a row fails `Dataset` validation, or a curated id</span>
-<a id="__codelineno-0-250" name="__codelineno-0-250"></a><span class="sd">            is absent from `available_datasets:`.</span>
-<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-252" name="__codelineno-0-252"></a>    <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
-<a id="__codelineno-0-253" name="__codelineno-0-253"></a>    <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
-<a id="__codelineno-0-254" name="__codelineno-0-254"></a>    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-<a id="__codelineno-0-255" name="__codelineno-0-255"></a>        <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
-<a id="__codelineno-0-256" name="__codelineno-0-256"></a>        <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
-<a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span class="p">)</span>
+<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">        ValueError: If no file has a `datasets:` block, an id is declared</span>
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">            in two files, a row fails `Dataset` validation, or a curated id</span>
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">            is absent from `available_datasets:`.</span>
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a>    <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a>    <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a>    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a>        <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a>        <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
+<a id="__codelineno-0-250" name="__codelineno-0-250"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -26331,7 +26331,7 @@ is absent from <code>available_datasets:</code>.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="earthlens.base.SummarisedLeaf">SummarisedLeaf</span></code></p>
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
 
 
@@ -26573,14 +26573,7 @@ for geoBoundaries (whose two-step resolve uses the module constant).</p>
 <span class="normal"><a href="#__codelineno-0-110">110</a></span>
 <span class="normal"><a href="#__codelineno-0-111">111</a></span>
 <span class="normal"><a href="#__codelineno-0-112">112</a></span>
-<span class="normal"><a href="#__codelineno-0-113">113</a></span>
-<span class="normal"><a href="#__codelineno-0-114">114</a></span>
-<span class="normal"><a href="#__codelineno-0-115">115</a></span>
-<span class="normal"><a href="#__codelineno-0-116">116</a></span>
-<span class="normal"><a href="#__codelineno-0-117">117</a></span>
-<span class="normal"><a href="#__codelineno-0-118">118</a></span>
-<span class="normal"><a href="#__codelineno-0-119">119</a></span>
-<span class="normal"><a href="#__codelineno-0-120">120</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="k">class</span><span class="w"> </span><span class="nc">Dataset</span><span class="p">(</span><span class="n">SummarisedLeaf</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="k">class</span><span class="w"> </span><span class="nc">Dataset</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;One curated administrative-boundary dataset row.</span>
 <a id="__codelineno-0-63" name="__codelineno-0-63"></a>
 <a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    A single row model spans all four providers; the provider-specific fields</span>
@@ -26618,28 +26611,21 @@ for geoBoundaries (whose two-step resolve uses the module constant).</p>
 <a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">        license_note: Attribution / license text surfaced in docs and logs.</span>
 <a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-98" name="__codelineno-0-98"></a>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">_summary_fields</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="s2">&quot;id&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>        <span class="s2">&quot;title&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>        <span class="s2">&quot;provider&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="s2">&quot;adm_level&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a>    <span class="p">)</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;forbid&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-110" name="__codelineno-0-110"></a>    <span class="n">provider</span><span class="p">:</span> <span class="n">Provider</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a>    <span class="n">adm_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="n">layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="n">default_scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span class="n">default_year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-116" name="__codelineno-0-116"></a>    <span class="n">per_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a>    <span class="n">required_selectors</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="n">native_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span>
-<a id="__codelineno-0-119" name="__codelineno-0-119"></a>    <span class="n">url_template</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="n">license_note</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;forbid&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>    <span class="n">provider</span><span class="p">:</span> <span class="n">Provider</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>    <span class="n">adm_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="n">layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span class="n">default_scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="n">default_year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="n">per_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>    <span class="n">required_selectors</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>    <span class="n">native_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="n">url_template</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">license_note</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -28359,7 +28345,14 @@ keys.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>libs/providers/hazards/src/earthlens/admin/catalog.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-200">200</a></span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-193">193</a></span>
+<span class="normal"><a href="#__codelineno-0-194">194</a></span>
+<span class="normal"><a href="#__codelineno-0-195">195</a></span>
+<span class="normal"><a href="#__codelineno-0-196">196</a></span>
+<span class="normal"><a href="#__codelineno-0-197">197</a></span>
+<span class="normal"><a href="#__codelineno-0-198">198</a></span>
+<span class="normal"><a href="#__codelineno-0-199">199</a></span>
+<span class="normal"><a href="#__codelineno-0-200">200</a></span>
 <span class="normal"><a href="#__codelineno-0-201">201</a></span>
 <span class="normal"><a href="#__codelineno-0-202">202</a></span>
 <span class="normal"><a href="#__codelineno-0-203">203</a></span>
@@ -28436,98 +28429,91 @@ keys.</p>
 <span class="normal"><a href="#__codelineno-0-274">274</a></span>
 <span class="normal"><a href="#__codelineno-0-275">275</a></span>
 <span class="normal"><a href="#__codelineno-0-276">276</a></span>
-<span class="normal"><a href="#__codelineno-0-277">277</a></span>
-<span class="normal"><a href="#__codelineno-0-278">278</a></span>
-<span class="normal"><a href="#__codelineno-0-279">279</a></span>
-<span class="normal"><a href="#__codelineno-0-280">280</a></span>
-<span class="normal"><a href="#__codelineno-0-281">281</a></span>
-<span class="normal"><a href="#__codelineno-0-282">282</a></span>
-<span class="normal"><a href="#__codelineno-0-283">283</a></span>
-<span class="normal"><a href="#__codelineno-0-284">284</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-200" name="__codelineno-0-200"></a><span class="k">class</span><span class="w"> </span><span class="nc">Catalog</span><span class="p">(</span><span class="n">AbstractCatalog</span><span class="p">[</span><span class="n">Dataset</span><span class="p">]):</span>
-<a id="__codelineno-0-201" name="__codelineno-0-201"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Administrative-boundary source catalog for the admin backend.</span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-193" name="__codelineno-0-193"></a><span class="k">class</span><span class="w"> </span><span class="nc">Catalog</span><span class="p">(</span><span class="n">AbstractCatalog</span><span class="p">[</span><span class="n">Dataset</span><span class="p">]):</span>
+<a id="__codelineno-0-194" name="__codelineno-0-194"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Administrative-boundary source catalog for the admin backend.</span>
+<a id="__codelineno-0-195" name="__codelineno-0-195"></a>
+<a id="__codelineno-0-196" name="__codelineno-0-196"></a><span class="sd">    Merges the bundled `catalog/` directory&#39;s per-provider `*.yaml` files and</span>
+<a id="__codelineno-0-197" name="__codelineno-0-197"></a><span class="sd">    exposes their `datasets:` blocks as a map of `Dataset` rows keyed by id</span>
+<a id="__codelineno-0-198" name="__codelineno-0-198"></a><span class="sd">    under the inherited `datasets` field (giving `cat[&quot;geoboundaries:adm1&quot;]`,</span>
+<a id="__codelineno-0-199" name="__codelineno-0-199"></a><span class="sd">    `&quot;tiger:county&quot; in cat`, `len(cat)`, and the did-you-mean error for free).</span>
+<a id="__codelineno-0-200" name="__codelineno-0-200"></a><span class="sd">    Instantiate with no arguments (`Catalog()`); `model_post_init` loads and</span>
+<a id="__codelineno-0-201" name="__codelineno-0-201"></a><span class="sd">    validates the catalog through the parse cache.</span>
 <a id="__codelineno-0-202" name="__codelineno-0-202"></a>
-<a id="__codelineno-0-203" name="__codelineno-0-203"></a><span class="sd">    Merges the bundled `catalog/` directory&#39;s per-provider `*.yaml` files and</span>
-<a id="__codelineno-0-204" name="__codelineno-0-204"></a><span class="sd">    exposes their `datasets:` blocks as a map of `Dataset` rows keyed by id</span>
-<a id="__codelineno-0-205" name="__codelineno-0-205"></a><span class="sd">    under the inherited `datasets` field (giving `cat[&quot;geoboundaries:adm1&quot;]`,</span>
-<a id="__codelineno-0-206" name="__codelineno-0-206"></a><span class="sd">    `&quot;tiger:county&quot; in cat`, `len(cat)`, and the did-you-mean error for free).</span>
-<a id="__codelineno-0-207" name="__codelineno-0-207"></a><span class="sd">    Instantiate with no arguments (`Catalog()`); `model_post_init` loads and</span>
-<a id="__codelineno-0-208" name="__codelineno-0-208"></a><span class="sd">    validates the catalog through the parse cache.</span>
+<a id="__codelineno-0-203" name="__codelineno-0-203"></a><span class="sd">    Attributes:</span>
+<a id="__codelineno-0-204" name="__codelineno-0-204"></a><span class="sd">        datasets: Map from dataset id to its `Dataset` row.</span>
+<a id="__codelineno-0-205" name="__codelineno-0-205"></a><span class="sd">        available_datasets: Every dataset id from `_index.yaml`. For admin the</span>
+<a id="__codelineno-0-206" name="__codelineno-0-206"></a><span class="sd">            curated set is the full shipped surface, so this equals the curated</span>
+<a id="__codelineno-0-207" name="__codelineno-0-207"></a><span class="sd">            keys.</span>
+<a id="__codelineno-0-208" name="__codelineno-0-208"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-209" name="__codelineno-0-209"></a>
-<a id="__codelineno-0-210" name="__codelineno-0-210"></a><span class="sd">    Attributes:</span>
-<a id="__codelineno-0-211" name="__codelineno-0-211"></a><span class="sd">        datasets: Map from dataset id to its `Dataset` row.</span>
-<a id="__codelineno-0-212" name="__codelineno-0-212"></a><span class="sd">        available_datasets: Every dataset id from `_index.yaml`. For admin the</span>
-<a id="__codelineno-0-213" name="__codelineno-0-213"></a><span class="sd">            curated set is the full shipped surface, so this equals the curated</span>
-<a id="__codelineno-0-214" name="__codelineno-0-214"></a><span class="sd">            keys.</span>
-<a id="__codelineno-0-215" name="__codelineno-0-215"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-216" name="__codelineno-0-216"></a>
-<a id="__codelineno-0-217" name="__codelineno-0-217"></a>    <span class="n">_catalog_kind</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;admin boundary catalog&quot;</span>
+<a id="__codelineno-0-210" name="__codelineno-0-210"></a>    <span class="n">_catalog_kind</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;admin boundary catalog&quot;</span>
+<a id="__codelineno-0-211" name="__codelineno-0-211"></a>
+<a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span class="n">datasets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<a id="__codelineno-0-213" name="__codelineno-0-213"></a>    <span class="n">_alias_index</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">PrivateAttr</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<a id="__codelineno-0-214" name="__codelineno-0-214"></a>
+<a id="__codelineno-0-215" name="__codelineno-0-215"></a>    <span class="nd">@classmethod</span>
+<a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_autoload</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<a id="__codelineno-0-217" name="__codelineno-0-217"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the bundled catalog from disk.</span>
 <a id="__codelineno-0-218" name="__codelineno-0-218"></a>
-<a id="__codelineno-0-219" name="__codelineno-0-219"></a>    <span class="n">datasets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-<a id="__codelineno-0-220" name="__codelineno-0-220"></a>    <span class="n">_alias_index</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">PrivateAttr</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-<a id="__codelineno-0-221" name="__codelineno-0-221"></a>
-<a id="__codelineno-0-222" name="__codelineno-0-222"></a>    <span class="nd">@classmethod</span>
-<a id="__codelineno-0-223" name="__codelineno-0-223"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_autoload</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<a id="__codelineno-0-224" name="__codelineno-0-224"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the bundled catalog from disk.</span>
-<a id="__codelineno-0-225" name="__codelineno-0-225"></a>
-<a id="__codelineno-0-226" name="__codelineno-0-226"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-227" name="__codelineno-0-227"></a><span class="sd">            dict[str, Any]: The `datasets`, `available_datasets` read from</span>
-<a id="__codelineno-0-228" name="__codelineno-0-228"></a><span class="sd">                the bundled catalog.</span>
-<a id="__codelineno-0-229" name="__codelineno-0-229"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-230" name="__codelineno-0-230"></a>        <span class="n">loaded</span> <span class="o">=</span> <span class="n">Catalog</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-<a id="__codelineno-0-231" name="__codelineno-0-231"></a>        <span class="k">return</span> <span class="p">{</span>
-<a id="__codelineno-0-232" name="__codelineno-0-232"></a>            <span class="s2">&quot;datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">datasets</span><span class="p">,</span>
-<a id="__codelineno-0-233" name="__codelineno-0-233"></a>            <span class="s2">&quot;available_datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">available_datasets</span><span class="p">,</span>
-<a id="__codelineno-0-234" name="__codelineno-0-234"></a>        <span class="p">}</span>
-<a id="__codelineno-0-235" name="__codelineno-0-235"></a>
-<a id="__codelineno-0-236" name="__codelineno-0-236"></a>    <span class="nd">@classmethod</span>
-<a id="__codelineno-0-237" name="__codelineno-0-237"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
-<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<a id="__codelineno-0-219" name="__codelineno-0-219"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-220" name="__codelineno-0-220"></a><span class="sd">            dict[str, Any]: The `datasets`, `available_datasets` read from</span>
+<a id="__codelineno-0-221" name="__codelineno-0-221"></a><span class="sd">                the bundled catalog.</span>
+<a id="__codelineno-0-222" name="__codelineno-0-222"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-223" name="__codelineno-0-223"></a>        <span class="n">loaded</span> <span class="o">=</span> <span class="n">Catalog</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+<a id="__codelineno-0-224" name="__codelineno-0-224"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-0-225" name="__codelineno-0-225"></a>            <span class="s2">&quot;datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">datasets</span><span class="p">,</span>
+<a id="__codelineno-0-226" name="__codelineno-0-226"></a>            <span class="s2">&quot;available_datasets&quot;</span><span class="p">:</span> <span class="n">loaded</span><span class="o">.</span><span class="n">available_datasets</span><span class="p">,</span>
+<a id="__codelineno-0-227" name="__codelineno-0-227"></a>        <span class="p">}</span>
+<a id="__codelineno-0-228" name="__codelineno-0-228"></a>
+<a id="__codelineno-0-229" name="__codelineno-0-229"></a>    <span class="nd">@classmethod</span>
+<a id="__codelineno-0-230" name="__codelineno-0-230"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a><span class="sd">            catalog_path: Catalog directory or single YAML file. Defaults to</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a><span class="sd">                the module-level `CATALOG_PATH`.</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="sd">            A fully-populated `Catalog`.</span>
 <a id="__codelineno-0-239" name="__codelineno-0-239"></a>
-<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">            catalog_path: Catalog directory or single YAML file. Defaults to</span>
-<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">                the module-level `CATALOG_PATH`.</span>
-<a id="__codelineno-0-243" name="__codelineno-0-243"></a>
-<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">            A fully-populated `Catalog`.</span>
-<a id="__codelineno-0-246" name="__codelineno-0-246"></a>
-<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">        Raises:</span>
-<a id="__codelineno-0-248" name="__codelineno-0-248"></a><span class="sd">            ValueError: If no file has a `datasets:` block, an id is declared</span>
-<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">                in two files, a row fails `Dataset` validation, or a curated id</span>
-<a id="__codelineno-0-250" name="__codelineno-0-250"></a><span class="sd">                is absent from `available_datasets:`.</span>
-<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-252" name="__codelineno-0-252"></a>        <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
-<a id="__codelineno-0-253" name="__codelineno-0-253"></a>        <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
-<a id="__codelineno-0-254" name="__codelineno-0-254"></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-<a id="__codelineno-0-255" name="__codelineno-0-255"></a>            <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
-<a id="__codelineno-0-256" name="__codelineno-0-256"></a>            <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
-<a id="__codelineno-0-257" name="__codelineno-0-257"></a>        <span class="p">)</span>
+<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">        Raises:</span>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">            ValueError: If no file has a `datasets:` block, an id is declared</span>
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">                in two files, a row fails `Dataset` validation, or a curated id</span>
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">                is absent from `available_datasets:`.</span>
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a>        <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a>        <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a>            <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a>            <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
+<a id="__codelineno-0-250" name="__codelineno-0-250"></a>        <span class="p">)</span>
+<a id="__codelineno-0-251" name="__codelineno-0-251"></a>
+<a id="__codelineno-0-252" name="__codelineno-0-252"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254"></a>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">        Args:</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">            dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a><span class="sd">                `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
 <a id="__codelineno-0-258" name="__codelineno-0-258"></a>
-<a id="__codelineno-0-259" name="__codelineno-0-259"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="sd">            Dataset: The matching row.</span>
 <a id="__codelineno-0-261" name="__codelineno-0-261"></a>
-<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">        Args:</span>
-<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">            dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
-<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">                `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">        Raises:</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">            ValueError: If `dataset_id` is not a curated dataset; the message</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">                lists the known ids with a did-you-mean hint.</span>
 <a id="__codelineno-0-265" name="__codelineno-0-265"></a>
-<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">        Returns:</span>
-<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">            Dataset: The matching row.</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a>
-<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">        Raises:</span>
-<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">            ValueError: If `dataset_id` is not a curated dataset; the message</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">                lists the known ids with a did-you-mean hint.</span>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">        Examples:</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">            - A known id resolves to its row:</span>
-<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">                ```python</span>
-<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">                &gt;&gt;&gt; from earthlens.admin import Catalog</span>
-<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
-<a id="__codelineno-0-278" name="__codelineno-0-278"></a><span class="sd">                &#39;geoboundaries&#39;</span>
-<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
-<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">                True</span>
-<a id="__codelineno-0-281" name="__codelineno-0-281"></a>
-<a id="__codelineno-0-282" name="__codelineno-0-282"></a><span class="sd">                ```</span>
-<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">        Examples:</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">            - A known id resolves to its row:</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">                ```python</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">                &gt;&gt;&gt; from earthlens.admin import Catalog</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">                &#39;geoboundaries&#39;</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a><span class="sd">                &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">                True</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">                ```</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a>        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -28651,7 +28637,14 @@ lists the known ids with a did-you-mean hint.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>libs/providers/hazards/src/earthlens/admin/catalog.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-259">259</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-252">252</a></span>
+<span class="normal"><a href="#__codelineno-0-253">253</a></span>
+<span class="normal"><a href="#__codelineno-0-254">254</a></span>
+<span class="normal"><a href="#__codelineno-0-255">255</a></span>
+<span class="normal"><a href="#__codelineno-0-256">256</a></span>
+<span class="normal"><a href="#__codelineno-0-257">257</a></span>
+<span class="normal"><a href="#__codelineno-0-258">258</a></span>
+<span class="normal"><a href="#__codelineno-0-259">259</a></span>
 <span class="normal"><a href="#__codelineno-0-260">260</a></span>
 <span class="normal"><a href="#__codelineno-0-261">261</a></span>
 <span class="normal"><a href="#__codelineno-0-262">262</a></span>
@@ -28669,39 +28662,32 @@ lists the known ids with a did-you-mean hint.</p>
 <span class="normal"><a href="#__codelineno-0-274">274</a></span>
 <span class="normal"><a href="#__codelineno-0-275">275</a></span>
 <span class="normal"><a href="#__codelineno-0-276">276</a></span>
-<span class="normal"><a href="#__codelineno-0-277">277</a></span>
-<span class="normal"><a href="#__codelineno-0-278">278</a></span>
-<span class="normal"><a href="#__codelineno-0-279">279</a></span>
-<span class="normal"><a href="#__codelineno-0-280">280</a></span>
-<span class="normal"><a href="#__codelineno-0-281">281</a></span>
-<span class="normal"><a href="#__codelineno-0-282">282</a></span>
-<span class="normal"><a href="#__codelineno-0-283">283</a></span>
-<span class="normal"><a href="#__codelineno-0-284">284</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-252" name="__codelineno-0-252"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+<a id="__codelineno-0-253" name="__codelineno-0-253"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the `Dataset` for a curated id, did-you-mean on miss.</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254"></a>
+<a id="__codelineno-0-255" name="__codelineno-0-255"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="sd">        dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
+<a id="__codelineno-0-257" name="__codelineno-0-257"></a><span class="sd">            `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
+<a id="__codelineno-0-258" name="__codelineno-0-258"></a>
+<a id="__codelineno-0-259" name="__codelineno-0-259"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="sd">        Dataset: The matching row.</span>
 <a id="__codelineno-0-261" name="__codelineno-0-261"></a>
-<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">        dataset_id: A curated dataset id (`&quot;geoboundaries:adm1&quot;`,</span>
-<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">            `&quot;tiger:county&quot;`, `&quot;natural_earth:countries&quot;`).</span>
+<a id="__codelineno-0-262" name="__codelineno-0-262"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-263" name="__codelineno-0-263"></a><span class="sd">        ValueError: If `dataset_id` is not a curated dataset; the message</span>
+<a id="__codelineno-0-264" name="__codelineno-0-264"></a><span class="sd">            lists the known ids with a did-you-mean hint.</span>
 <a id="__codelineno-0-265" name="__codelineno-0-265"></a>
-<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">        Dataset: The matching row.</span>
-<a id="__codelineno-0-268" name="__codelineno-0-268"></a>
-<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">        ValueError: If `dataset_id` is not a curated dataset; the message</span>
-<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">            lists the known ids with a did-you-mean hint.</span>
-<a id="__codelineno-0-272" name="__codelineno-0-272"></a>
-<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">    Examples:</span>
-<a id="__codelineno-0-274" name="__codelineno-0-274"></a><span class="sd">        - A known id resolves to its row:</span>
-<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">            ```python</span>
-<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">            &gt;&gt;&gt; from earthlens.admin import Catalog</span>
-<a id="__codelineno-0-277" name="__codelineno-0-277"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
-<a id="__codelineno-0-278" name="__codelineno-0-278"></a><span class="sd">            &#39;geoboundaries&#39;</span>
-<a id="__codelineno-0-279" name="__codelineno-0-279"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
-<a id="__codelineno-0-280" name="__codelineno-0-280"></a><span class="sd">            True</span>
-<a id="__codelineno-0-281" name="__codelineno-0-281"></a>
-<a id="__codelineno-0-282" name="__codelineno-0-282"></a><span class="sd">            ```</span>
-<a id="__codelineno-0-283" name="__codelineno-0-283"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-284" name="__codelineno-0-284"></a>    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
+<a id="__codelineno-0-266" name="__codelineno-0-266"></a><span class="sd">    Examples:</span>
+<a id="__codelineno-0-267" name="__codelineno-0-267"></a><span class="sd">        - A known id resolves to its row:</span>
+<a id="__codelineno-0-268" name="__codelineno-0-268"></a><span class="sd">            ```python</span>
+<a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="sd">            &gt;&gt;&gt; from earthlens.admin import Catalog</span>
+<a id="__codelineno-0-270" name="__codelineno-0-270"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;geoboundaries:adm1&quot;).provider</span>
+<a id="__codelineno-0-271" name="__codelineno-0-271"></a><span class="sd">            &#39;geoboundaries&#39;</span>
+<a id="__codelineno-0-272" name="__codelineno-0-272"></a><span class="sd">            &gt;&gt;&gt; Catalog().get(&quot;tiger:tract&quot;).per_state</span>
+<a id="__codelineno-0-273" name="__codelineno-0-273"></a><span class="sd">            True</span>
+<a id="__codelineno-0-274" name="__codelineno-0-274"></a>
+<a id="__codelineno-0-275" name="__codelineno-0-275"></a><span class="sd">            ```</span>
+<a id="__codelineno-0-276" name="__codelineno-0-276"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-277" name="__codelineno-0-277"></a>    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -28808,7 +28794,14 @@ is absent from <code>available_datasets:</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>libs/providers/hazards/src/earthlens/admin/catalog.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-236">236</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-229">229</a></span>
+<span class="normal"><a href="#__codelineno-0-230">230</a></span>
+<span class="normal"><a href="#__codelineno-0-231">231</a></span>
+<span class="normal"><a href="#__codelineno-0-232">232</a></span>
+<span class="normal"><a href="#__codelineno-0-233">233</a></span>
+<span class="normal"><a href="#__codelineno-0-234">234</a></span>
+<span class="normal"><a href="#__codelineno-0-235">235</a></span>
+<span class="normal"><a href="#__codelineno-0-236">236</a></span>
 <span class="normal"><a href="#__codelineno-0-237">237</a></span>
 <span class="normal"><a href="#__codelineno-0-238">238</a></span>
 <span class="normal"><a href="#__codelineno-0-239">239</a></span>
@@ -28822,35 +28815,28 @@ is absent from <code>available_datasets:</code>.</p>
 <span class="normal"><a href="#__codelineno-0-247">247</a></span>
 <span class="normal"><a href="#__codelineno-0-248">248</a></span>
 <span class="normal"><a href="#__codelineno-0-249">249</a></span>
-<span class="normal"><a href="#__codelineno-0-250">250</a></span>
-<span class="normal"><a href="#__codelineno-0-251">251</a></span>
-<span class="normal"><a href="#__codelineno-0-252">252</a></span>
-<span class="normal"><a href="#__codelineno-0-253">253</a></span>
-<span class="normal"><a href="#__codelineno-0-254">254</a></span>
-<span class="normal"><a href="#__codelineno-0-255">255</a></span>
-<span class="normal"><a href="#__codelineno-0-256">256</a></span>
-<span class="normal"><a href="#__codelineno-0-257">257</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-236" name="__codelineno-0-236"></a><span class="nd">@classmethod</span>
-<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
-<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<span class="normal"><a href="#__codelineno-0-250">250</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-229" name="__codelineno-0-229"></a><span class="nd">@classmethod</span>
+<a id="__codelineno-0-230" name="__codelineno-0-230"></a><span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">catalog_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
+<a id="__codelineno-0-231" name="__codelineno-0-231"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the admin catalog from disk (directory or single file).</span>
+<a id="__codelineno-0-232" name="__codelineno-0-232"></a>
+<a id="__codelineno-0-233" name="__codelineno-0-233"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-234" name="__codelineno-0-234"></a><span class="sd">        catalog_path: Catalog directory or single YAML file. Defaults to</span>
+<a id="__codelineno-0-235" name="__codelineno-0-235"></a><span class="sd">            the module-level `CATALOG_PATH`.</span>
+<a id="__codelineno-0-236" name="__codelineno-0-236"></a>
+<a id="__codelineno-0-237" name="__codelineno-0-237"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-238" name="__codelineno-0-238"></a><span class="sd">        A fully-populated `Catalog`.</span>
 <a id="__codelineno-0-239" name="__codelineno-0-239"></a>
-<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">        catalog_path: Catalog directory or single YAML file. Defaults to</span>
-<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">            the module-level `CATALOG_PATH`.</span>
-<a id="__codelineno-0-243" name="__codelineno-0-243"></a>
-<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-245" name="__codelineno-0-245"></a><span class="sd">        A fully-populated `Catalog`.</span>
-<a id="__codelineno-0-246" name="__codelineno-0-246"></a>
-<a id="__codelineno-0-247" name="__codelineno-0-247"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-248" name="__codelineno-0-248"></a><span class="sd">        ValueError: If no file has a `datasets:` block, an id is declared</span>
-<a id="__codelineno-0-249" name="__codelineno-0-249"></a><span class="sd">            in two files, a row fails `Dataset` validation, or a curated id</span>
-<a id="__codelineno-0-250" name="__codelineno-0-250"></a><span class="sd">            is absent from `available_datasets:`.</span>
-<a id="__codelineno-0-251" name="__codelineno-0-251"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-252" name="__codelineno-0-252"></a>    <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
-<a id="__codelineno-0-253" name="__codelineno-0-253"></a>    <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
-<a id="__codelineno-0-254" name="__codelineno-0-254"></a>    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
-<a id="__codelineno-0-255" name="__codelineno-0-255"></a>        <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
-<a id="__codelineno-0-256" name="__codelineno-0-256"></a>        <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
-<a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span class="p">)</span>
+<a id="__codelineno-0-240" name="__codelineno-0-240"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-241" name="__codelineno-0-241"></a><span class="sd">        ValueError: If no file has a `datasets:` block, an id is declared</span>
+<a id="__codelineno-0-242" name="__codelineno-0-242"></a><span class="sd">            in two files, a row fails `Dataset` validation, or a curated id</span>
+<a id="__codelineno-0-243" name="__codelineno-0-243"></a><span class="sd">            is absent from `available_datasets:`.</span>
+<a id="__codelineno-0-244" name="__codelineno-0-244"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-245" name="__codelineno-0-245"></a>    <span class="n">catalog_path</span> <span class="o">=</span> <span class="n">catalog_path</span> <span class="k">if</span> <span class="n">catalog_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CATALOG_PATH</span>
+<a id="__codelineno-0-246" name="__codelineno-0-246"></a>    <span class="n">available</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">_load_catalog_data</span><span class="p">(</span><span class="n">catalog_path</span><span class="p">)</span>
+<a id="__codelineno-0-247" name="__codelineno-0-247"></a>    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+<a id="__codelineno-0-248" name="__codelineno-0-248"></a>        <span class="n">datasets</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">datasets</span><span class="p">),</span>
+<a id="__codelineno-0-249" name="__codelineno-0-249"></a>        <span class="n">available_datasets</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
+<a id="__codelineno-0-250" name="__codelineno-0-250"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -28878,7 +28864,7 @@ is absent from <code>available_datasets:</code>.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="earthlens.base.SummarisedLeaf">SummarisedLeaf</span></code></p>
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
 
 
@@ -29120,14 +29106,7 @@ for geoBoundaries (whose two-step resolve uses the module constant).</p>
 <span class="normal"><a href="#__codelineno-0-110">110</a></span>
 <span class="normal"><a href="#__codelineno-0-111">111</a></span>
 <span class="normal"><a href="#__codelineno-0-112">112</a></span>
-<span class="normal"><a href="#__codelineno-0-113">113</a></span>
-<span class="normal"><a href="#__codelineno-0-114">114</a></span>
-<span class="normal"><a href="#__codelineno-0-115">115</a></span>
-<span class="normal"><a href="#__codelineno-0-116">116</a></span>
-<span class="normal"><a href="#__codelineno-0-117">117</a></span>
-<span class="normal"><a href="#__codelineno-0-118">118</a></span>
-<span class="normal"><a href="#__codelineno-0-119">119</a></span>
-<span class="normal"><a href="#__codelineno-0-120">120</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="k">class</span><span class="w"> </span><span class="nc">Dataset</span><span class="p">(</span><span class="n">SummarisedLeaf</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="k">class</span><span class="w"> </span><span class="nc">Dataset</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;One curated administrative-boundary dataset row.</span>
 <a id="__codelineno-0-63" name="__codelineno-0-63"></a>
 <a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    A single row model spans all four providers; the provider-specific fields</span>
@@ -29165,28 +29144,21 @@ for geoBoundaries (whose two-step resolve uses the module constant).</p>
 <a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">        license_note: Attribution / license text surfaced in docs and logs.</span>
 <a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-98" name="__codelineno-0-98"></a>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">_summary_fields</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="s2">&quot;id&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>        <span class="s2">&quot;title&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>        <span class="s2">&quot;provider&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="s2">&quot;adm_level&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-104" name="__codelineno-0-104"></a>    <span class="p">)</span>
-<a id="__codelineno-0-105" name="__codelineno-0-105"></a>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;forbid&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-110" name="__codelineno-0-110"></a>    <span class="n">provider</span><span class="p">:</span> <span class="n">Provider</span>
-<a id="__codelineno-0-111" name="__codelineno-0-111"></a>    <span class="n">adm_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="n">layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="n">default_scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span class="n">default_year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-116" name="__codelineno-0-116"></a>    <span class="n">per_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a>    <span class="n">required_selectors</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="n">native_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span>
-<a id="__codelineno-0-119" name="__codelineno-0-119"></a>    <span class="n">url_template</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="n">license_note</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;forbid&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>    <span class="n">provider</span><span class="p">:</span> <span class="n">Provider</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>    <span class="n">adm_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="n">layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span class="n">default_scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="n">default_year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="n">per_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>    <span class="n">required_selectors</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>    <span class="n">native_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="n">url_template</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">license_note</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
