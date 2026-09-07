@@ -35,7 +35,7 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -95,7 +95,7 @@ class MswepVersion(BaseModel):
     provisional: bool = False
 
 
-class MswepVariant(BaseModel):
+class MswepVariant(SummarisedLeaf):
     """One data variant and its window.
 
     Two kinds exist. An **analysis** variant (`Past`, `Past_nogauge`,
@@ -146,6 +146,12 @@ class MswepVariant(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "variant",
+        "kind",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

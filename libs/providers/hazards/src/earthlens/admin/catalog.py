@@ -24,9 +24,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, ValidationError
+from pydantic import ConfigDict, Field, PrivateAttr, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -58,7 +58,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One curated administrative-boundary dataset row.
 
     A single row model spans all four providers; the provider-specific fields
@@ -95,6 +95,13 @@ class Dataset(BaseModel):
             for geoBoundaries (whose two-step resolve uses the module constant).
         license_note: Attribution / license text surfaced in docs and logs.
     """
+
+    _summary_fields = (
+        "id",
+        "title",
+        "provider",
+        "adm_level",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

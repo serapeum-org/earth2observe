@@ -18,9 +18,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -34,7 +34,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One JRC dataset row (EFHM, or a sea-level TWL forecast).
 
     Attributes:
@@ -86,6 +86,12 @@ class Dataset(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "id",
+        "title",
+        "units",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str
@@ -101,6 +107,22 @@ class Dataset(BaseModel):
     crs: str = "EPSG:4326"
     nodata: float | None = -9999.0
     spatial_resolution: float | None = None
+
+    def summary_parts(self) -> list[str]:
+        """Append the resolution with its unit, so it is not a bare float.
+
+        `spatial_resolution` is a nominal metre count, and this row also
+        declares `units`, which is often `m` as well. `..., m, 90 m` reads as
+        two quantities, so the fragment carries its own label.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m resolution"`.
+        """
+        parts = super().summary_parts()
+        if self.spatial_resolution:
+            parts.append(f"{self.spatial_resolution:g} m resolution")
+        return parts
+
     base_url: str = ""
     filename_template: str = "Europe_RP{rp}_filled_depth.tif"
     return_periods: list[int] = Field(default_factory=list)

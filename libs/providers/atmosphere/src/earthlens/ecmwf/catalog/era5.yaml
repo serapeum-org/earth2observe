@@ -583,6 +583,7 @@ datasets:
         units: J m**-2
       surface-solar-radiation-downwards:
         nc_variable: ssrd
+        types: flux
         units: J m**-2
       surface-thermal-radiation-downward-clear-sky:
         nc_variable: strdc

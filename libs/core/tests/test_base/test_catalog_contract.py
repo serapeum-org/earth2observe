@@ -1,10 +1,17 @@
 """Cross-backend AbstractCatalog contract checks.
 
-Every backend catalog must chain to `super().model_post_init()` so the
-base `catalog` field is populated from `get_catalog()`. This guards
-against a backend overriding `model_post_init` and silently leaving
-`catalog` empty (the H2 regression in
-the catalog-consistency alignment).
+Holds the rules that must be true of every backend catalog at once, each
+parametrized over the registry rather than a hand-kept list, so a new
+backend is covered the moment it ships.
+
+* `model_post_init` chains to `super()`, so the base `catalog` field is
+  populated from `get_catalog()` — a backend that overrode it and left
+  `catalog` empty was the original regression here.
+* Rows are frozen, since the parse cache shares them across callers.
+* `resolve` / `get_variable` are overridden or raise, and the
+  did-you-mean errors name the backend's own entry noun.
+* Every `_summary_fields` name a `SummarisedLeaf` row declares is real,
+  and every reachable row renders as one line naming its class.
 """
 
 from __future__ import annotations
@@ -20,6 +27,7 @@ from pydantic import BaseModel
 from earthlens._backends import discover_backends
 from earthlens.base import AbstractCatalog
 from earthlens.base.abstractdatasource import _WARNED_EMPTY_CATALOGS
+from earthlens.base.leaves import SummarisedLeaf
 
 #: The class names a backend's `catalog` module may expose, in preference order.
 CATALOG_CLASS_NAMES = ("Catalog", "StationCatalog")
@@ -437,3 +445,129 @@ def test_catalog_rows_are_frozen(module_name: str, class_name: str):
         f"{module_name}.{type(row).__name__} is not frozen; the shared parse "
         "cache would let one caller mutate every other caller's catalog"
     )
+
+
+def _summarised_leaf_classes() -> list[tuple[str, type]]:
+    """Find every shipped `SummarisedLeaf` subclass, by class path.
+
+    Walks the subclass tree rather than listing the adopters by hand: the
+    declaration is what makes a row summarise itself, so a new adopter has to
+    be checked the moment it inherits, not when someone remembers to add it
+    here. `_discover_catalogs()` has already imported every backend's catalog
+    module, which is what registers the subclasses.
+
+    Test-local subclasses are filtered out — a fixture row deliberately
+    declaring a bad field is exercising the degradation path, not breaking
+    the contract.
+
+    Returns:
+        list[tuple[str, type]]: Sorted `(dotted class path, class)` pairs.
+    """
+    found: dict[str, type] = {}
+    pending = [SummarisedLeaf]
+    while pending:
+        for sub in pending.pop().__subclasses__():
+            path = f"{sub.__module__}.{sub.__qualname__}"
+            if sub.__module__.startswith("earthlens.") and path not in found:
+                found[path] = sub
+            pending.append(sub)
+    return sorted(found.items())
+
+
+#: (class path, class) for every shipped catalog row that summarises itself.
+SUMMARISED_LEAVES = _summarised_leaf_classes()
+
+
+def test_the_cross_backend_gates_are_not_vacuous():
+    """Both discovery lists are populated, so the parametrized gates run.
+
+    Each list is built from imports that skip a backend whose SDK is absent,
+    so an environment change could reduce either to nothing and every
+    parametrized gate would pass by collecting no cases. Asserted here rather
+    than at module scope, where a provider-free run would fail collection for
+    the whole file instead of this one test.
+    """
+    assert len(CATALOG_BACKENDS) > 40, (
+        f"only {len(CATALOG_BACKENDS)} backend catalogs importable; the "
+        "cross-backend gates would pass vacuously"
+    )
+    assert len(SUMMARISED_LEAVES) > 10, (
+        f"only {len(SUMMARISED_LEAVES)} summarising rows discovered; the "
+        "summary gates would pass vacuously"
+    )
+
+
+def _reachable_summarised_rows(catalog: AbstractCatalog) -> list[SummarisedLeaf]:
+    """Collect every `SummarisedLeaf` reachable from a built catalog.
+
+    Walking only `catalog.datasets` misses most of them: the variable rows
+    (chc, ecmwf, cmems) and the gee `Band` / `Extent` hang off a dataset row
+    rather than the top level, so a top-level-only sweep never renders the
+    classes the summaries were written for.
+
+    Args:
+        catalog: A built backend catalog.
+
+    Returns:
+        list[SummarisedLeaf]: Every distinct row found, outermost first.
+    """
+    found: list[SummarisedLeaf] = []
+    seen: set[int] = set()
+    pending: list[Any] = [catalog.datasets]
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        if isinstance(current, SummarisedLeaf):
+            found.append(current)
+        if isinstance(current, BaseModel):
+            pending.extend(
+                getattr(current, name) for name in type(current).model_fields
+            )
+        elif isinstance(current, dict):
+            pending.extend(current.values())
+        elif isinstance(current, (list, tuple, set, frozenset)):
+            pending.extend(current)
+    return found
+
+
+@pytest.mark.parametrize("path, cls", SUMMARISED_LEAVES)
+def test_declared_summary_fields_exist(path: str, cls: type):
+    """Every name in `_summary_fields` is a real field on the row.
+
+    The renderer reads each declared name with a `None` default, so a typo or
+    a renamed field does not raise — it silently drops that fragment and the
+    summary quietly gets shorter. This is the gate that turns that into a
+    failure.
+    """
+    missing = [
+        f
+        for f in getattr(cls, "_summary_fields", ())
+        if f not in cls.model_fields and not hasattr(cls, f)
+    ]
+    assert not missing, (
+        f"{path} declares {missing} in _summary_fields but carries no such "
+        "field or attribute; the fragment would be silently dropped from its "
+        "summary. A value computed from other fields belongs in a "
+        "summary_parts() override, the way FluxableLeaf adds is_flux."
+    )
+
+
+@pytest.mark.parametrize("module_name, class_name", CATALOG_BACKENDS)
+def test_row_summaries_are_one_line(module_name: str, class_name: str):
+    """A row summary stays a single line that names the class it came from.
+
+    Deliberately not an ASCII assertion: shipped titles legitimately carry
+    `—` and `≥`, and reproducing the row's own text is the same choice
+    `AbstractCatalog.__str__` makes.
+    """
+    rows = _reachable_summarised_rows(_build(module_name, class_name))
+    if not rows:
+        pytest.skip(f"{module_name} exposes no summarising rows")
+    for row in rows:
+        rendered = str(row)
+        assert "\n" not in rendered, f"{module_name} row summary wraps: {rendered!r}"
+        assert rendered.startswith(f"{type(row).__name__}("), (
+            f"{module_name} row summary does not name its class: {rendered!r}"
+        )

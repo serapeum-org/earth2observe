@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     # strings at runtime, so the forward reference is free.
     from earthlens.gee.jobs import TaskInfo
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_fragment
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.providers import (
     Provider,
@@ -280,7 +280,7 @@ class Cadence(BaseModel):
     unit: Literal["minute", "hour", "day", "pentad", "dekad", "month", "year"]
 
 
-class Band(BaseModel):
+class Band(SummarisedLeaf):
     """Per-band metadata for one band of an Earth Engine dataset.
 
     A frozen value object; the band id is injected from the YAML
@@ -334,6 +334,8 @@ class Band(BaseModel):
             ```
     """
 
+    _summary_fields = ("id", "units", "description")
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str
@@ -347,7 +349,7 @@ class Band(BaseModel):
     estimated_range: bool = False
 
 
-class Extent(BaseModel):
+class Extent(SummarisedLeaf):
     """Spatial/temporal coverage of an Earth Engine dataset.
 
     Attributes:
@@ -386,8 +388,39 @@ class Extent(BaseModel):
     end_date: str | None = None
     bbox: tuple[float, float, float, float] | None = None
 
+    def summary_parts(self) -> list[str]:
+        """Return the covered period as a single `start..end` fragment.
 
-class Dataset(BaseModel):
+        Deliberately temporal-only. `bbox` is the other half of this class,
+        but four coordinates cost more width than they inform inside a
+        one-line row summary, and nearly every curated collection is global;
+        a caller who needs the footprint reads `extent.bbox`.
+
+        An open-ended collection has no `end_date`; it reads as `present`
+        rather than being omitted, since "still updating" is the point.
+
+        Returns:
+            list[str]: One fragment, the period. `start_date` is required on
+            this model, so there is always exactly one.
+
+        Examples:
+            - A collection that is still updating reads as open-ended:
+                ```python
+                >>> print(Extent(start_date="2018-07-10"))
+                Extent(2018-07-10..present)
+
+                ```
+            - A retired collection shows the date it stopped:
+                ```python
+                >>> print(Extent(start_date="2000-01-01", end_date="2010-12-31"))
+                Extent(2000-01-01..2010-12-31)
+
+                ```
+        """
+        return [f"{self.start_date}..{self.end_date or 'present'}"]
+
+
+class Dataset(SummarisedLeaf):
     """One Earth Engine collection/image with curated metadata.
 
     A frozen value object; the asset id is injected from the YAML
@@ -459,6 +492,60 @@ class Dataset(BaseModel):
     terms_note: str | None = None
     source: Literal["ee_native", "republished", "community"] = "ee_native"
     bands: dict[str, Band] = Field(default_factory=dict)
+
+    def summary_parts(self) -> list[str]:
+        """Return id, title, provider, resolution, period and band count.
+
+        Composed rather than declared, because three of the six need shaping
+        the generic field renderer cannot do: the resolution carries a unit,
+        the period comes from a nested `Extent`, and the bands render
+        as a count rather than a dump.
+
+        Returns:
+            list[str]: The fragments, skipping any the row does not carry.
+
+        Examples:
+            - A fully populated row summarises in one line:
+                ```python
+                >>> row = Dataset(
+                ...     id="COPERNICUS/S5P/NRTI/L3_NO2",
+                ...     title="S5P NRTI NO2",
+                ...     provider="copernicus",
+                ...     spatial_resolution=1113.2,
+                ...     extent=Extent(start_date="2018-07-10"),
+                ...     bands={"NO2_column_number_density": Band(id="NO2")},
+                ... )
+                >>> print(row)
+                Dataset(COPERNICUS/S5P/NRTI/L3_NO2, S5P NRTI NO2, copernicus, 1113.2 m, 2018-07-10..present, 1 band)
+
+                ```
+            - A sparse row omits what it does not carry, and a whole-metre
+              resolution drops its trailing zero:
+                ```python
+                >>> row = Dataset(
+                ...     id="USGS/SRTMGL1_003",
+                ...     title="SRTM v3",
+                ...     spatial_resolution=30.0,
+                ...     extent=Extent(start_date="2000-02-11", end_date="2000-02-22"),
+                ... )
+                >>> print(row)
+                Dataset(USGS/SRTMGL1_003, SRTM v3, 30 m, 2000-02-11..2000-02-22)
+
+                ```
+        """
+        parts = [render_fragment(self.id, "id")]
+        title = render_fragment(self.title, "title")
+        if title:
+            parts.append(title)
+        if self.provider:
+            parts.append(self.provider)
+        if self.spatial_resolution:
+            parts.append(f"{self.spatial_resolution:g} m")
+        parts.extend(self.extent.summary_parts())
+        bands = render_fragment(self.bands, "bands")
+        if bands:
+            parts.append(bands)
+        return parts
 
     @property
     def is_raster(self) -> bool:
