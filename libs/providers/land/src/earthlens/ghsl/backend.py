@@ -665,8 +665,9 @@ class GHSL(AbstractDataSource):
         bbox. The mosaic inherits the source tiles' declared no-data (JRC uses
         `-200`, or `65535` on the uint16 products) instead of `merge_rasters`'
         `0` default, which would mask every zero-population / zero-built-up
-        cell and promote the real sentinel to valid data. Categorical products reproject with nearest-neighbour (so class
-        codes are never blended); those with a curated legend also carry a
+        cell and promote the real sentinel to valid data. Categorical products
+        reproject with nearest-neighbour (so class codes are never blended);
+        those with a curated legend also carry a
         colour table + a `.legend.json` sidecar, while a legend-less categorical
         product (e.g. `GHS_BUILT_C_VEG`) still gets the safe NN resampling but
         no colour table or sidecar.
