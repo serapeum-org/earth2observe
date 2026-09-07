@@ -28,7 +28,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -97,7 +97,7 @@ class GOESDomain(BaseModel):
     cadence_minutes: float = 0.0
 
 
-class GOESProduct(BaseModel):
+class GOESProduct(SummarisedLeaf):
     """One curated ABI product family (the "dataset" analog).
 
     The product key (`"abi-l2-mcmip"`) is the parent key in
@@ -135,6 +135,12 @@ class GOESProduct(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "product",
+        "level",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

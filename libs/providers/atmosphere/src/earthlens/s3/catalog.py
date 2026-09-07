@@ -26,7 +26,7 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -89,7 +89,7 @@ class Variable(BaseModel):
     nc_variable: str | None = None
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One registered (or passthrough) AWS Open-Data S3 dataset.
 
     Carries everything the backend needs to turn a uniform request into S3
@@ -137,6 +137,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "bucket",
+        "cadence",
+        "format",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

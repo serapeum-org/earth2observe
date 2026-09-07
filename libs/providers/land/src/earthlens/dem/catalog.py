@@ -19,9 +19,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -35,7 +35,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class DEMDataset(BaseModel):
+class DEMDataset(SummarisedLeaf):
     """One Copernicus DEM dataset row.
 
     A frozen value object that pins the exact S3 bucket, region, and the
@@ -70,6 +70,12 @@ class DEMDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "key",
+        "long_name",
+        "native_resolution_m",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

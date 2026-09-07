@@ -35,7 +35,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -90,7 +90,7 @@ class ZenodoRecord(BaseModel):
     attribution: str = ""
 
 
-class FlodisDataset(BaseModel):
+class FlodisDataset(SummarisedLeaf):
     """One selectable FLODIS table (a row of the catalog's dict surface).
 
     The `dataset` string (`"damages"`, `"displacement"`) is the parent key in
@@ -117,6 +117,11 @@ class FlodisDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "file",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

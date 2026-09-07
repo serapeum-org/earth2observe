@@ -29,7 +29,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -43,7 +43,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Cmip6Variable(BaseModel):
+class Cmip6Variable(SummarisedLeaf):
     """One curated CMIP6 variable row (the `variable_id` leaf).
 
     A frozen value object with descriptive metadata only — CMIP6 variables carry
@@ -68,6 +68,12 @@ class Cmip6Variable(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "long_name",
+        "units",
+        "realm",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -41,7 +41,7 @@ from pydantic import (
     field_validator,
 )
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     load_catalog,
@@ -369,7 +369,7 @@ class TemporalCoverage(BaseModel):
         return value
 
 
-class EarthdataDataset(BaseModel):
+class EarthdataDataset(SummarisedLeaf):
     """One curated Earthdata dataset row.
 
     Mirrors a single `datasets.<key>:` block in one of the per-DAAC
@@ -416,6 +416,13 @@ class EarthdataDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "short_name",
+        "version",
+        "daac",
+        "format",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

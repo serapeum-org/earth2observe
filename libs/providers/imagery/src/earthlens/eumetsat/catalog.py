@@ -43,7 +43,7 @@ from pydantic import (
     field_validator,
 )
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -268,7 +268,7 @@ class TemporalCoverage(BaseModel):
         return value
 
 
-class EumetsatDataset(BaseModel):
+class EumetsatDataset(SummarisedLeaf):
     """One curated EUMETSAT Data Store dataset (collection) row.
 
     Mirrors a single `datasets.<key>:` block in one of the per-group
@@ -317,6 +317,13 @@ class EumetsatDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "collection_id",
+        "mission",
+        "format",
+        "cadence",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

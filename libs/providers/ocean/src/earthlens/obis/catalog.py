@@ -21,9 +21,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -91,7 +91,7 @@ def _load_catalog_data(path: Path) -> tuple[dict[str, Species], list[str]]:
     return rows, available
 
 
-class Species(BaseModel):
+class Species(SummarisedLeaf):
     """One friendly OBIS species' dispatch row.
 
     The user-facing name is the parent key in :attr:`Catalog.datasets`
@@ -112,6 +112,11 @@ class Species(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "scientific_name",
+        "title",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

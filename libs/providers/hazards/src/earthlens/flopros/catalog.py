@@ -17,9 +17,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -35,7 +35,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class FloprosDataset(BaseModel):
+class FloprosDataset(SummarisedLeaf):
     """The FLOPROS shapefile's download + column spec.
 
     The dataset name (`"flopros"`) is the parent key in
@@ -61,6 +61,11 @@ class FloprosDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "shapefile_stem",
+        "crs",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

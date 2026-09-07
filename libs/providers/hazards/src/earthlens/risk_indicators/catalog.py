@@ -24,9 +24,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -105,7 +105,7 @@ def _load_catalog_data(path: Path) -> tuple[dict[str, Dataset], dict[str, int]]:
     return value
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One risk-indicators catalog row.
 
     The dataset id is the parent key in :attr:`Catalog.datasets` and is also
@@ -155,6 +155,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "id",
+        "long_name",
+        "hazard",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

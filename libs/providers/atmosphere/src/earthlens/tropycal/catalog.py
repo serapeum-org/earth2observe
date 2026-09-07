@@ -32,7 +32,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -134,7 +134,7 @@ class TrackField(BaseModel):
     long_name: str = ""
 
 
-class Basin(BaseModel):
+class Basin(SummarisedLeaf):
     """One ocean basin's catalog row (the "Dataset" analog).
 
     The basin code is the parent key in :attr:`Catalog.datasets` and is
@@ -161,6 +161,8 @@ class Basin(BaseModel):
 
             ```
     """
+
+    _summary_fields = ("name",)
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

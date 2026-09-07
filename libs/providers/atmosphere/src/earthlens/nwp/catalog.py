@@ -24,9 +24,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -112,7 +112,7 @@ def _load_catalog_data(path: Path) -> dict[str, NWPModel]:
     return models
 
 
-class NWPModel(BaseModel):
+class NWPModel(SummarisedLeaf):
     """One curated NWP model row.
 
     Mirrors a single `datasets.<key>:` block in
@@ -225,6 +225,12 @@ class NWPModel(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "model_family",
+        "resolution",
+        "title",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

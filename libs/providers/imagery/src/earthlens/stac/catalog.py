@@ -28,7 +28,7 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -128,7 +128,7 @@ class Endpoint(BaseModel):
     region: str | None = None
 
 
-class Collection(BaseModel):
+class Collection(SummarisedLeaf):
     """One curated STAC collection, addressed by a logical key.
 
     Attributes:
@@ -161,6 +161,12 @@ class Collection(BaseModel):
             informational only; the actual routing comes from `signer`
             (e.g. `signer: bdc-token`). Defaults to `False`.
     """
+
+    _summary_fields = (
+        "endpoint",
+        "collection_id",
+        "cadence",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -30,7 +30,7 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -353,7 +353,7 @@ class Version(BaseModel):
         return archive
 
 
-class Extension(BaseModel):
+class Extension(SummarisedLeaf):
     """One Caravan extension — a Zenodo record set with its releases.
 
     Attributes:
@@ -383,6 +383,12 @@ class Extension(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "key",
+        "title",
+        "license",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

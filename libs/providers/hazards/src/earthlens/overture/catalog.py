@@ -34,9 +34,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 from earthlens.overture.releases import is_release_id
@@ -102,7 +102,7 @@ def _release_sort_key(release: str) -> tuple[str, int]:
     return date, int(ordinal)
 
 
-class Theme(BaseModel):
+class Theme(SummarisedLeaf):
     """One Overture theme's dispatch row.
 
     The friendly theme name (`"buildings"`, `"places"`, …) is the parent
@@ -146,6 +146,12 @@ class Theme(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "default_type",
+        "geometry",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

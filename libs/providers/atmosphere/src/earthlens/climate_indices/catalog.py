@@ -23,9 +23,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -110,7 +110,7 @@ def _load_catalog_data(path: Path) -> dict[str, Index]:
     return rows
 
 
-class Index(BaseModel):
+class Index(SummarisedLeaf):
     """One climate-index catalogue row.
 
     The index id is the parent key in :attr:`Catalog.datasets`; the row
@@ -143,6 +143,12 @@ class Index(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "long_name",
+        "units",
+        "source",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

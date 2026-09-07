@@ -19,9 +19,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, ValidationError
+from pydantic import ConfigDict, Field, PrivateAttr, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -59,7 +59,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Layer(BaseModel):
+class Layer(SummarisedLeaf):
     """One curated Solar / Wind Atlas layer.
 
     Attributes:
@@ -76,6 +76,12 @@ class Layer(BaseModel):
         long_name: One-line human-readable description.
         license_note: Attribution / licence text surfaced in docs and logs.
     """
+
+    _summary_fields = (
+        "id",
+        "long_name",
+        "units",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -33,7 +33,7 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -111,7 +111,7 @@ class Temporal(BaseModel):
     quality: Literal["NRT", "SP"] = "NRT"
 
 
-class Sensor(BaseModel):
+class Sensor(SummarisedLeaf):
     """One FIRMS sensor's dispatch row (the "dataset" analog).
 
     The FIRMS source code is the parent key in :attr:`Catalog.datasets`
@@ -147,6 +147,12 @@ class Sensor(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "code",
+        "name",
+        "resolution_m",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

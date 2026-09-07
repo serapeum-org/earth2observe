@@ -34,7 +34,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -110,7 +110,7 @@ class Band(BaseModel):
     center_wavelength: float | None = None
 
 
-class Collection(BaseModel):
+class Collection(SummarisedLeaf):
     """One curated Sentinel Hub data collection, addressed by a logical key.
 
     Attributes:
@@ -125,6 +125,12 @@ class Collection(BaseModel):
         extent: Spatial/temporal coverage, or `None`.
         description: One-line human summary, or `None`.
     """
+
+    _summary_fields = (
+        "sh_collection",
+        "cadence",
+        "resolution",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

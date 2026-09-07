@@ -28,7 +28,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -137,7 +137,7 @@ class SubAlias(BaseModel):
         )
 
 
-class Product(BaseModel):
+class Product(SummarisedLeaf):
     """One curated WorldPop product family (a top-level REST alias).
 
     Attributes:
@@ -160,6 +160,12 @@ class Product(BaseModel):
             title), shown in docs / `describe`.
         subaliases: The concrete variants this product offers.
     """
+
+    _summary_fields = (
+        "alias",
+        "kind",
+        "unit",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
