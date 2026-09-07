@@ -576,3 +576,53 @@ class TestCatalogCache:
         assert catalog_module._CATALOG_CACHE
         catalog_module.clear_catalog_cache()
         assert not catalog_module._CATALOG_CACHE
+
+
+class TestSummaries:
+    """Tests for the one-line `__str__` on the GEE catalog rows."""
+
+    def test_dataset_summary_names_the_six_facts_a_reader_wants(
+        self, shipped_catalog: Catalog
+    ):
+        """The dataset summary carries id, title, provider, resolution, period and band count."""
+        row = shipped_catalog.get_dataset("COPERNICUS/S5P/NRTI/L3_NO2")
+        assert str(row) == (
+            "Dataset(COPERNICUS/S5P/NRTI/L3_NO2, "
+            "Sentinel-5P NRTI NO2: Near-Real-Time Tropospheric Nitrogen Dioxide, "
+            "copernicus, 1113.2 m, 2018-07-10..present, 4 bands)"
+        )
+
+    def test_dataset_resolution_drops_a_trailing_zero(self):
+        """A whole-metre resolution reads as `30 m`, not `30.0 m`."""
+        row = Dataset(
+            id="A/B",
+            title="A title",
+            spatial_resolution=30.0,
+            extent=Extent(start_date="2000-01-01"),
+        )
+        assert "30 m" in str(row)
+
+    def test_dataset_summary_omits_what_the_row_does_not_carry(self):
+        """A sparse dataset row stays short instead of padding with `None`."""
+        row = Dataset(id="A/B", title="A title", extent=Extent(start_date="2000-01-01"))
+        assert str(row) == "Dataset(A/B, A title, 2000-01-01..present)"
+
+    def test_an_open_ended_extent_reads_as_present(self):
+        """A collection still updating says so rather than dropping the end."""
+        assert str(Extent(start_date="2018-07-10")) == "Extent(2018-07-10..present)"
+
+    def test_a_closed_extent_shows_its_end_date(self):
+        """A retired collection shows the date it stopped."""
+        extent = Extent(start_date="2000-01-01", end_date="2010-12-31")
+        assert str(extent) == "Extent(2000-01-01..2010-12-31)"
+
+    def test_band_summary_leads_with_its_id(self):
+        """A band is addressed by id, so the id comes first."""
+        band = Band(
+            id="NO2_column_number_density", units="mol/m^2", description="Total column"
+        )
+        assert str(band) == "Band(NO2_column_number_density, mol/m^2, Total column)"
+
+    def test_band_summary_survives_a_bare_id(self):
+        """A band carrying only an id still renders."""
+        assert str(Band(id="B1")) == "Band(B1)"

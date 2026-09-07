@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from earthlens._backends import discover_backends
 from earthlens.base import AbstractCatalog
 from earthlens.base.abstractdatasource import _WARNED_EMPTY_CATALOGS
+from earthlens.base.leaves import SummarisedLeaf
 
 #: The class names a backend's `catalog` module may expose, in preference order.
 CATALOG_CLASS_NAMES = ("Catalog", "StationCatalog")
@@ -437,3 +438,72 @@ def test_catalog_rows_are_frozen(module_name: str, class_name: str):
         f"{module_name}.{type(row).__name__} is not frozen; the shared parse "
         "cache would let one caller mutate every other caller's catalog"
     )
+
+
+def _summarised_leaf_classes() -> list[tuple[str, type]]:
+    """Find every shipped `SummarisedLeaf` subclass, by class path.
+
+    Walks the subclass tree rather than listing the adopters by hand: the
+    declaration is what makes a row summarise itself, so a new adopter has to
+    be checked the moment it inherits, not when someone remembers to add it
+    here. `_discover_catalogs()` has already imported every backend's catalog
+    module, which is what registers the subclasses.
+
+    Test-local subclasses are filtered out — a fixture row deliberately
+    declaring a bad field is exercising the degradation path, not breaking
+    the contract.
+
+    Returns:
+        list[tuple[str, type]]: Sorted `(dotted class path, class)` pairs.
+    """
+    found: dict[str, type] = {}
+    pending = [SummarisedLeaf]
+    while pending:
+        for sub in pending.pop().__subclasses__():
+            path = f"{sub.__module__}.{sub.__qualname__}"
+            if sub.__module__.startswith("earthlens.") and path not in found:
+                found[path] = sub
+            pending.append(sub)
+    return sorted(found.items())
+
+
+#: (class path, class) for every shipped catalog row that summarises itself.
+SUMMARISED_LEAVES = _summarised_leaf_classes()
+
+
+@pytest.mark.parametrize("path, cls", SUMMARISED_LEAVES)
+def test_declared_summary_fields_exist(path: str, cls: type):
+    """Every name in `_summary_fields` is a real field on the row.
+
+    The renderer reads each declared name with a `None` default, so a typo or
+    a renamed field does not raise — it silently drops that fragment and the
+    summary quietly gets shorter. This is the gate that turns that into a
+    failure.
+    """
+    missing = [
+        f for f in getattr(cls, "_summary_fields", ()) if f not in cls.model_fields
+    ]
+    assert not missing, (
+        f"{path} declares {missing} in _summary_fields but carries no such "
+        "field; the fragment would be silently dropped from its summary"
+    )
+
+
+@pytest.mark.parametrize("module_name, class_name", CATALOG_BACKENDS)
+def test_row_summaries_are_one_ascii_line(module_name: str, class_name: str):
+    """A row summary stays a single ASCII line, printable on any console.
+
+    A `cp1252` terminal is the constraint: a `__str__` that raised
+    `UnicodeEncodeError` on a Windows console would be worse than a plain one.
+    """
+    cat = _build(module_name, class_name)
+    rows = [row for row in cat.datasets.values() if isinstance(row, SummarisedLeaf)]
+    if not rows:
+        pytest.skip(f"{module_name} exposes no summarising rows")
+    for row in rows[:25]:
+        rendered = str(row)
+        assert "\n" not in rendered, f"{module_name} row summary wraps: {rendered!r}"
+        assert rendered.startswith(f"{type(row).__name__}("), (
+            f"{module_name} row summary does not name its class: {rendered!r}"
+        )
+        rendered.encode("cp1252")

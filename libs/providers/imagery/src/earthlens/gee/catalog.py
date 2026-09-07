@@ -396,6 +396,20 @@ class Extent(SummarisedLeaf):
 
         Returns:
             list[str]: One fragment, the period.
+
+        Examples:
+            - A collection that is still updating reads as open-ended:
+                ```python
+                >>> print(Extent(start_date="2018-07-10"))
+                Extent(2018-07-10..present)
+
+                ```
+            - A retired collection shows the date it stopped:
+                ```python
+                >>> print(Extent(start_date="2000-01-01", end_date="2010-12-31"))
+                Extent(2000-01-01..2010-12-31)
+
+                ```
         """
         return [f"{self.start_date}..{self.end_date or 'present'}"]
 
@@ -483,6 +497,35 @@ class Dataset(SummarisedLeaf):
 
         Returns:
             list[str]: The fragments, skipping any the row does not carry.
+
+        Examples:
+            - A fully populated row summarises in one line:
+                ```python
+                >>> row = Dataset(
+                ...     id="COPERNICUS/S5P/NRTI/L3_NO2",
+                ...     title="S5P NRTI NO2",
+                ...     provider="copernicus",
+                ...     spatial_resolution=1113.2,
+                ...     extent=Extent(start_date="2018-07-10"),
+                ...     bands={"NO2_column_number_density": Band(id="NO2")},
+                ... )
+                >>> print(row)
+                Dataset(COPERNICUS/S5P/NRTI/L3_NO2, S5P NRTI NO2, copernicus, 1113.2 m, 2018-07-10..present, 1 bands)
+
+                ```
+            - A sparse row omits what it does not carry, and a whole-metre
+              resolution drops its trailing zero:
+                ```python
+                >>> row = Dataset(
+                ...     id="USGS/SRTMGL1_003",
+                ...     title="SRTM v3",
+                ...     spatial_resolution=30.0,
+                ...     extent=Extent(start_date="2000-02-11", end_date="2000-02-22"),
+                ... )
+                >>> print(row)
+                Dataset(USGS/SRTMGL1_003, SRTM v3, 30 m, 2000-02-11..2000-02-22)
+
+                ```
         """
         parts = [self.id, self.title]
         if self.provider:

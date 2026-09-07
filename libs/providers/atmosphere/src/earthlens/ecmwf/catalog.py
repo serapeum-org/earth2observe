@@ -657,6 +657,37 @@ class Variable(FluxableLeaf):
 
         Returns:
             list[str]: The `cds -> nc` pair, then units and the flux marker.
+
+        Examples:
+            - A state variable pairs the two names it is addressed by:
+                ```python
+                >>> row = Variable(
+                ...     cds_dataset="reanalysis-era5-single-levels",
+                ...     cds_variable="2m_temperature",
+                ...     nc_variable="t2m",
+                ...     units="K",
+                ...     types="state",
+                ... )
+                >>> print(row)
+                Variable(2m_temperature -> t2m, K, state)
+
+                ```
+            - A flux variable is marked, which is what drives the monthly
+              accumulation scaling:
+                ```python
+                >>> row = Variable(
+                ...     cds_dataset="reanalysis-era5-single-levels",
+                ...     cds_variable="total_precipitation",
+                ...     nc_variable="tp",
+                ...     units="m",
+                ...     types="flux",
+                ... )
+                >>> row.is_flux
+                True
+                >>> print(row)
+                Variable(total_precipitation -> tp, m, flux)
+
+                ```
         """
         return [f"{self.cds_variable} -> {self.nc_variable}", *super().summary_parts()]
 
