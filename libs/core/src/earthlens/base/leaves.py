@@ -59,26 +59,48 @@ MAX_FRAGMENT = 60
 MAX_SUMMARY = 180
 
 
+def _reads_as_prose(text: str) -> bool:
+    """Whether `text` is a sentence rather than an identifier.
+
+    Args:
+        text: The fragment being clipped.
+
+    Returns:
+        bool: `True` when the text has spaces and no path or token
+        separators — a title or description rather than an id or a path.
+    """
+    return " " in text and not any(sep in text for sep in "/:|")
+
+
 def _clip(text: str, limit: int) -> str:
     """Shorten `text` to `limit` characters, marking that it was cut.
 
-    Cuts the middle rather than the tail. Catalog identifiers are long
-    because they are paths, and what distinguishes two of them is usually
-    the last segment — `.../weathernext_2_0_0` from
-    `.../weathernext_2_0_0_mean`. Keeping only the head would render those
-    two rows identically, which is worse than not clipping at all.
+    Where the cut falls depends on what the text is.
+
+    An **identifier** is cut in the middle. Catalog ids are long because
+    they are paths, and what distinguishes two of them is usually the last
+    segment — `.../weathernext_2_0_0` from `.../weathernext_2_0_0_mean`.
+    Keeping only the head would render those two rows identically, which is
+    worse than not clipping at all.
+
+    **Prose** is cut at the end. A title or description carries its meaning
+    front-loaded, and splicing its two ends together reads as damage rather
+    than as truncation: `heavy-rainfall events with a...t least 5 years`.
 
     Args:
         text: The text to shorten.
         limit: Maximum length of the result, including the ellipsis.
 
     Returns:
-        str: `text` unchanged when it fits, else its head and tail joined
-        by `...`.
+        str: `text` unchanged when it fits, else a clipped form ending in
+        `...` for prose, or joining head and tail by `...` for an
+        identifier.
     """
     if len(text) <= limit:
         return text
     keep = limit - 3
+    if _reads_as_prose(text):
+        return text[:keep].rstrip() + "..."
     head = (keep + 1) // 2
     return text[:head].rstrip() + "..." + text[len(text) - (keep - head) :].lstrip()
 

@@ -345,6 +345,27 @@ class TestLengthAndWhitespace:
         assert len(rendered) == MAX_FRAGMENT
         assert "..." in rendered
 
+    def test_prose_is_clipped_at_the_end(self):
+        """Splicing the two ends of a sentence together reads as damage, not truncation."""
+        rendered = render_fragment(
+            "heavy-rainfall events with a return period of at least 5 years", "d"
+        )
+        assert rendered.endswith("..."), rendered
+        assert rendered.startswith("heavy-rainfall events with a return"), rendered
+
+    def test_an_identifier_is_still_clipped_in_the_middle(self):
+        """A path keeps both ends, so two ids differing only at the tail stay distinct."""
+        rendered = render_fragment(
+            "projects/malariaatlasproject/assets/accessibility/friction_surface/2019_v5_1",
+            "id",
+        )
+        assert "..." in rendered and not rendered.endswith("..."), rendered
+
+    def test_a_spaced_title_carrying_a_path_separator_is_treated_as_an_identifier(self):
+        """`endpoint/collection id` is addressed by its tail even though it has spaces."""
+        rendered = render_fragment("bdc/AMZ1 WFI L4 SR 1 " + "x" * 60, "id")
+        assert not rendered.endswith("..."), rendered
+
     def test_clipping_keeps_the_tail_that_distinguishes_two_paths(self):
         """Two asset ids differing only in their last segment must not collide."""
         base = "projects/gcp-public-data-weathernext/assets/weathernext_2_0_0"
