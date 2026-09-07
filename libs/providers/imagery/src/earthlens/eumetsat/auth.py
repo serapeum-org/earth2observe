@@ -25,13 +25,16 @@ The auth wrapper exists so that:
 
 The credentials-resolution priority used by `configure()` is:
 
-1. `EUMETSAT_CONSUMER_KEY` / `EUMETSAT_CONSUMER_SECRET` environment
+1. The `consumer_key` / `consumer_secret` passed to the constructor.
+2. `EUMETSAT_CONSUMER_KEY` / `EUMETSAT_CONSUMER_SECRET` environment
    variables.
-2. The `consumer_key` / `consumer_secret` passed to the constructor.
 3. A `~/.eumdac/credentials` file (a single `key,secret` line, the
    format `eumdac set-credentials` writes; the directory is overridable
    via `EUMDAC_CONFIG_DIR`, or pointed at explicitly with
    `credentials_file`).
+
+The key and the secret are resolved independently, so the two halves may
+come from different tiers.
 """
 
 from __future__ import annotations
@@ -99,15 +102,15 @@ class EumetsatCredentials(BaseModel):
     """Frozen value object holding the EUMETSAT consumer key / secret.
 
     Every field is optional — the auth wrapper resolves the actual pair
-    at `configure()` time from the environment, these fields, then the
-    `~/.eumdac/credentials` file. Validation is intentionally permissive;
+    at `configure()` time from these fields, then the environment, then
+    the `~/.eumdac/credentials` file. Validation is intentionally permissive;
     the real "do these creds work?" gate is
     `EumetsatAuth.configure`, which mints a token against the OAuth2
     endpoint.
 
     Attributes:
         consumer_key: The EUMETSAT consumer key (the OAuth2 client id).
-            `None` means "look at the environment / credentials file".
+            `None` means "look at the environment, then the credentials file".
         consumer_secret: The matching consumer secret, stored as a
             `pydantic.SecretStr` so it is never echoed by `repr(creds)`
             or in logs. `None` means same as `consumer_key`.
@@ -146,18 +149,17 @@ class EumetsatAuth(AbstractAuth[EumetsatCredentials]):
 
     Wraps `eumdac.AccessToken` in the `earthlens.base.AbstractAuth`
     contract. `configure()` resolves a consumer key / secret pair
-    (environment → constructor kwargs → `~/.eumdac/credentials`) and
+    (constructor kwargs → environment → `~/.eumdac/credentials`) and
     mints an `eumdac.AccessToken`, which auto-refreshes the ~1 h bearer
     internally. The `datastore` / `datatailor` helpers build the matching
     `eumdac` clients from the live token.
 
-    The environment is deliberately read **before** the constructor
-    kwargs, which is the opposite of the kwargs-first backends (e.g.
-    `sentinel_hub`) and of :class:`~earthlens.base.auth.SingleSecretAuth`.
-    `AbstractAuth` fixes no ordering, so this is a per-backend choice
-    rather than a deviation — but it does mean an explicit
-    `consumer_key=` is ignored while `EUMETSAT_CONSUMER_KEY` is set.
-    See issue #1184 before relying on either order.
+    Each half is resolved on its own, so a pair may be assembled from two
+    sources — an explicit key with a secret from the environment. This
+    matches :class:`~earthlens.base.auth.SingleSecretAuth` and the other
+    backends; it read the environment first until #1184, which meant an
+    explicit `consumer_key=` was silently discarded whenever
+    `EUMETSAT_CONSUMER_KEY` happened to be set.
 
     The class is a context manager (inherited from `AbstractAuth`):
     `with EumetsatAuth(creds) as auth: ...` calls `configure()` on enter
@@ -201,22 +203,29 @@ class EumetsatAuth(AbstractAuth[EumetsatCredentials]):
     def _resolve_pair(self) -> tuple[str | None, str | None]:
         """Resolve the consumer key / secret pair.
 
-        Resolution order: the `EUMETSAT_CONSUMER_KEY` /
-        `EUMETSAT_CONSUMER_SECRET` environment variables, then the
-        constructor kwargs, then a `key,secret` line in the
-        credentials file (the explicit `credentials_file`, else
-        `EUMDAC_CONFIG_DIR/credentials`, else `~/.eumdac/credentials`).
-        The first source that yields both halves wins.
+        Resolution order: the constructor kwargs, then the
+        `EUMETSAT_CONSUMER_KEY` / `EUMETSAT_CONSUMER_SECRET` environment
+        variables, then a `key,secret` line in the credentials file (the
+        explicit `credentials_file`, else `EUMDAC_CONFIG_DIR/credentials`,
+        else `~/.eumdac/credentials`).
+
+        The key and the secret are resolved **independently**, so the two
+        halves may come from different sources — an explicit key pairs with
+        a secret from the environment when only the key is passed. An empty
+        value counts as unset and falls through to the next source.
 
         Returns:
             tuple[str | None, str | None]: The `(consumer_key,
                 consumer_secret)` pair; either element is `None` when no
                 source supplied it.
         """
-        key = os.getenv("EUMETSAT_CONSUMER_KEY") or self._creds.consumer_key
-        secret = os.getenv("EUMETSAT_CONSUMER_SECRET")
-        if not secret and self._creds.consumer_secret is not None:
-            secret = self._creds.consumer_secret.get_secret_value()
+        explicit_secret = (
+            self._creds.consumer_secret.get_secret_value()
+            if self._creds.consumer_secret is not None
+            else None
+        )
+        key = self._creds.consumer_key or os.getenv("EUMETSAT_CONSUMER_KEY")
+        secret = explicit_secret or os.getenv("EUMETSAT_CONSUMER_SECRET")
         if key and secret:
             return key, secret
         file_key, file_secret = self._read_credentials_file()
@@ -262,7 +271,7 @@ class EumetsatAuth(AbstractAuth[EumetsatCredentials]):
 
         Idempotent — short-circuits when `is_authenticated` already
         returns `True`. Resolves the consumer key / secret pair
-        (environment → kwargs → credentials file), then constructs an
+        (kwargs → environment → credentials file), then constructs an
         `eumdac.AccessToken((key, secret))`. The token object refreshes
         the ~1 h bearer internally; this wrapper re-mints a fresh one
         only after the cached token's `expiration` has passed (see

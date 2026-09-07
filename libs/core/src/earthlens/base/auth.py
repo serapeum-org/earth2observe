@@ -111,16 +111,15 @@ class AbstractAuth(ABC, Generic[CredentialsT]):
     resource (e.g. an HTTP session, a boto3 client) override
     `close` to release it.
 
-    This class deliberately fixes **no** credential-resolution
-    precedence: a backend may resolve an explicit argument before the
-    environment, or the environment first, whichever matches the SDK
-    it wraps. A subclass that reads more than one source **must state
-    its own order in its docstring**, because callers cannot infer it
-    from here and the orders genuinely differ across backends
-    (`sentinel_hub` takes the explicit value first; `eumetsat` takes
-    the environment first). Subclass :class:`SingleSecretAuth` instead
-    when the standard "explicit wins over the environment" ordering
-    fits — it implements that resolution once.
+    This class fixes **no** credential-resolution precedence in code, but
+    the package convention is the one :class:`SingleSecretAuth` implements
+    and every backend now follows: **an explicit argument wins over the
+    environment, which wins over any credentials file**. Subclass
+    `SingleSecretAuth` when a single secret is involved and get that for
+    free; a subclass that resolves several sources itself should keep the
+    same order and **state it in its own docstring**, since callers cannot
+    infer it from here. Deviating silently is how an explicit credential
+    ends up discarded — see #1184.
 
     Attributes:
         _creds: The credentials value object passed at
