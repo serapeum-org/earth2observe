@@ -302,7 +302,6 @@ class Product(SummarisedLeaf):
 
     _summary_fields = (
         "code",
-        "family",
         "unit",
     )
 

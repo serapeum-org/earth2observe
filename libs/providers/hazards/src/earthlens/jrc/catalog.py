@@ -90,8 +90,22 @@ class Dataset(SummarisedLeaf):
         "id",
         "title",
         "units",
-        "spatial_resolution",
     )
+
+    def summary_parts(self) -> list[str]:
+        """Append the resolution with its unit, so it is not a bare float.
+
+        `spatial_resolution` is a nominal metre count. Rendering it as a
+        declared field put `90.0` next to the data's own unit (`m`), reading
+        as a second quantity rather than a resolution.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m"` when known.
+        """
+        parts = super().summary_parts()
+        if self.spatial_resolution:
+            parts.append(f"{self.spatial_resolution:g} m")
+        return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

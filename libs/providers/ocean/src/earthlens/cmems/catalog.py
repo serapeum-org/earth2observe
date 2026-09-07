@@ -155,6 +155,7 @@ def _load_catalog_data(path: Path) -> tuple[list[str], dict[str, Dataset]]:
         for var_name, var_body in variables_yaml.items():
             payload = dict(var_body or {})
             try:
+                payload.setdefault("name", var_name)
                 ds_vars[var_name] = Variable(**payload)
             except ValidationError as exc:
                 raise ValueError(
@@ -216,6 +217,9 @@ class Variable(FluxableLeaf):
         long_name: CF long-name of the variable (e.g. `"Sea water
             potential temperature"`). Mainly for human-readable
             logging.
+        name: The variable's catalog key, injected by the loader. Many
+            rows carry no `long_name`, so without this a summary would
+            identify itself by its unit alone.
         types: Optional `"flux"` or `"state"` marker (inherited).
             Currently advisory only — CMEMS variables are
             overwhelmingly state (instantaneous fields); the marker
@@ -248,10 +252,12 @@ class Variable(FluxableLeaf):
     """
 
     _summary_fields = (
+        "name",
         "long_name",
         "units",
     )
 
+    name: str = ""
     units: str
     long_name: str = ""
 

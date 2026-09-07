@@ -143,7 +143,7 @@ class Dataset(SummarisedLeaf):
 
     _summary_fields = (
         "key",
-        "short_name",
+        "description",
         "collection",
     )
 
