@@ -124,6 +124,36 @@ class SummarisedLeaf(BaseModel):
     #: not declared one.
     _summary_fields: ClassVar[tuple[str, ...]] = ()
 
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:
+        """Reject a `_summary_fields` spelling pydantic would silently swallow.
+
+        A leading underscore plus a bare annotation — `_summary_fields:
+        tuple[str, ...] = (...)` — makes pydantic treat the declaration as a
+        private attribute and drop it from the class namespace. Lookup then
+        falls through to this base's empty default and the row prints as
+        `ClassName()` with no error, no lint warning and no type error. That
+        is the one failure this class cannot detect at render time, so it is
+        caught at class-creation time instead.
+
+        Args:
+            **kwargs: Class-construction keywords, forwarded to the base.
+
+        Raises:
+            TypeError: If `_summary_fields` was captured as a private
+                attribute, i.e. annotated without `ClassVar`.
+        """
+        super().__pydantic_init_subclass__(**kwargs)
+        if "_summary_fields" in cls.__private_attributes__:
+            raise TypeError(
+                f"{cls.__name__}._summary_fields is annotated without "
+                "ClassVar, so pydantic captured it as a private attribute and "
+                "the summary would silently degrade to "
+                f"'{cls.__name__}()'. Declare it bare "
+                '(`_summary_fields = ("id", ...)`) or as '
+                "`ClassVar[tuple[str, ...]]`."
+            )
+
     def summary_parts(self) -> list[str]:
         """Return the rendered fragments that make up the one-line summary.
 

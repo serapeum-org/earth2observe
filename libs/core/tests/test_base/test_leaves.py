@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import pytest
 
 from earthlens.base.leaves import FluxableLeaf, SummarisedLeaf, _render
@@ -270,3 +272,39 @@ class TestFluxableLeafStr:
     def test_subclass_can_prepend_and_keep_the_marker(self):
         """Overriding `summary_parts` composes with the base via `super()`."""
         assert str(Pairing(units="K")) == "Pairing(a -> b, K, state)"
+
+
+class TestSummaryFieldsDeclaration:
+    """Tests for the class-creation guard on `_summary_fields`."""
+
+    def test_a_bare_declaration_is_accepted(self):
+        """The documented spelling carries through to the summary."""
+        assert str(Row(id="A/B", provider="esa")) == "Row(A/B, esa)"
+
+    def test_a_classvar_declaration_is_accepted(self):
+        """Spelling the ClassVar out explicitly is equally valid."""
+
+        class Explicit(SummarisedLeaf):
+            _summary_fields: ClassVar[tuple[str, ...]] = ("id",)
+
+            id: str = "A/B"
+
+        assert str(Explicit()) == "Explicit(A/B)"
+
+    def test_an_annotation_without_classvar_is_rejected(self):
+        """Pydantic would swallow it, so the row is refused at class creation."""
+        with pytest.raises(TypeError, match="annotated without ClassVar"):
+
+            class Swallowed(SummarisedLeaf):
+                _summary_fields: tuple[str, ...] = ("id",)
+
+                id: str = "A/B"
+
+    def test_the_rejection_names_the_degraded_output(self):
+        """The message shows what would have been printed, so the fix is obvious."""
+        with pytest.raises(TypeError, match=r"degrade to 'Swallowed\(\)'"):
+
+            class Swallowed(SummarisedLeaf):
+                _summary_fields: tuple[str, ...] = ("id",)
+
+                id: str = "A/B"
