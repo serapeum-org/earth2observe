@@ -24822,8 +24822,9 @@ print(f'output directory: {OUT_DIR.resolve()}')</div>
 <span class="n">ds</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="s1">'ECMWF/ERA5_LAND/MONTHLY_AGGR'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
-<span class="c1"># The summary covers id, title, provider, resolution, period and band count.</span>
-<span class="c1"># These are the fields it deliberately leaves out:</span>
+<span class="c1"># The summary clips long text and shows only a band count, so an explorer</span>
+<span class="c1"># notebook still wants the untruncated title and the fields it omits:</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'title (full):        </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'ee_type:             </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">ee_type</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'default_reducer:     </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">default_reducer</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'license:             </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">license</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
@@ -24833,8 +24834,9 @@ print(f'output directory: {OUT_DIR.resolve()}')</div>
 ds = cat.get_dataset('ECMWF/ERA5_LAND/MONTHLY_AGGR')
 print(ds)
 
-# The summary covers id, title, provider, resolution, period and band count.
-# These are the fields it deliberately leaves out:
+# The summary clips long text and shows only a band count, so an explorer
+# notebook still wants the untruncated title and the fields it omits:
+print(f'title (full):        {ds.title}')
 print(f'ee_type:             {ds.ee_type}')
 print(f'default_reducer:     {ds.default_reducer}')
 print(f'license:             {ds.license}')

@@ -24641,7 +24641,7 @@ long-name without ever touching the network.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'temporal: </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">temporal</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s1"> -&gt; </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">temporal</span><span class="o">.</span><span class="n">end</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'variables:'</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s1">10s</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'  </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">ds = cat.get_dataset('cmems_mod_glo_phy_my_0.083deg_P1D-m')
 print(f'product:  {ds.product}')
@@ -24650,7 +24650,7 @@ print(f'cadence:  {ds.cadence}   domain: {ds.domain}')
 print(f'temporal: {ds.temporal.start} -&gt; {ds.temporal.end}')
 print('variables:')
 for name, var in sorted(ds.variables.items()):
-    print(f'  {name:10s} {var}')</div>
+    print(f'  {var}')</div>
 </div>
 </div>
 </div>
