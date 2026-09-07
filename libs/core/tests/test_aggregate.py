@@ -768,8 +768,8 @@ class _FakeNetCDF:
     Implements the surfaces `aggregate_netcdf` consumes —
     `get_variable`, `read_array`, `get_time_variable`,
     `dimension_names`, `geotransform`, and (optionally) `sel`. Lets
-    tests exercise the body of `aggregate_netcdf` without writing a
-    real on-disk NetCDF (the test environment has no NetCDF writer).
+    tests exercise the body of `aggregate_netcdf` without the cost of a
+    real on-disk NetCDF per case.
     """
 
     def __init__(
@@ -1438,8 +1438,13 @@ class TestAggregateNetcdfRoundTrip:
     ):
         """A container's placeholder transform must never reach the GeoTIFF."""
         cube = self._daily_six_hourly_array(n_days=1)
+        # A multi-variable CF container reports a pixel-index transform rather
+        # than a CRS one: a real 67-variable GOES ABI file reads back as
+        # (-0.5, 1.0, 0, 1499.5, 0, -1.0). Only the variable carries the real
+        # transform, which is what this case pins.
         placeholder = (0.0, 1.0, 0.0, 0.0, 0.0, -1.0)
         real_geo = (-75.125, 0.25, 0.0, 5.125, 0.0, -0.25)
+        assert placeholder != real_geo
         nc = _FakeNetCDF(
             array=cube,
             time_strs_by_var={"time": self._date_strings_six_hourly(1)},
