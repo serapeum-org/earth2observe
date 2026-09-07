@@ -106,12 +106,13 @@ class SummarisedLeaf(BaseModel):
     A catalog row is normally read for three things — what it is called,
     what units it is in, and how big or how recent it is. Pydantic's default
     `__str__` answers none of them quickly: it prints every field, including
-    the `None`s, which is why examples across the docs re-implement the same
-    hand-rolled `print(f"...: {row.field}")` blocks.
+    the `None`s.
 
     `None`, empty strings and empty collections are skipped, so a sparse row
     stays short; a non-empty collection renders as a count (`12 bands`).
-    A subclass needing a different shape overrides :meth:`summary_parts`.
+    Fragments are capped at `MAX_FRAGMENT` characters and the joined summary
+    at `MAX_SUMMARY`, both marked with an ellipsis when cut. A subclass
+    needing a different shape overrides `summary_parts`.
 
     Only `__str__` is defined. `__repr__` is deliberately left as pydantic's
     field-complete form: that is the debugging contract, and doctests and log

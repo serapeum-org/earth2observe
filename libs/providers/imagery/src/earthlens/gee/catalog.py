@@ -334,9 +334,9 @@ class Band(SummarisedLeaf):
             ```
     """
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
     _summary_fields = ("id", "units", "description")
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str
     description: str | None = None
@@ -391,11 +391,17 @@ class Extent(SummarisedLeaf):
     def summary_parts(self) -> list[str]:
         """Return the covered period as a single `start..end` fragment.
 
+        Deliberately temporal-only. `bbox` is the other half of this class,
+        but four coordinates cost more width than they inform inside a
+        one-line row summary, and nearly every curated collection is global;
+        a caller who needs the footprint reads `extent.bbox`.
+
         An open-ended collection has no `end_date`; it reads as `present`
         rather than being omitted, since "still updating" is the point.
 
         Returns:
-            list[str]: One fragment, the period.
+            list[str]: One fragment, the period, or none when no start is
+            known — `None..present` would be worse than saying nothing.
 
         Examples:
             - A collection that is still updating reads as open-ended:
@@ -411,6 +417,8 @@ class Extent(SummarisedLeaf):
 
                 ```
         """
+        if not self.start_date:
+            return []
         return [f"{self.start_date}..{self.end_date or 'present'}"]
 
 
@@ -492,7 +500,7 @@ class Dataset(SummarisedLeaf):
 
         Composed rather than declared, because three of the six need shaping
         the generic field renderer cannot do: the resolution carries a unit,
-        the period comes from a nested :class:`Extent`, and the bands render
+        the period comes from a nested `Extent`, and the bands render
         as a count rather than a dump.
 
         Returns:
