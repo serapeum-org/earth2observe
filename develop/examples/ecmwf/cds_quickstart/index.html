@@ -24763,15 +24763,15 @@ variable name, units, and whether it is a flux.</p>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">spec</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"reanalysis-era5-single-levels"</span><span class="p">,</span> <span class="s2">"2m-temperature"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cds_variable: </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">cds_variable</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"nc_variable:  </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">nc_variable</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"units:        </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+
+<span class="c1"># The trailing marker is the one that decides aggregation:</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"is_flux:      </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">is_flux</span><span class="si">}</span><span class="s2">  # state -&gt; auto resolves to mean"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">spec = cat.get_variable("reanalysis-era5-single-levels", "2m-temperature")
-print(f"cds_variable: {spec.cds_variable}")
-print(f"nc_variable:  {spec.nc_variable}")
-print(f"units:        {spec.units}")
+print(spec)
+
+# The trailing marker is the one that decides aggregation:
 print(f"is_flux:      {spec.is_flux}  # state -&gt; auto resolves to mean")</div>
 </div>
 </div>

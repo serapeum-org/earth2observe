@@ -24717,28 +24717,24 @@ SERVICE_KEY = os.environ['GEE_SERVICE_KEY']</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">cat</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
 <span class="n">ds</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="s1">'CIESIN/GPWv4/population-density'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'title:               </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+
+<span class="c1"># The summary covers id, title, provider, resolution, period and band count.</span>
+<span class="c1"># These are the fields it deliberately leaves out:</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'ee_type:             </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">ee_type</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'spatial_resolution:  </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">spatial_resolution</span><span class="si">}</span><span class="s1"> m'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'extent.start_date:   </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">extent</span><span class="o">.</span><span class="n">start_date</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'extent.end_date:     </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">extent</span><span class="o">.</span><span class="n">end_date</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'default_reducer:     </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">default_reducer</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'license:             </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">license</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'provider:            </span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">provider</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'#bands:              </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">bands</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'band ids (first 5):  </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">bands</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">cat = Catalog()
 ds = cat.get_dataset('CIESIN/GPWv4/population-density')
-print(f'title:               {ds.title}')
+print(ds)
+
+# The summary covers id, title, provider, resolution, period and band count.
+# These are the fields it deliberately leaves out:
 print(f'ee_type:             {ds.ee_type}')
-print(f'spatial_resolution:  {ds.spatial_resolution} m')
-print(f'extent.start_date:   {ds.extent.start_date}')
-print(f'extent.end_date:     {ds.extent.end_date}')
 print(f'default_reducer:     {ds.default_reducer}')
 print(f'license:             {ds.license}')
-print(f'provider:            {ds.provider}')
-print(f'#bands:              {len(ds.bands)}')
 print(f'band ids (first 5):  {list(ds.bands)[:5]}')</div>
 </div>
 </div>
