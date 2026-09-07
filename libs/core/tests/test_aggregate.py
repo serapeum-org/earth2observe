@@ -1467,6 +1467,45 @@ class TestAggregateNetcdfRoundTrip:
             "origin-(0,0), 1-degree placeholder."
         )
 
+    def test_geotransform_follows_the_level_resolved_cube(
+        self, monkeypatch, tmp_path, state_var
+    ):
+        """On the 4-D path the transform comes from the level-pinned cube."""
+        cube = self._daily_six_hourly_array(n_days=1)
+        before_sel = (10.0, 0.5, 0.0, 20.0, 0.0, -0.5)
+        after_sel = (-75.125, 0.25, 0.0, 5.125, 0.0, -0.25)
+        assert before_sel != after_sel
+
+        pinned = _FakeNetCDF(
+            array=cube,
+            time_strs_by_var={"time": self._date_strings_six_hourly(1)},
+            dimension_names=["time", "lat", "lon"],
+            geotransform=after_sel,
+        )
+        nc = _FakeNetCDF(
+            array=cube,
+            time_strs_by_var={"time": self._date_strings_six_hourly(1)},
+            dimension_names=["time", "pressure_level", "lat", "lon"],
+            geotransform=(0.0, 1.0, 0.0, 0.0, 0.0, -1.0),
+            variable_geotransform=before_sel,
+            on_sel=pinned,
+        )
+        _patch_netcdf_read(monkeypatch, nc)
+        writes = _patch_geotiff_write(monkeypatch)
+
+        aggregate_netcdf(
+            tmp_path / "fake.nc",
+            state_var,
+            AggregationConfig(freq="1D", op="mean", out_dir=tmp_path, level=1000),
+        )
+
+        _, geo, _, _ = writes[0]
+        assert geo == after_sel, (
+            f"Expected the level-pinned cube's geotransform {after_sel}, got {geo}. "
+            "`_resolve_pressure_level` returns a new object, so the transform has "
+            "to be read after it, not before."
+        )
+
     def test_geotransform_forwarded_to_geotiff_writer(
         self, monkeypatch, tmp_path, state_var
     ):

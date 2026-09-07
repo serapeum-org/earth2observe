@@ -29,6 +29,22 @@ def _build(tmp_path: Path, variables, **kw) -> GHSL:
     return GHSL(variables=variables, **defaults)
 
 
+def _undeclared_tile(url: str, dest_dir) -> Path:
+    """Write a tile that declares no no-data and return its path."""
+    dest = Path(dest_dir)
+    dest.mkdir(parents=True, exist_ok=True)
+    target = dest / (url.rsplit("/", 1)[-1][: -len(".zip")] + ".tif")
+    if not target.exists():
+        make_tiny_tif(target, epsg=4326, no_data=None)
+    return target
+
+
+def _record_merge(records: list[dict], src, dst, kwargs: dict) -> None:
+    """Record the merge arguments and satisfy the caller with a real file."""
+    records.append({"n": len(src), "no_data_value": kwargs.get("no_data_value")})
+    shutil.copy(src[0], dst)
+
+
 @pytest.fixture
 def patched_io(monkeypatch, tmp_path):
     """Fake the per-URL download (real 4326 tif) + record merge_rasters args."""
@@ -393,6 +409,36 @@ class TestReviewFixes:
         )
         g.download(progress_bar=False)
         assert patched_io[-1]["no_data_value"] == -200.0
+
+    def test_merge_falls_back_to_none_when_the_tiles_declare_nothing(
+        self, tmp_path, monkeypatch
+    ):
+        """Tiles without a declared no-data send "none", not merge_rasters' 0."""
+        records: list[dict] = []
+        monkeypatch.setattr(
+            backend_mod,
+            "download_and_unzip",
+            lambda url, dest_dir, **kw: _undeclared_tile(url, dest_dir),
+        )
+        monkeypatch.setattr(
+            "pyramids.dataset.merge.merge_rasters",
+            lambda src, dst, **kw: _record_merge(records, src, dst, kw),
+        )
+
+        g = _build(tmp_path, ["GHS_POP"])
+        monkeypatch.setattr(
+            g,
+            "_urls_for",
+            lambda code, epoch: [
+                "https://x/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0_R6_C18.zip"
+            ],
+        )
+        g.download(progress_bar=False)
+
+        assert records[-1]["no_data_value"] == "none", (
+            "an undeclared tile must unset the mosaic no-data rather than "
+            f"inherit merge_rasters' 0 default; got {records[-1]['no_data_value']!r}"
+        )
 
     def test_localise_idempotent_skips_remerge(self, tmp_path, patched_io):
         """A repeated identical download reuses the output without re-merging (L4)."""

@@ -237,9 +237,11 @@ class _FakePyramidsHandle:
 
         _Path(path).write_bytes(self._body)
 
+    closed_handles: list[_FakePyramidsHandle] = []
+
     def close(self) -> None:
-        """No-op stand-in for `Dataset.close`, which releases the GDAL handle."""
-        return None
+        """Record the release so tests can assert the handle is not leaked."""
+        _FakePyramidsHandle.closed_handles.append(self)
 
 
 class _FakePyramidsDataset:
@@ -1659,6 +1661,56 @@ class TestAutoSplit:
             assert tile_path.endswith(".tif")
             assert "_tile_" in tile_path
             assert not Path(tile_path).exists()  # tile files cleaned up post-merge
+
+    def test_tiles_that_declare_a_no_data_have_it_inherited(
+        self, make_gee, monkeypatch, tmp_path
+    ):
+        """A declared tile no-data reaches merge_rasters instead of the fallback."""
+        merge_calls: list[dict] = []
+
+        def _fake_merge(src, dst, **kwargs):
+            merge_calls.append({"kwargs": kwargs})
+            Path(dst).write_bytes(b"merged")
+
+        monkeypatch.setattr(backend_module, "merge_rasters", _fake_merge)
+        monkeypatch.setattr(
+            _FakePyramidsDataset,
+            "read_file",
+            classmethod(lambda cls, path, **kw: _FakePyramidsHandle(b"", (-9999.0,))),
+        )
+        _FakePyramidsHandle.closed_handles = []
+
+        gee = make_gee(
+            lat_lim=[0.0, 40.0], lon_lim=[0.0, 40.0], scale=30.0, auto_split=True
+        )
+        gee.download(progress_bar=False)
+
+        assert merge_calls[0]["kwargs"]["no_data_value"] == -9999.0, (
+            "the tiles' own sentinel should be inherited, not the 'none' fallback"
+        )
+        assert _FakePyramidsHandle.closed_handles, (
+            "the probe handle must be released before the tiles are removed"
+        )
+
+    def test_the_no_data_probe_handle_is_released_on_the_fallback_branch(
+        self, make_gee, monkeypatch, tmp_path
+    ):
+        """The probe handle is closed even when the tiles declare nothing."""
+        monkeypatch.setattr(
+            backend_module,
+            "merge_rasters",
+            lambda src, dst, **kw: Path(dst).write_bytes(b"merged"),
+        )
+        _FakePyramidsHandle.closed_handles = []
+
+        gee = make_gee(
+            lat_lim=[0.0, 40.0], lon_lim=[0.0, 40.0], scale=30.0, auto_split=True
+        )
+        gee.download(progress_bar=False)
+
+        assert _FakePyramidsHandle.closed_handles, (
+            "the probe handle must be released on the fallback branch too"
+        )
 
     def test_each_tile_request_is_within_the_synchronous_cap(
         self, make_gee, monkeypatch
