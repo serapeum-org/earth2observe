@@ -471,6 +471,41 @@ def _summarised_leaf_classes() -> list[tuple[str, type]]:
 SUMMARISED_LEAVES = _summarised_leaf_classes()
 
 
+def _reachable_summarised_rows(catalog: AbstractCatalog) -> list[SummarisedLeaf]:
+    """Collect every `SummarisedLeaf` reachable from a built catalog.
+
+    Walking only `catalog.datasets` misses most of them: the variable rows
+    (chc, ecmwf, cmems) and the gee `Band` / `Extent` hang off a dataset row
+    rather than the top level, so a top-level-only sweep never renders the
+    classes the summaries were written for.
+
+    Args:
+        catalog: A built backend catalog.
+
+    Returns:
+        list[SummarisedLeaf]: Every distinct row found, outermost first.
+    """
+    found: list[SummarisedLeaf] = []
+    seen: set[int] = set()
+    pending: list[Any] = [catalog.datasets]
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        if isinstance(current, SummarisedLeaf):
+            found.append(current)
+        if isinstance(current, BaseModel):
+            pending.extend(
+                getattr(current, name) for name in type(current).model_fields
+            )
+        elif isinstance(current, dict):
+            pending.extend(current.values())
+        elif isinstance(current, (list, tuple, set, frozenset)):
+            pending.extend(current)
+    return found
+
+
 @pytest.mark.parametrize("path, cls", SUMMARISED_LEAVES)
 def test_declared_summary_fields_exist(path: str, cls: type):
     """Every name in `_summary_fields` is a real field on the row.
@@ -497,8 +532,7 @@ def test_row_summaries_are_one_line(module_name: str, class_name: str):
     `—` and `≥`, and reproducing the row's own text is the same choice
     `AbstractCatalog.__str__` makes.
     """
-    cat = _build(module_name, class_name)
-    rows = [row for row in cat.datasets.values() if isinstance(row, SummarisedLeaf)]
+    rows = _reachable_summarised_rows(_build(module_name, class_name))
     if not rows:
         pytest.skip(f"{module_name} exposes no summarising rows")
     for row in rows:
