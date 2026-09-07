@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2860,10 +2860,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-environment-variables-recommended-for-ci" class="md-nav__link">
+  <a href="#1-constructor-facade-keyword-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Environment variables (recommended for CI)
+        1. Constructor / facade keyword arguments
       
     </span>
   </a>
@@ -2871,10 +2871,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-constructor-facade-keyword-arguments" class="md-nav__link">
+  <a href="#2-environment-variables-recommended-for-ci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Constructor / facade keyword arguments
+        2. Environment variables (recommended for CI)
       
     </span>
   </a>
@@ -23593,10 +23593,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-environment-variables-recommended-for-ci" class="md-nav__link">
+  <a href="#1-constructor-facade-keyword-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Environment variables (recommended for CI)
+        1. Constructor / facade keyword arguments
       
     </span>
   </a>
@@ -23604,10 +23604,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-constructor-facade-keyword-arguments" class="md-nav__link">
+  <a href="#2-environment-variables-recommended-for-ci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Constructor / facade keyword arguments
+        2. Environment variables (recommended for CI)
       
     </span>
   </a>
@@ -23711,26 +23711,27 @@ has expired.</p>
    are the only credentials the backend needs.</li>
 </ol>
 <h2 id="supplying-the-credentials"><a class="toclink" href="#supplying-the-credentials">Supplying the credentials</a><a class="headerlink" href="#supplying-the-credentials" title="Permanent link">#</a></h2>
-<p><code>EumetsatAuth</code> resolves the pair in this order — the first source that
-yields <strong>both</strong> halves wins:</p>
-<h3 id="1-environment-variables-recommended-for-ci"><a class="toclink" href="#1-environment-variables-recommended-for-ci">1. Environment variables (recommended for CI)</a><a class="headerlink" href="#1-environment-variables-recommended-for-ci" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EUMETSAT_CONSUMER_KEY</span><span class="o">=</span><span class="s2">&quot;your-consumer-key&quot;</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EUMETSAT_CONSUMER_SECRET</span><span class="o">=</span><span class="s2">&quot;your-consumer-secret&quot;</span>
-</code></pre></div>
-<h3 id="2-constructor-facade-keyword-arguments"><a class="toclink" href="#2-constructor-facade-keyword-arguments">2. Constructor / facade keyword arguments</a><a class="headerlink" href="#2-constructor-facade-keyword-arguments" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLens</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">el</span> <span class="o">=</span> <span class="n">EarthLens</span><span class="p">(</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">data_source</span><span class="o">=</span><span class="s2">&quot;eumetsat&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">variables</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;msg-hrseviri&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;HRSEVIRI&quot;</span><span class="p">]},</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2024-06-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2024-06-01&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">lat_lim</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">lon_lim</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">consumer_key</span><span class="o">=</span><span class="s2">&quot;your-consumer-key&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">consumer_secret</span><span class="o">=</span><span class="s2">&quot;your-consumer-secret&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">)</span>
+<p><code>EumetsatAuth</code> resolves the pair in this order. The key and the secret
+are resolved <strong>independently</strong>, so the two halves may come from different
+sources — an explicit key pairs with a secret from the environment:</p>
+<h3 id="1-constructor-facade-keyword-arguments"><a class="toclink" href="#1-constructor-facade-keyword-arguments">1. Constructor / facade keyword arguments</a><a class="headerlink" href="#1-constructor-facade-keyword-arguments" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLens</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">el</span> <span class="o">=</span> <span class="n">EarthLens</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">data_source</span><span class="o">=</span><span class="s2">&quot;eumetsat&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">variables</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;msg-hrseviri&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;HRSEVIRI&quot;</span><span class="p">]},</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2024-06-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2024-06-01&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">lat_lim</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">lon_lim</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">consumer_key</span><span class="o">=</span><span class="s2">&quot;your-consumer-key&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">consumer_secret</span><span class="o">=</span><span class="s2">&quot;your-consumer-secret&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
 </code></pre></div>
 <p>The <code>consumer_secret</code> is held as a <code>pydantic.SecretStr</code>, so it never
 appears in <code>repr()</code> or logs.</p>
+<h3 id="2-environment-variables-recommended-for-ci"><a class="toclink" href="#2-environment-variables-recommended-for-ci">2. Environment variables (recommended for CI)</a><a class="headerlink" href="#2-environment-variables-recommended-for-ci" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EUMETSAT_CONSUMER_KEY</span><span class="o">=</span><span class="s2">&quot;your-consumer-key&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EUMETSAT_CONSUMER_SECRET</span><span class="o">=</span><span class="s2">&quot;your-consumer-secret&quot;</span>
+</code></pre></div>
 <h3 id="3-a-eumdaccredentials-file"><a class="toclink" href="#3-a-eumdaccredentials-file">3. A <code>~/.eumdac/credentials</code> file</a><a class="headerlink" href="#3-a-eumdaccredentials-file" title="Permanent link">#</a></h3>
 <p>This is the file the <code>eumdac</code> CLI writes with <code>eumdac set-credentials</code>.
 It is a single line:</p>

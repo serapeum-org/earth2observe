@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -23673,14 +23673,18 @@ keys — the same account has three separate auth planes.</p>
 <h2 id="2-provide-the-credentials-to-earthlens"><a class="toclink" href="#2-provide-the-credentials-to-earthlens">2. Provide the credentials to earthlens</a><a class="headerlink" href="#2-provide-the-credentials-to-earthlens" title="Permanent link">#</a></h2>
 <p>The backend resolves credentials in this order:</p>
 <ol>
-<li><strong>Environment</strong> — <code>SENTINELHUB_CLIENT_ID</code> / <code>SENTINELHUB_CLIENT_SECRET</code> (and
-   optional <code>SENTINELHUB_PROFILE</code>). The <code>sentinelhub-py</code>-native <code>SH_CLIENT_ID</code> /
-   <code>SH_CLIENT_SECRET</code> / <code>SH_PROFILE</code> are accepted as a fallback.</li>
-<li><strong>Constructor kwargs</strong> — <code>client_id=</code> / <code>client_secret=</code> (these win over the
-   environment).</li>
-<li><strong>Saved <code>SHConfig</code> profile</strong> — <code>profile=</code> (a profile written earlier with
-   <code>SHConfig.save("name")</code>).</li>
+<li><strong>Constructor kwargs</strong> — <code>client_id=</code> / <code>client_secret=</code>.</li>
+<li><strong>Environment</strong> — <code>SENTINELHUB_CLIENT_ID</code> / <code>SENTINELHUB_CLIENT_SECRET</code>. The
+   <code>sentinelhub-py</code>-native <code>SH_CLIENT_ID</code> / <code>SH_CLIENT_SECRET</code> are accepted as a
+   fallback.</li>
+<li><strong>Saved <code>SHConfig</code> profile</strong> — <code>profile=</code>, else <code>SENTINELHUB_PROFILE</code> /
+   <code>SH_PROFILE</code> (a profile written earlier with <code>SHConfig.save("name")</code>).</li>
 </ol>
+<p>Each field is resolved on its own, so the three sources can be mixed: passing
+only <code>client_id=</code> pairs it with <code>SENTINELHUB_CLIENT_SECRET</code> from the
+environment. A named profile is loaded whenever one is given — not only when
+nothing else is set — and any id or secret resolved above overwrites the value
+the profile carries.</p>
 <h3 id="environment-variables-recommended-for-ci-headless"><a class="toclink" href="#environment-variables-recommended-for-ci-headless">Environment variables (recommended for CI / headless)</a><a class="headerlink" href="#environment-variables-recommended-for-ci-headless" title="Permanent link">#</a></h3>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">bash</label><label for="__tabbed_1_2">PowerShell</label></div>
 <div class="tabbed-content">
