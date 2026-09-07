@@ -22,14 +22,30 @@ def test_credentials_secret_hidden_in_repr():
     assert "topsecret" not in repr(creds)
 
 
-def test_resolve_pair_prefers_env(monkeypatch):
-    """Environment variables win over constructor kwargs."""
+def test_resolve_pair_prefers_explicit(monkeypatch):
+    """Constructor kwargs win over the environment (#1184)."""
     monkeypatch.setenv("EUMETSAT_CONSUMER_KEY", "envkey")
     monkeypatch.setenv("EUMETSAT_CONSUMER_SECRET", "envsecret")
     auth = EumetsatAuth(
         EumetsatCredentials(consumer_key="argkey", consumer_secret="argsecret")
     )
+    assert auth._resolve_pair() == ("argkey", "argsecret")
+
+
+def test_resolve_pair_uses_env_when_no_kwargs(monkeypatch):
+    """With no explicit pair the environment still supplies it — the CI path."""
+    monkeypatch.setenv("EUMETSAT_CONSUMER_KEY", "envkey")
+    monkeypatch.setenv("EUMETSAT_CONSUMER_SECRET", "envsecret")
+    auth = EumetsatAuth(EumetsatCredentials())
     assert auth._resolve_pair() == ("envkey", "envsecret")
+
+
+def test_resolve_pair_mixes_sources_per_half(monkeypatch):
+    """An explicit key pairs with a secret from the environment."""
+    monkeypatch.delenv("EUMETSAT_CONSUMER_KEY", raising=False)
+    monkeypatch.setenv("EUMETSAT_CONSUMER_SECRET", "envsecret")
+    auth = EumetsatAuth(EumetsatCredentials(consumer_key="argkey"))
+    assert auth._resolve_pair() == ("argkey", "envsecret")
 
 
 def test_resolve_pair_falls_back_to_kwargs():

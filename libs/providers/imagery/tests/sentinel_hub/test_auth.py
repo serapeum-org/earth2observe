@@ -97,6 +97,22 @@ class TestConfigure:
         cfg = auth.config()
         assert cfg.profile == "myprofile"
 
+    def test_id_and_secret_resolve_from_different_sources(self, fake_sh, monkeypatch):
+        """An explicit id pairs with a secret from the environment."""
+        monkeypatch.setenv("SH_CLIENT_ID", "envid")
+        monkeypatch.setenv("SH_CLIENT_SECRET", "envsecret")
+        cfg = SentinelHubAuth(SentinelHubCredentials(client_id="kw")).config()
+        assert cfg.sh_client_id == "kw"
+        assert cfg.sh_client_secret == "envsecret"
+
+    def test_profile_loads_even_when_an_id_is_supplied(self, fake_sh):
+        """A profile is loaded whenever given, not only when nothing else is set."""
+        cfg = SentinelHubAuth(
+            SentinelHubCredentials(client_id="kw", profile="myprofile")
+        ).config()
+        assert cfg.profile == "myprofile"
+        assert cfg.sh_client_id == "kw"
+
     def test_idempotent(self, fake_sh):
         """`is_authenticated` flips False→True and a second configure is a no-op."""
         auth = SentinelHubAuth(SentinelHubCredentials(client_id="a", client_secret="b"))

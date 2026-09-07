@@ -23,13 +23,18 @@ keys — the same account has three separate auth planes.
 
 The backend resolves credentials in this order:
 
-1. **Environment** — `SENTINELHUB_CLIENT_ID` / `SENTINELHUB_CLIENT_SECRET` (and
-   optional `SENTINELHUB_PROFILE`). The `sentinelhub-py`-native `SH_CLIENT_ID` /
-   `SH_CLIENT_SECRET` / `SH_PROFILE` are accepted as a fallback.
-2. **Constructor kwargs** — `client_id=` / `client_secret=` (these win over the
-   environment).
-3. **Saved `SHConfig` profile** — `profile=` (a profile written earlier with
-   `SHConfig.save("name")`).
+1. **Constructor kwargs** — `client_id=` / `client_secret=`.
+2. **Environment** — `SENTINELHUB_CLIENT_ID` / `SENTINELHUB_CLIENT_SECRET`. The
+   `sentinelhub-py`-native `SH_CLIENT_ID` / `SH_CLIENT_SECRET` are accepted as a
+   fallback.
+3. **Saved `SHConfig` profile** — `profile=`, else `SENTINELHUB_PROFILE` /
+   `SH_PROFILE` (a profile written earlier with `SHConfig.save("name")`).
+
+Each field is resolved on its own, so the three sources can be mixed: passing
+only `client_id=` pairs it with `SENTINELHUB_CLIENT_SECRET` from the
+environment. A named profile is loaded whenever one is given — not only when
+nothing else is set — and any id or secret resolved above overwrites the value
+the profile carries.
 
 ### Environment variables (recommended for CI / headless)
 

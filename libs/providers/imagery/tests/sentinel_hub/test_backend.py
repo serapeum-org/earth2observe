@@ -24,6 +24,28 @@ def _make_backend(variables, output_dir, **kwargs) -> SentinelHub:
     )
 
 
+class TestCredentialResolution:
+    """The constructor folds the environment into the credentials it builds."""
+
+    def test_env_profile_is_used_when_no_profile_argument(
+        self, output_dir: Path, monkeypatch
+    ):
+        """`SENTINELHUB_PROFILE` supplies the profile when `profile=` is omitted."""
+        monkeypatch.setenv("SENTINELHUB_PROFILE", "from-env")
+        backend = _make_backend({"sentinel-2-l2a-ndvi": []}, output_dir)
+        assert backend._credentials.profile == "from-env"
+
+    def test_profile_argument_wins_over_the_environment(
+        self, output_dir: Path, monkeypatch
+    ):
+        """An explicit `profile=` overrides `SENTINELHUB_PROFILE`."""
+        monkeypatch.setenv("SENTINELHUB_PROFILE", "from-env")
+        backend = _make_backend(
+            {"sentinel-2-l2a-ndvi": []}, output_dir, profile="explicit"
+        )
+        assert backend._credentials.profile == "explicit"
+
+
 class TestConstruction:
     """Constructor validation and request resolution."""
 
