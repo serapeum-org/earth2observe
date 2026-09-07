@@ -17,11 +17,13 @@ The credential resolution order in :meth:`SentinelHubAuth.configure` is:
    (with `SH_CLIENT_ID` / `SH_CLIENT_SECRET` accepted as a `sentinelhub-py`-native
    fallback).
 3. **saved profile** — a named `SHConfig` profile written earlier with
-   `SHConfig.save(profile)` (used when neither of the above is set).
+   `SHConfig.save(profile)`.
 
-The id and the secret are resolved **independently**, so an explicit
-`client_id` pairs with a `SENTINELHUB_CLIENT_SECRET` from the environment when
-only one of the two is passed.
+Each field is resolved **independently**, so the sources can be mixed: an
+explicit `client_id` pairs with a `SENTINELHUB_CLIENT_SECRET` from the
+environment when only one of the two is passed. A profile is loaded whenever
+one is given — not only when nothing else is set — and an id or secret
+resolved above overwrites the value the profile carries.
 
 `endpoint=` switches the CDSE-free deployment (the default) and the commercial
 one (`services.sentinel-hub.com`, a different token URL). Any failure is wrapped
@@ -173,7 +175,9 @@ class SentinelHubAuth(AbstractAuth[SentinelHubCredentials]):
     def _resolve_pair(self) -> tuple[str | None, str | None]:
         """Return the `(client_id, client_secret)` to use (kwargs → env).
 
-        Explicit credentials on the object win over the environment.
+        Explicit credentials on the object win over the environment. The two
+        fields are resolved separately, so the pair can come from different
+        sources — an explicit `client_id` with a secret from the environment.
 
         Returns:
             The resolved id and secret (either may be `None`).
