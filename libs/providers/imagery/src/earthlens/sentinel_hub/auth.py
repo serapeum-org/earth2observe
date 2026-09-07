@@ -11,13 +11,17 @@ login step here: :meth:`SentinelHubAuth.configure` only assembles the
 
 The credential resolution order in :meth:`SentinelHubAuth.configure` is:
 
-1. **environment** — `SENTINELHUB_CLIENT_ID` / `SENTINELHUB_CLIENT_SECRET`
+1. **kwargs** — an explicit `client_id` / `client_secret` on the credentials
+   object.
+2. **environment** — `SENTINELHUB_CLIENT_ID` / `SENTINELHUB_CLIENT_SECRET`
    (with `SH_CLIENT_ID` / `SH_CLIENT_SECRET` accepted as a `sentinelhub-py`-native
    fallback).
-2. **kwargs** — an explicit `client_id` / `client_secret` on the credentials
-   object (these win over the environment).
 3. **saved profile** — a named `SHConfig` profile written earlier with
    `SHConfig.save(profile)` (used when neither of the above is set).
+
+The id and the secret are resolved **independently**, so an explicit
+`client_id` pairs with a `SENTINELHUB_CLIENT_SECRET` from the environment when
+only one of the two is passed.
 
 `endpoint=` switches the CDSE-free deployment (the default) and the commercial
 one (`services.sentinel-hub.com`, a different token URL). Any failure is wrapped
