@@ -79,14 +79,15 @@ def _callable_name(fn: Callable) -> str:
 
     Only a real `functools.partial` is unwrapped. Following any `func`
     attribute would mis-name an unrelated callable that happens to carry one,
-    and would not terminate on objects that synthesise attributes on access
-    (a `unittest.mock.Mock` returns a fresh child mock for every `.func`).
+    and would not terminate against an object that synthesises a fresh
+    attribute on every access.
 
     Args:
         fn: Any callable.
 
     Returns:
-        The callable's `__name__` where it has one, else its type name.
+        The callable's `__name__` when it has a non-empty one, else its type
+        name. Coerced to `str` so the declared return type always holds.
     """
     target = fn
     while isinstance(target, functools.partial):

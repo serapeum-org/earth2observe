@@ -5,7 +5,6 @@ from __future__ import annotations
 import functools
 import io
 import ssl
-from unittest.mock import Mock
 
 import geopandas as gpd
 import pandas as pd
@@ -80,8 +79,7 @@ class _BlankName:
 
     __name__ = ""
 
-    def __call__(self, *_args, **_kwargs):
-        raise ConnectionResetError("boom")
+    def __call__(self, *_args, **_kwargs) -> None: ...
 
 
 class _HasFuncAttribute:
@@ -89,8 +87,7 @@ class _HasFuncAttribute:
 
     func = "not a partial"
 
-    def __call__(self, *_args, **_kwargs):
-        raise ConnectionResetError("boom")
+    def __call__(self, *_args, **_kwargs) -> None: ...
 
 
 class _IntName:
@@ -98,8 +95,7 @@ class _IntName:
 
     __name__ = 123
 
-    def __call__(self, *_args, **_kwargs):
-        raise ConnectionResetError("boom")
+    def __call__(self, *_args, **_kwargs) -> None: ...
 
 
 class TestCallableName:
@@ -131,12 +127,14 @@ class TestCallableName:
         """An empty `__name__` is treated as absent, not logged as a blank name."""
         assert _callable_name(_BlankName()) == "_BlankName"
 
-    def test_mock_terminates_instead_of_unwrapping_forever(self):
-        """A Mock synthesises a fresh `.func` on every access, so it must not be unwrapped."""
-        assert _callable_name(Mock()) == "Mock"
-
     def test_non_partial_func_attribute_is_left_alone(self):
-        """A callable carrying an unrelated `func` attribute keeps its own name."""
+        """A callable carrying an unrelated `func` attribute keeps its own name.
+
+        This is the guard for the attribute-synthesising case too (a `Mock`
+        yields a fresh child for every `.func`): following a non-partial `func`
+        is the single behaviour that makes such an object unbounded, and it
+        fails here in milliseconds rather than by exhausting the process.
+        """
         assert _callable_name(_HasFuncAttribute()) == "_HasFuncAttribute"
 
     def test_non_string_name_is_coerced(self):
