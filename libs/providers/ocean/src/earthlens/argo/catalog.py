@@ -43,7 +43,8 @@ class Family(SummarisedLeaf):
     """One Argo dataset family's parameter vocabulary.
 
     The family key (`"phy"` / `"bgc"`) is the parent key in
-    :attr:`Catalog.datasets` and is not stored on the row.
+    :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`name` so a resolved family is self-describing.
 
     Attributes:
         name: The family's catalog key, injected by the loader; the row

@@ -51,9 +51,12 @@ class AdminLevel(SummarisedLeaf):
     """One admin level's download + shapefile spec.
 
     The admin-level name (`"country"` / `"state"` / `"basin"`) is the parent key
-    in :attr:`Catalog.datasets`, not stored on the row.
+    in :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`level` so a resolved level is self-describing.
 
     Attributes:
+        level: The admin-level name, copied from the catalog key. Empty only
+            for a row built directly rather than through the loader.
         zip: The zip file name the shapefile lives in — a direct download under
             `base_url` when :attr:`container_zip` is `None`, otherwise the entry
             to extract from that outer bundle first.

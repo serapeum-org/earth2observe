@@ -82,7 +82,8 @@ class Station(SummarisedLeaf):
     """One WSR-88D radar site.
 
     The site id (e.g. `"KTLX"`) is the parent key in
-    :attr:`Catalog.datasets` and is not stored on the row.
+    :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`code` so a resolved station is self-describing.
 
     Attributes:
         code: The station's catalog key (its ICAO id, e.g. `"KABR"`),

@@ -140,7 +140,8 @@ class FloodType(SummarisedLeaf):
     """One entry of the HANZE flood-`Type` vocabulary.
 
     The type string (`"River"`, `"River/Coastal"`) is the parent key in
-    :attr:`Catalog.datasets` and is not stored on the row.
+    :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`name` so a resolved flood type is self-describing.
 
     Attributes:
         name: The flood type's catalog key, injected by the loader; the
