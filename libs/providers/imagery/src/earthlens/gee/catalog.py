@@ -518,7 +518,7 @@ class Dataset(SummarisedLeaf):
                 ...     bands={"NO2_column_number_density": Band(id="NO2")},
                 ... )
                 >>> print(row)
-                Dataset(COPERNICUS/S5P/NRTI/L3_NO2, S5P NRTI NO2, copernicus, 1113.2 m, 2018-07-10..present, 1 bands)
+                Dataset(COPERNICUS/S5P/NRTI/L3_NO2, S5P NRTI NO2, copernicus, 1113.2 m, 2018-07-10..present, 1 band)
 
                 ```
             - A sparse row omits what it does not carry, and a whole-metre
@@ -544,8 +544,9 @@ class Dataset(SummarisedLeaf):
         if self.spatial_resolution:
             parts.append(f"{self.spatial_resolution:g} m")
         parts.extend(self.extent.summary_parts())
-        if self.bands:
-            parts.append(f"{len(self.bands)} bands")
+        bands = render_fragment(self.bands, "bands")
+        if bands:
+            parts.append(bands)
         return parts
 
     @property
