@@ -111,6 +111,16 @@ class AbstractAuth(ABC, Generic[CredentialsT]):
     resource (e.g. an HTTP session, a boto3 client) override
     `close` to release it.
 
+    This class fixes **no** credential-resolution precedence in code, but
+    the package convention is the one :class:`SingleSecretAuth` implements
+    and every backend now follows: **an explicit argument wins over the
+    environment, which wins over any credentials file**. Subclass
+    `SingleSecretAuth` when a single secret is involved and get that for
+    free; a subclass that resolves several sources itself should keep the
+    same order and **state it in its own docstring**, since callers cannot
+    infer it from here. Deviating silently is how an explicit credential
+    ends up discarded — see #1184.
+
     Attributes:
         _creds: The credentials value object passed at
             construction. Stored verbatim so subclasses can read

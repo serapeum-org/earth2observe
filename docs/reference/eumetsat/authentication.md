@@ -16,17 +16,11 @@ has expired.
 
 ## Supplying the credentials
 
-`EumetsatAuth` resolves the pair in this order — the first source that
-yields **both** halves wins:
+`EumetsatAuth` resolves the pair in this order. The key and the secret
+are resolved **independently**, so the two halves may come from different
+sources — an explicit key pairs with a secret from the environment:
 
-### 1. Environment variables (recommended for CI)
-
-```bash
-export EUMETSAT_CONSUMER_KEY="your-consumer-key"
-export EUMETSAT_CONSUMER_SECRET="your-consumer-secret"
-```
-
-### 2. Constructor / facade keyword arguments
+### 1. Constructor / facade keyword arguments
 
 ```python
 from earthlens.core import EarthLens
@@ -43,6 +37,13 @@ el = EarthLens(
 
 The `consumer_secret` is held as a `pydantic.SecretStr`, so it never
 appears in `repr()` or logs.
+
+### 2. Environment variables (recommended for CI)
+
+```bash
+export EUMETSAT_CONSUMER_KEY="your-consumer-key"
+export EUMETSAT_CONSUMER_SECRET="your-consumer-secret"
+```
 
 ### 3. A `~/.eumdac/credentials` file
 
