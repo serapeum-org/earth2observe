@@ -60,7 +60,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from earthlens.base import AbstractCatalog, FluxableLeaf, Provider
+from earthlens.base import (
+    AbstractCatalog,
+    FluxableLeaf,
+    Provider,
+    render_fragment,
+)
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -646,6 +651,8 @@ class Variable(FluxableLeaf):
             ```
     """
 
+    _summary_fields = ("units",)
+
     # `model_config` (frozen=True, extra="forbid") and the `types` field
     # + `is_flux` property are inherited from `FluxableLeaf`.
 
@@ -661,6 +668,50 @@ class Variable(FluxableLeaf):
     endpoint: str = "cds"
     grid_resolution: float | None = None
     unhydratable: Literal["pseudo-slug"] | None = None
+
+    def summary_parts(self) -> list[str]:
+        """Lead with the CDS name and the NetCDF name it arrives as.
+
+        Those two are what a caller actually reconciles — the request is
+        written against `cds_variable`, the file that comes back is keyed by
+        `nc_variable` — so they belong first, as a pair.
+
+        Returns:
+            list[str]: The `cds -> nc` pair, then units and the flux marker.
+
+        Examples:
+            - A state variable pairs the two names it is addressed by:
+                ```python
+                >>> row = Variable(
+                ...     cds_dataset="reanalysis-era5-single-levels",
+                ...     cds_variable="2m_temperature",
+                ...     nc_variable="t2m",
+                ...     units="K",
+                ...     types="state",
+                ... )
+                >>> print(row)
+                Variable(2m_temperature -> t2m, K, state)
+
+                ```
+            - A flux variable is marked, which is what drives the monthly
+              accumulation scaling:
+                ```python
+                >>> row = Variable(
+                ...     cds_dataset="reanalysis-era5-single-levels",
+                ...     cds_variable="total_precipitation",
+                ...     nc_variable="tp",
+                ...     units="m",
+                ...     types="flux",
+                ... )
+                >>> row.is_flux
+                True
+                >>> print(row)
+                Variable(total_precipitation -> tp, m, flux)
+
+                ```
+        """
+        pair = f"{self.cds_variable} -> {self.nc_variable}"
+        return [render_fragment(pair, "cds_variable"), *super().summary_parts()]
 
     @field_validator("extras", mode="before")
     @classmethod
@@ -901,7 +952,7 @@ class Dataset(BaseModel):
         return _validate_grid_resolution(value)
 
 
-class Catalog(AbstractCatalog):
+class Catalog(AbstractCatalog[Dataset]):
     """Variable catalog for the CDS-backed ECMWF data source.
 
     Reads the bundled CDS catalog (the `catalog/` directory, shipped as
@@ -1084,31 +1135,6 @@ class Catalog(AbstractCatalog):
             datasets=dict(datasets),
             providers=dict(providers),
         )
-
-    def get_catalog(self) -> dict[str, Dataset]:
-        """Return the structural per-dataset map.
-
-        Satisfies the abstract base's contract; the actual parsing
-        is done in :func:`model_post_init`.
-
-        Returns:
-            dict[str, Dataset]: One entry per CDS dataset. Same
-            object as :attr:`datasets`.
-
-        Examples:
-            - Inspect the dataset count and a sample:
-
-                ```python
-                >>> from earthlens.ecmwf import Catalog
-                >>> mapping = Catalog().get_catalog()
-                >>> "reanalysis-era5-single-levels" in mapping
-                True
-                >>> mapping["reanalysis-era5-single-levels"].monthly
-                'reanalysis-era5-single-levels-monthly-means'
-
-                ```
-        """
-        return self.datasets
 
     def get_variable(self, dataset_name: str, variable_name: str) -> Variable:
         """Return the :class:`Variable` for a `(dataset, code)` pair.

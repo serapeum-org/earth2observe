@@ -155,6 +155,7 @@ def _load_catalog_data(path: Path) -> tuple[list[str], dict[str, Dataset]]:
         for var_name, var_body in variables_yaml.items():
             payload = dict(var_body or {})
             try:
+                payload.setdefault("name", var_name)
                 ds_vars[var_name] = Variable(**payload)
             except ValidationError as exc:
                 raise ValueError(
@@ -216,6 +217,9 @@ class Variable(FluxableLeaf):
         long_name: CF long-name of the variable (e.g. `"Sea water
             potential temperature"`). Mainly for human-readable
             logging.
+        name: The variable's catalog key, injected by the loader. Many
+            rows carry no `long_name`, so without this a summary would
+            identify itself by its unit alone.
         types: Optional `"flux"` or `"state"` marker (inherited).
             Currently advisory only — CMEMS variables are
             overwhelmingly state (instantaneous fields); the marker
@@ -247,6 +251,13 @@ class Variable(FluxableLeaf):
             ```
     """
 
+    _summary_fields = (
+        "name",
+        "long_name",
+        "units",
+    )
+
+    name: str = ""
     units: str
     long_name: str = ""
 
@@ -359,7 +370,7 @@ class Dataset(BaseModel):
     variables: dict[str, Variable] = Field(default_factory=dict)
 
 
-class Catalog(AbstractCatalog):
+class Catalog(AbstractCatalog[Dataset]):
     """Variable catalog for the Copernicus Marine backend.
 
     Reads the bundled `catalog/` directory (shipped as package data)
@@ -448,18 +459,6 @@ class Catalog(AbstractCatalog):
             available_datasets=list(available_datasets),
             datasets=dict(datasets),
         )
-
-    def get_catalog(self) -> dict[str, Dataset]:
-        """Return the structural per-dataset map.
-
-        Satisfies the abstract base's contract; the actual parsing
-        is done in :func:`model_post_init`.
-
-        Returns:
-            dict[str, Dataset]: One entry per curated CMEMS dataset.
-                Same object as :attr:`datasets`.
-        """
-        return self.datasets
 
     def get_variable(self, dataset_id: str, variable_name: str) -> Variable:
         """Return the :class:`Variable` for a `(dataset_id, name)` pair.

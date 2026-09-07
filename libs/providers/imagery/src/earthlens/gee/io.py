@@ -23,6 +23,7 @@ masked real errors as transient. See N2 in the GEE utils plan.
 
 from __future__ import annotations
 
+import functools
 import ssl
 import time
 import urllib.error
@@ -65,6 +66,33 @@ _DEFAULT_POOL_SIZE: int = 25
 _DEFAULT_RETRIES: int = 5
 _DEFAULT_BACKOFF: float = 2.0
 _DEFAULT_INITIAL_DELAY: float = 1.0
+
+
+def _callable_name(fn: Callable) -> str:
+    """Return a display name for any callable shape.
+
+    `__name__` exists on a plain function but not on a `functools.partial` or a
+    class instance with `__call__`. The retry logger reads this from inside an
+    `except` block, so a bare `fn.__name__` there would raise `AttributeError`
+    in place of the error being retried. A partial is unwrapped to the function
+    it targets, which is the useful name to log.
+
+    Only a real `functools.partial` is unwrapped. Following any `func`
+    attribute would mis-name an unrelated callable that happens to carry one,
+    and would not terminate against an object that synthesises a fresh
+    attribute on every access.
+
+    Args:
+        fn: Any callable.
+
+    Returns:
+        The callable's `__name__` when it has a non-empty one, else its type
+        name. Coerced to `str` so the declared return type always holds.
+    """
+    target = fn
+    while isinstance(target, functools.partial):
+        target = target.func
+    return str(getattr(target, "__name__", None) or type(target).__name__)
 
 
 def _retry_on_transient_errors(
@@ -113,7 +141,7 @@ def _retry_on_transient_errors(
                 if attempt == tries:
                     raise
                 logger.warning(
-                    f"{fn.__name__} attempt {attempt}/{tries} failed "
+                    f"{_callable_name(fn)} attempt {attempt}/{tries} failed "
                     f"({type(exc).__name__}: {exc}); retrying in {delay:.1f}s"
                 )
                 # Resolve `sleep` lazily so tests can monkeypatch `io.time.sleep`.

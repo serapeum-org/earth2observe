@@ -28,9 +28,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -149,7 +149,7 @@ def _load_catalog_data(path: Path) -> tuple[list[str], dict[str, Dataset]]:
     return _CATALOG_CACHE[key]
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One curated ERDDAP dataset pinned to a concrete server.
 
     Mirrors a single `datasets.<dataset_id>:` block in one of the
@@ -199,6 +199,12 @@ class Dataset(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "dataset_id",
+        "title",
+        "protocol",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     server_url: str
@@ -212,7 +218,7 @@ class Dataset(BaseModel):
     license_note: str = ""
 
 
-class Catalog(AbstractCatalog):
+class Catalog(AbstractCatalog[Dataset]):
     """Server catalog for the generic ERDDAP backend.
 
     Reads the bundled `catalog/` directory (shipped as package data) and
@@ -286,18 +292,6 @@ class Catalog(AbstractCatalog):
             available_datasets=list(available_datasets) or sorted(datasets),
             datasets=dict(datasets),
         )
-
-    def get_catalog(self) -> dict[str, Dataset]:
-        """Return the structural per-dataset map.
-
-        Satisfies the abstract base's contract; the actual parsing is
-        done in :func:`model_post_init`.
-
-        Returns:
-            dict[str, Dataset]: One entry per curated ERDDAP dataset.
-                Same object as :attr:`datasets`.
-        """
-        return self.datasets
 
     def get(self, dataset_id: str) -> Dataset:
         """Return the :class:`Dataset` row for `dataset_id`.

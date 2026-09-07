@@ -34,9 +34,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -80,7 +80,7 @@ def clear_catalog_cache() -> None:
 from earthlens.jaxa.auth import JaxaProtocol  # noqa: E402  (re-export)
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One JAXA dataset row.
 
     The row's `protocol` field is the discriminator the backend dispatches
@@ -141,6 +141,12 @@ class Dataset(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "key",
+        "description",
+        "collection",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     key: str
@@ -191,7 +197,7 @@ class Dataset(BaseModel):
         return self
 
 
-class Catalog(AbstractCatalog):
+class Catalog(AbstractCatalog[Dataset]):
     """Reader for the bundled JAXA dataset catalog.
 
     Subclasses :class:`AbstractCatalog` so the dict-like surface
@@ -281,24 +287,6 @@ class Catalog(AbstractCatalog):
         path = catalog_path if catalog_path is not None else CATALOG_PATH
         payload = load_catalog(path, _CATALOG_CACHE, _parse_catalog, provider="jaxa")
         return cls(**payload)
-
-    def get_catalog(self) -> dict[str, Dataset]:
-        """Return the dataset map (satisfies the abstract contract).
-
-        Returns:
-            dict[str, Dataset]: Same object as :attr:`datasets`.
-
-        Examples:
-            - Inspect one of the rows by canonical key:
-                ```python
-                >>> from earthlens.jaxa import Catalog
-                >>> cat = Catalog()
-                >>> cat.get_catalog()["aw3d30"].protocol
-                'jaxa-earth'
-
-                ```
-        """
-        return self.datasets
 
     def get(self, key: str) -> Dataset:
         """Return the :class:`Dataset` for `key` (canonical, alias, or raw id).

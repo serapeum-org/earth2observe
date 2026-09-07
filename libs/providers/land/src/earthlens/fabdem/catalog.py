@@ -16,9 +16,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -32,7 +32,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One FABDEM product row.
 
     Attributes:
@@ -60,6 +60,13 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "id",
+        "title",
+        "provider",
+        "units",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -117,7 +124,7 @@ def _parse_catalog(files: list[Path]) -> dict[str, Any]:
     }
 
 
-class Catalog(AbstractCatalog):
+class Catalog(AbstractCatalog[Dataset]):
     """Product catalog for the FABDEM backend.
 
     Reads the bundled `fabdem_data_catalog.yaml` and exposes its single row
@@ -184,14 +191,6 @@ class Catalog(AbstractCatalog):
         path = catalog_path if catalog_path is not None else CATALOG_PATH
         payload = load_catalog(path, _CATALOG_CACHE, _parse_catalog, provider="FABDEM")
         return cls(**payload)
-
-    def get_catalog(self) -> dict[str, Dataset]:
-        """Return the product map (satisfies the abstract contract).
-
-        Returns:
-            dict[str, Dataset]: Same object as `datasets`.
-        """
-        return self.datasets
 
     def get(self, key: str) -> Dataset:
         """Return the `Dataset` for `key`, with a did-you-mean hint.

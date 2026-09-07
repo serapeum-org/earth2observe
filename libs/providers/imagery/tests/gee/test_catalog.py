@@ -576,3 +576,83 @@ class TestCatalogCache:
         assert catalog_module._CATALOG_CACHE
         catalog_module.clear_catalog_cache()
         assert not catalog_module._CATALOG_CACHE
+
+
+class TestSummaries:
+    """Tests for the one-line `__str__` on the GEE catalog rows."""
+
+    def test_dataset_summary_names_the_six_facts_a_reader_wants(self):
+        """The dataset summary carries id, title, provider, resolution, period, bands."""
+        row = Dataset(
+            id="COPERNICUS/S5P/NRTI/L3_NO2",
+            title="Sentinel-5P NRTI NO2",
+            provider="copernicus",
+            spatial_resolution=1113.2,
+            extent=Extent(start_date="2018-07-10"),
+            bands={"a": Band(id="a"), "b": Band(id="b")},
+        )
+        assert str(row) == (
+            "Dataset(COPERNICUS/S5P/NRTI/L3_NO2, Sentinel-5P NRTI NO2, "
+            "copernicus, 1113.2 m, 2018-07-10..present, 2 bands)"
+        )
+
+    def test_a_shipped_row_summarises_without_placeholders(
+        self, shipped_catalog: Catalog
+    ):
+        """Smoke test on real data, asserting shape rather than catalog text.
+
+        Deliberately not pinned to the title or band count: a
+        `datasets refresh gee` legitimately changes both, and this test is
+        about the formatting, not the catalog contents.
+        """
+        rendered = str(shipped_catalog.get_dataset("COPERNICUS/S5P/NRTI/L3_NO2"))
+        assert rendered.startswith("Dataset(COPERNICUS/S5P/NRTI/L3_NO2, ")
+        assert rendered.endswith(")")
+        assert "None" not in rendered, rendered
+        assert "\n" not in rendered, rendered
+
+    def test_dataset_resolution_drops_a_trailing_zero(self):
+        """A whole-metre resolution reads as `30 m`, not `30.0 m`."""
+        row = Dataset(
+            id="A/B",
+            title="A title",
+            spatial_resolution=30.0,
+            extent=Extent(start_date="2000-01-01"),
+        )
+        assert "30 m" in str(row)
+
+    def test_an_over_long_title_is_clipped_rather_than_hiding_what_follows(self):
+        """A 66-character title would otherwise push the period and band count out."""
+        row = Dataset(
+            id="A/B",
+            title="x" * 200,
+            extent=Extent(start_date="2000-01-01"),
+        )
+        rendered = str(row)
+        assert "..." in rendered, rendered
+        assert rendered.endswith("2000-01-01..present)"), rendered
+
+    def test_dataset_summary_omits_what_the_row_does_not_carry(self):
+        """A sparse dataset row stays short instead of padding with `None`."""
+        row = Dataset(id="A/B", title="A title", extent=Extent(start_date="2000-01-01"))
+        assert str(row) == "Dataset(A/B, A title, 2000-01-01..present)"
+
+    def test_an_open_ended_extent_reads_as_present(self):
+        """A collection still updating says so rather than dropping the end."""
+        assert str(Extent(start_date="2018-07-10")) == "Extent(2018-07-10..present)"
+
+    def test_a_closed_extent_shows_its_end_date(self):
+        """A retired collection shows the date it stopped."""
+        extent = Extent(start_date="2000-01-01", end_date="2010-12-31")
+        assert str(extent) == "Extent(2000-01-01..2010-12-31)"
+
+    def test_band_summary_leads_with_its_id(self):
+        """A band is addressed by id, so the id comes first."""
+        band = Band(
+            id="NO2_column_number_density", units="mol/m^2", description="Total column"
+        )
+        assert str(band) == "Band(NO2_column_number_density, mol/m^2, Total column)"
+
+    def test_band_summary_survives_a_bare_id(self):
+        """A band carrying only an id still renders."""
+        assert str(Band(id="B1")) == "Band(B1)"

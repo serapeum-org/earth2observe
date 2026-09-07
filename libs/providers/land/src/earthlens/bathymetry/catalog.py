@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 from pydantic import (
-    BaseModel,
     ConfigDict,
     Field,
     PrivateAttr,
@@ -35,7 +34,7 @@ from pydantic import (
     model_validator,
 )
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -72,7 +71,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One curated DEM row — an endpoint, a coverage id, and a band.
 
     Attributes:
@@ -107,6 +106,13 @@ class Dataset(BaseModel):
             griddap rows (ERDDAP rejects an out-of-coverage bbox itself).
         license_note: Attribution / licence text surfaced in docs and logs.
     """
+
+    _summary_fields = (
+        "id",
+        "title",
+        "transport",
+        "native_resolution",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -241,7 +247,7 @@ def _load_catalog_data(path: Path) -> tuple[list[str], dict[str, Dataset]]:
     return _CATALOG_CACHE[key]
 
 
-class Catalog(AbstractCatalog):
+class Catalog(AbstractCatalog[Dataset]):
     """DEM endpoint / transport catalog for the bathymetry backend.
 
     Merges the bundled `catalog/` directory's per-family `*.yaml` files and
@@ -299,10 +305,6 @@ class Catalog(AbstractCatalog):
             datasets=dict(datasets),
             available_datasets=list(available),
         )
-
-    def get_catalog(self) -> dict[str, Dataset]:
-        """Return the dataset map (satisfies the abstract contract)."""
-        return self.datasets
 
     def get(self, dataset_id: str) -> Dataset:
         """Return the `Dataset` for a curated id, did-you-mean on miss.
