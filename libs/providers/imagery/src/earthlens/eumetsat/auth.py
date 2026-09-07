@@ -151,6 +151,14 @@ class EumetsatAuth(AbstractAuth[EumetsatCredentials]):
     internally. The `datastore` / `datatailor` helpers build the matching
     `eumdac` clients from the live token.
 
+    The environment is deliberately read **before** the constructor
+    kwargs, which is the opposite of the kwargs-first backends (e.g.
+    `sentinel_hub`) and of :class:`~earthlens.base.auth.SingleSecretAuth`.
+    `AbstractAuth` fixes no ordering, so this is a per-backend choice
+    rather than a deviation — but it does mean an explicit
+    `consumer_key=` is ignored while `EUMETSAT_CONSUMER_KEY` is set.
+    See issue #1184 before relying on either order.
+
     The class is a context manager (inherited from `AbstractAuth`):
     `with EumetsatAuth(creds) as auth: ...` calls `configure()` on enter
     and the default no-op `close()` on exit.
