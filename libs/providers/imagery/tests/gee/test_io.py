@@ -74,6 +74,15 @@ class _CallableInstance:
         raise ConnectionResetError("boom")
 
 
+class _BlankName:
+    """A callable whose `__name__` is present but empty."""
+
+    __name__ = ""
+
+    def __call__(self, *_args, **_kwargs):
+        raise ConnectionResetError("boom")
+
+
 class TestCallableName:
     """Tests for the retry logger's display-name helper."""
 
@@ -93,6 +102,15 @@ class TestCallableName:
     def test_callable_instance_falls_back_to_its_type(self):
         """An object with no `__name__` reports its class name."""
         assert _callable_name(_CallableInstance()) == "_CallableInstance"
+
+    def test_partial_wrapping_a_nameless_target_falls_back_to_its_type(self):
+        """Unwrapping a partial onto a nameless target still yields the type name."""
+        wrapped = functools.partial(_CallableInstance(), 1)
+        assert _callable_name(wrapped) == "_CallableInstance"
+
+    def test_empty_name_falls_back_to_the_type(self):
+        """An empty `__name__` is treated as absent, not logged as a blank name."""
+        assert _callable_name(_BlankName()) == "_BlankName"
 
 
 class TestRetryOnTransientErrors:
