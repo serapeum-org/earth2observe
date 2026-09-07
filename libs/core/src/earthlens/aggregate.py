@@ -909,20 +909,24 @@ def iter_aggregate_netcdf(
     # delete or overwrite the NetCDF it just aggregated.
     opened: list[Any] = [nc]
     try:
-        # Read time axis + geotransform from the root container — only the
-        # container exposes `get_time_variable` against the underlying CF
-        # metadata. The variable-subset cube returned by `get_variable`
-        # tracks coords on `_band_dim_values_map` instead, but does not
-        # round-trip them through `get_time_variable`. The cube is what
-        # `sel()` and the band-dim-aware multi-D logic need, so use it
-        # for level pinning + array read.
+        # Read the time axis from the root container — only the container
+        # exposes `get_time_variable` against the underlying CF metadata. The
+        # variable-subset cube returned by `get_variable` tracks coords on
+        # `_band_dim_values_map` instead, but does not round-trip them through
+        # `get_time_variable`. The cube is what `sel()` and the band-dim-aware
+        # multi-D logic need, so use it for level pinning + array read.
         time_axis = _read_time_axis(nc)
-        geo = nc.geotransform
         var = nc.get_variable(var_info.nc_variable)
         opened.append(var)
         var = _resolve_pressure_level(var, config.level)
         if var is not opened[-1]:
             opened.append(var)
+        # The geotransform comes from the variable, never the container. A
+        # container is not a raster, so `nc.geotransform` is GDAL's in-memory
+        # placeholder — origin (0, 0) with 1-degree cells — and every GeoTIFF
+        # written from it lands off the coast of Africa with the right EPSG
+        # stamped on top, which hides the error.
+        geo = var.geotransform
 
         in_range = _date_range_mask(time_axis, date_range)
         stem = _output_stem(var_info)
