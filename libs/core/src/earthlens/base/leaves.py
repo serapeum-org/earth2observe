@@ -202,9 +202,13 @@ class SummarisedLeaf(BaseModel):
         """Return `ClassName(fragment, fragment, ...)` for `print(row)`.
 
         Returns:
-            str: The one-line summary. ASCII only — a `__str__` that raises
-            `UnicodeEncodeError` on a `cp1252` console would be worse than a
-            plain one.
+            str: The one-line summary. The row's own text is reproduced as
+            itself, so a title carrying `—` or `≥` keeps it — the same choice
+            :meth:`earthlens.base.AbstractCatalog.__str__` makes, since
+            escaping the text into ASCII sequences is what actually makes a
+            summary unreadable. A console on a narrow codepage (`cp1252`) can
+            therefore still raise `UnicodeEncodeError` on `print(row)`; that
+            is a property of the console, not of this summary.
 
         Examples:
             - The class names itself, then lists its fragments:

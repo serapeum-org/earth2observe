@@ -490,20 +490,20 @@ def test_declared_summary_fields_exist(path: str, cls: type):
 
 
 @pytest.mark.parametrize("module_name, class_name", CATALOG_BACKENDS)
-def test_row_summaries_are_one_ascii_line(module_name: str, class_name: str):
-    """A row summary stays a single ASCII line, printable on any console.
+def test_row_summaries_are_one_line(module_name: str, class_name: str):
+    """A row summary stays a single line that names the class it came from.
 
-    A `cp1252` terminal is the constraint: a `__str__` that raised
-    `UnicodeEncodeError` on a Windows console would be worse than a plain one.
+    Deliberately not an ASCII assertion: shipped titles legitimately carry
+    `—` and `≥`, and reproducing the row's own text is the same choice
+    `AbstractCatalog.__str__` makes.
     """
     cat = _build(module_name, class_name)
     rows = [row for row in cat.datasets.values() if isinstance(row, SummarisedLeaf)]
     if not rows:
         pytest.skip(f"{module_name} exposes no summarising rows")
-    for row in rows[:25]:
+    for row in rows:
         rendered = str(row)
         assert "\n" not in rendered, f"{module_name} row summary wraps: {rendered!r}"
         assert rendered.startswith(f"{type(row).__name__}("), (
             f"{module_name} row summary does not name its class: {rendered!r}"
         )
-        rendered.encode("cp1252")

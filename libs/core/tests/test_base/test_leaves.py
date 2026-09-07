@@ -230,10 +230,10 @@ class TestSummarisedLeafStr:
         assert "title=None" in repr(row)
         assert repr(row) != str(row)
 
-    def test_str_is_ascii_only(self):
-        """The summary survives a `cp1252` console, which an arrow glyph would not."""
-        rendered = str(Row(id="A/B", title="A title"))
-        assert rendered.encode("cp1252").decode("cp1252") == rendered
+    def test_non_ascii_text_is_reproduced_as_itself(self):
+        """Escaping a title into ASCII sequences is what makes a summary unreadable."""
+        rendered = str(Row(id="A/B", title="Sea level — medium term"))
+        assert "Sea level — medium term" in rendered, f"text was escaped: {rendered!r}"
 
     def test_summary_fields_is_not_a_model_field(self):
         """The declaration is class config, so it never becomes data."""
