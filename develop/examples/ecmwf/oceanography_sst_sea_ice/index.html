@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -24635,6 +24635,9 @@ inspection.</p>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AggregationConfig</span><span class="p">,</span> <span class="n">EarthLens</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.ecmwf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
+
+<span class="c1"># One spelling of the axis label, shared by the table, the twin axis and the bar.</span>
+<span class="n">SST_LABEL</span> <span class="o">=</span> <span class="s2">"SST [°C]"</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">from pathlib import Path
 
@@ -24645,7 +24648,10 @@ from pyramids.dataset import DatasetCollection
 from pyramids.plot import Basemap
 
 from earthlens.core import AggregationConfig, EarthLens
-from earthlens.ecmwf import Catalog</div>
+from earthlens.ecmwf import Catalog
+
+# One spelling of the axis label, shared by the table, the twin axis and the bar.
+SST_LABEL = "SST [°C]"</div>
 </div>
 </div>
 </div>
@@ -24945,7 +24951,7 @@ returning one map, so they answer a different question.</p>
 <span class="n">ice_pct</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">domain_mean</span><span class="p">(</span><span class="n">ice</span><span class="p">)</span>
 
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-    <span class="p">{</span><span class="s2">"SST [°C]"</span><span class="p">:</span> <span class="n">sst_C</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s2">"Ice cover [%]"</span><span class="p">:</span> <span class="n">ice_pct</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)},</span> <span class="n">index</span><span class="o">=</span><span class="n">months</span>
+    <span class="p">{</span><span class="n">SST_LABEL</span><span class="p">:</span> <span class="n">sst_C</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s2">"Ice cover [%]"</span><span class="p">:</span> <span class="n">ice_pct</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)},</span> <span class="n">index</span><span class="o">=</span><span class="n">months</span>
 <span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-7">months = pd.date_range("2022-01-01", periods=12, freq="MS")
@@ -24965,7 +24971,7 @@ sst_C = domain_mean(sst) - 273.15
 ice_pct = 100.0 * domain_mean(ice)
 
 pd.DataFrame(
-    {"SST [°C]": sst_C.round(2), "Ice cover [%]": ice_pct.round(1)}, index=months
+    {SST_LABEL: sst_C.round(2), "Ice cover [%]": ice_pct.round(1)}, index=months
 )</div>
 </div>
 </div>
@@ -25007,7 +25013,7 @@ with the SST minimum, summer melt with the SST peak.</p>
 <span class="n">color1</span><span class="p">,</span> <span class="n">color2</span> <span class="o">=</span> <span class="s2">"tab:red"</span><span class="p">,</span> <span class="s2">"tab:blue"</span>
 
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">months</span><span class="p">,</span> <span class="n">sst_C</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"SST"</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"SST [°C]"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">SST_LABEL</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color1</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="n">color1</span><span class="p">)</span>
 
 <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
@@ -25024,7 +25030,7 @@ with the SST minimum, summer melt with the SST peak.</p>
 color1, color2 = "tab:red", "tab:blue"
 
 ax1.plot(months, sst_C, marker="o", color=color1, label="SST")
-ax1.set_ylabel("SST [°C]", color=color1)
+ax1.set_ylabel(SST_LABEL, color=color1)
 ax1.tick_params(axis="y", labelcolor=color1)
 
 ax2 = ax1.twinx()
@@ -25116,7 +25122,7 @@ than a hole in the data.</p>
     <span class="n">pad</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>
     <span class="n">shrink</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">bar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">"SST [°C]"</span><span class="p">)</span>
+<span class="n">bar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">SST_LABEL</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-9">panels = {"February": sst.iloc(1), "August": sst.iloc(7)}
 celsius = {
@@ -25159,7 +25165,7 @@ bar = fig.colorbar(
     pad=0.10,
     shrink=0.7,
 )
-bar.set_label("SST [°C]")</div>
+bar.set_label(SST_LABEL)</div>
 </div>
 </div>
 </div>
