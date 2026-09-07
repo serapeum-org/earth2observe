@@ -165,8 +165,23 @@ class Collection(SummarisedLeaf):
     _summary_fields = (
         "endpoint",
         "collection_id",
-        "cadence",
+        "assets",
     )
+
+    def summary_parts(self) -> list[str]:
+        """Append the nominal resolution with its unit.
+
+        `resolution` is a bare metre count, so rendering it as a declared field
+        put a lone number beside the other fragments with nothing saying what
+        it measured.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m"` when known.
+        """
+        parts = super().summary_parts()
+        if self.resolution:
+            parts.append(f"{self.resolution:g} m")
+        return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
