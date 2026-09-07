@@ -2736,8 +2736,8 @@ class GEE(LazyClientMixin, AbstractDataSource):
         try:
             tile_no_data = first_tile.no_data_value
         finally:
-            # Release before the tiles are removed: a live handle keeps a
-            # Windows lock and the cleanup below would fail silently.
+            # Release before the unlink below: a live handle holds a Windows
+            # lock, and `Path.unlink` would raise PermissionError on it.
             first_tile.close()  # release the handle before the tiles are unlinked
         fill = (
             tile_no_data[0] if isinstance(tile_no_data, (list, tuple)) else tile_no_data

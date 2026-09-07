@@ -707,8 +707,8 @@ class GHSL(AbstractDataSource):
         try:
             source_no_data = first_tile.no_data_value
         finally:
-            # Release before the tiles are removed: a live handle keeps a
-            # Windows lock and the cleanup below would fail silently.
+            # The tiles outlive this call, so nothing here depends on the
+            # release — but the probe opened a handle and must not leak it.
             first_tile.close()
         fill = (
             source_no_data[0]
