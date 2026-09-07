@@ -30,7 +30,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -47,7 +47,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class AdminLevel(BaseModel):
+class AdminLevel(SummarisedLeaf):
     """One admin level's download + shapefile spec.
 
     The admin-level name (`"country"` / `"state"` / `"basin"`) is the parent key
@@ -77,8 +77,14 @@ class AdminLevel(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "level",
+        "shapefile_stem",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    level: str = ""
     zip: str
     shapefile_stem: str
     container_zip: str | None = None
@@ -112,7 +118,12 @@ class Scenario(BaseModel):
 
 
 def _parse_rows(
-    rows_yaml: dict[str, Any], model: type[BaseModel], path: Path, label: str
+    rows_yaml: dict[str, Any],
+    model: type[BaseModel],
+    path: Path,
+    label: str,
+    *,
+    key_field: str | None = None,
 ) -> dict[str, Any]:
     """Validate a `name -> body` mapping into `model` instances.
 
@@ -121,6 +132,9 @@ def _parse_rows(
         model: The pydantic model each body is validated against.
         path: The catalog path (for the error message).
         label: The row kind, named in a validation error (`"admin level"`).
+        key_field: When given, the mapping key is copied onto each row under
+            this field name, so a row that is addressed by its key can name
+            itself. A body that already declares it wins.
 
     Returns:
         dict[str, Any]: One validated `model` instance per key.
@@ -131,7 +145,10 @@ def _parse_rows(
     parsed: dict[str, Any] = {}
     for name, body in rows_yaml.items():
         try:
-            parsed[name] = model(**dict(body or {}))
+            fields = dict(body or {})
+            if key_field:
+                fields.setdefault(key_field, name)
+            parsed[name] = model(**fields)
         except ValidationError as exc:
             raise ValueError(
                 f"{path} {label} {name!r} failed validation:\n{exc}"
@@ -168,7 +185,9 @@ def _load_catalog_data(path: Path) -> dict[str, Any]:
             f"{path} is missing or has an empty 'admin_levels:' block. "
             "The Aqueduct catalog must list at least one admin level."
         )
-    levels = _parse_rows(levels_yaml, AdminLevel, path, "admin level")
+    levels = _parse_rows(
+        levels_yaml, AdminLevel, path, "admin level", key_field="level"
+    )
     scenarios = _parse_rows(data.get("scenarios") or {}, Scenario, path, "scenario")
 
     value: dict[str, Any] = {

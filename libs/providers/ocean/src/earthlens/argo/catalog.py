@@ -20,9 +20,9 @@ import difflib
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -39,13 +39,15 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Family(BaseModel):
+class Family(SummarisedLeaf):
     """One Argo dataset family's parameter vocabulary.
 
     The family key (`"phy"` / `"bgc"`) is the parent key in
     :attr:`Catalog.datasets` and is not stored on the row.
 
     Attributes:
+        name: The family's catalog key, injected by the loader; the row
+            carries no other identifier.
         description: Short note on what the family covers.
         parameters: Map from canonical Argo parameter name (`"TEMP"`,
             `"DOXY"`) to its reporting units (`"degC"`).
@@ -61,8 +63,14 @@ class Family(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "name",
+        "description",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    name: str = ""
     description: str = ""
     parameters: dict[str, str] = Field(default_factory=dict)
 
@@ -91,7 +99,7 @@ def _parse_argo_catalog(files: list[Path]):
     families: dict[str, Family] = {}
     for name, body in families_yaml.items():
         try:
-            families[name] = Family(**dict(body or {}))
+            families[name] = Family(**{"name": name, **dict(body or {})})
         except ValidationError as exc:
             raise ValueError(
                 f"{catalog_path} family {name!r} failed validation:\n{exc}"

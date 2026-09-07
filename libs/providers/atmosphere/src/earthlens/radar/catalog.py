@@ -17,9 +17,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -70,7 +70,7 @@ def _parse_stations(files: list[Path]) -> dict[str, Station]:
     stations: dict[str, Station] = {}
     for site_id, body in rows.items():
         try:
-            stations[site_id] = Station(**(body or {}))
+            stations[site_id] = Station(**{"code": site_id, **(body or {})})
         except ValidationError as exc:
             raise ValueError(
                 f"{path} station {site_id!r} failed validation:\n{exc}"
@@ -78,21 +78,30 @@ def _parse_stations(files: list[Path]) -> dict[str, Station]:
     return stations
 
 
-class Station(BaseModel):
+class Station(SummarisedLeaf):
     """One WSR-88D radar site.
 
     The site id (e.g. `"KTLX"`) is the parent key in
     :attr:`Catalog.datasets` and is not stored on the row.
 
     Attributes:
+        code: The station's catalog key (its ICAO id, e.g. `"KABR"`),
+            injected by the loader; it is how a station is addressed.
         name: Human-readable site name / location.
         latitude: Site latitude in degrees (south negative).
         longitude: Site longitude in degrees (west negative).
         state: Two-letter US state / territory code.
     """
 
+    _summary_fields = (
+        "code",
+        "name",
+        "state",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    code: str = ""
     name: str = ""
     latitude: float = Field(ge=-90.0, le=90.0)
     longitude: float = Field(ge=-180.0, le=180.0)

@@ -36,7 +36,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -136,13 +136,15 @@ class HanzeFile(BaseModel):
         return _CONTENT_URL.format(record=record, name=self.name)
 
 
-class FloodType(BaseModel):
+class FloodType(SummarisedLeaf):
     """One entry of the HANZE flood-`Type` vocabulary.
 
     The type string (`"River"`, `"River/Coastal"`) is the parent key in
     :attr:`Catalog.datasets` and is not stored on the row.
 
     Attributes:
+        name: The flood type's catalog key, injected by the loader; the
+            row carries no other identifier.
         description: Short note on what the flood type covers.
 
     Examples:
@@ -155,8 +157,14 @@ class FloodType(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "name",
+        "description",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    name: str = ""
     description: str = ""
 
 
@@ -232,7 +240,7 @@ def _parse_catalog(files: list[Path]) -> dict[str, Any]:
             name: HanzeFile(**dict(body or {})) for name, body in files_yaml.items()
         }
         flood_types = {
-            name: FloodType(**dict(body or {}))
+            name: FloodType(**{"name": name, **dict(body or {})})
             for name, body in flood_types_yaml.items()
         }
         geometry = GeometryJoin(**dict(geometry_yaml))
