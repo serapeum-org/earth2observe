@@ -227,6 +227,7 @@ class _FakePyramidsHandle:
     """Stand-in for a `pyramids.dataset.Dataset` returned by `from_bytes`."""
 
     def __init__(self, body: bytes, no_data_value=(None,)):
+        _FakePyramidsHandle.opened_handles.append(self)
         self._body = body
         # Real getDownloadURL tiles declare no no-data; the backend reads this
         # to inherit it rather than letting merge_rasters stamp its 0 default.
@@ -237,7 +238,14 @@ class _FakePyramidsHandle:
 
         _Path(path).write_bytes(self._body)
 
+    opened_handles: list[_FakePyramidsHandle] = []
     closed_handles: list[_FakePyramidsHandle] = []
+
+    @classmethod
+    def reset_handle_log(cls) -> None:
+        """Clear the open/close log so a test starts from a known state."""
+        cls.opened_handles = []
+        cls.closed_handles = []
 
     def close(self) -> None:
         """Record the release so tests can assert the handle is not leaked."""
@@ -1678,7 +1686,7 @@ class TestAutoSplit:
             "read_file",
             classmethod(lambda cls, path, **kw: _FakePyramidsHandle(b"", (-9999.0,))),
         )
-        _FakePyramidsHandle.closed_handles = []
+        _FakePyramidsHandle.reset_handle_log()
 
         gee = make_gee(
             lat_lim=[0.0, 40.0], lon_lim=[0.0, 40.0], scale=30.0, auto_split=True
@@ -1688,8 +1696,14 @@ class TestAutoSplit:
         assert merge_calls[0]["kwargs"]["no_data_value"] == -9999.0, (
             "the tiles' own sentinel should be inherited, not the 'none' fallback"
         )
-        assert _FakePyramidsHandle.closed_handles, (
-            "the probe handle must be released before the tiles are removed"
+        leaked = [
+            handle
+            for handle in _FakePyramidsHandle.opened_handles
+            if handle not in _FakePyramidsHandle.closed_handles
+        ]
+        assert not leaked, (
+            f"{len(leaked)} of {len(_FakePyramidsHandle.opened_handles)} handles were "
+            "never released; the no-data probe must close its own"
         )
 
     def test_the_no_data_probe_handle_is_released_on_the_fallback_branch(
@@ -1701,15 +1715,21 @@ class TestAutoSplit:
             "merge_rasters",
             lambda src, dst, **kw: Path(dst).write_bytes(b"merged"),
         )
-        _FakePyramidsHandle.closed_handles = []
+        _FakePyramidsHandle.reset_handle_log()
 
         gee = make_gee(
             lat_lim=[0.0, 40.0], lon_lim=[0.0, 40.0], scale=30.0, auto_split=True
         )
         gee.download(progress_bar=False)
 
-        assert _FakePyramidsHandle.closed_handles, (
-            "the probe handle must be released on the fallback branch too"
+        leaked = [
+            handle
+            for handle in _FakePyramidsHandle.opened_handles
+            if handle not in _FakePyramidsHandle.closed_handles
+        ]
+        assert not leaked, (
+            f"{len(leaked)} of {len(_FakePyramidsHandle.opened_handles)} handles were "
+            "never released on the fallback branch"
         )
 
     def test_each_tile_request_is_within_the_synchronous_cap(
