@@ -921,11 +921,14 @@ def iter_aggregate_netcdf(
         var = _resolve_pressure_level(var, config.level)
         if var is not opened[-1]:
             opened.append(var)
-        # The geotransform comes from the variable, never the container. A
-        # container is not a raster, so `nc.geotransform` is GDAL's in-memory
-        # placeholder — origin (0, 0) with 1-degree cells — and every GeoTIFF
-        # written from it lands off the coast of Africa with the right EPSG
-        # stamped on top, which hides the error.
+        # Read the transform from the variable rather than the container.
+        # Where a file has one variable the two agree and this changes
+        # nothing; they diverge on multi-variable containers, where the
+        # container is not itself a raster. A 67-variable GOES ABI file
+        # reports (-0.5, 1.0, 0, 1499.5, 0, -1.0) on the container — a
+        # pixel-index transform — while each raster variable carries the real
+        # CF one. Taking the container's would place the output by pixel index
+        # with the correct EPSG stamped on top, which hides the error.
         geo = var.geotransform
 
         in_range = _date_range_mask(time_axis, date_range)
