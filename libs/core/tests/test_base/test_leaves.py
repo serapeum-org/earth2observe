@@ -325,7 +325,12 @@ class TestLengthAndWhitespace:
         """A 186-character variable name would otherwise hide the fields after it."""
         rendered = render_fragment("x" * 200, "title")
         assert len(rendered) == MAX_FRAGMENT
-        assert rendered.endswith("...")
+        assert "..." in rendered
+
+    def test_clipping_keeps_the_tail_that_distinguishes_two_paths(self):
+        """Two asset ids differing only in their last segment must not collide."""
+        base = "projects/gcp-public-data-weathernext/assets/weathernext_2_0_0"
+        assert render_fragment(base, "id") != render_fragment(base + "_mean", "id")
 
     def test_a_fragment_at_the_limit_is_left_alone(self):
         """Clipping starts past the limit, not at it."""
@@ -355,4 +360,25 @@ class TestLengthAndWhitespace:
             d: str = "w" * 55
 
         rendered = str(Wide())
-        assert rendered.endswith("...)"), rendered
+        assert "..." in rendered, rendered
+        assert len(rendered) <= MAX_SUMMARY + len("Wide") + 2, rendered
+
+    def test_a_typo_in_the_declaration_name_is_rejected(self):
+        """`_summary_field` would be ignored and the row would print bare."""
+        with pytest.raises(TypeError, match="_summary_field"):
+
+            class Typo(SummarisedLeaf):
+                _summary_field = ("id",)
+
+                id: str = "A/B"
+
+    def test_an_unrelated_private_name_is_left_alone(self):
+        """Only near-misses of the declaration name are refused."""
+
+        class Other(SummarisedLeaf):
+            _cache_key = "x"
+            _summary_fields = ("id",)
+
+            id: str = "A/B"
+
+        assert str(Other()) == "Other(A/B)"

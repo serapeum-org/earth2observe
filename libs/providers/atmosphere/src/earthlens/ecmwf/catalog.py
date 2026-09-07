@@ -694,9 +694,8 @@ class Variable(FluxableLeaf):
 
                 ```
         """
-        cds = render_fragment(self.cds_variable, "cds_variable")
-        nc = render_fragment(self.nc_variable, "nc_variable")
-        return [f"{cds} -> {nc}", *super().summary_parts()]
+        pair = f"{self.cds_variable} -> {self.nc_variable}"
+        return [render_fragment(pair, "cds_variable"), *super().summary_parts()]
 
     # `model_config` (frozen=True, extra="forbid") and the `types` field
     # + `is_flux` property are inherited from `FluxableLeaf`.

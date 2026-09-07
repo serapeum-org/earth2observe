@@ -29,17 +29,25 @@ MAX_SUMMARY = 180
 def _clip(text: str, limit: int) -> str:
     """Shorten `text` to `limit` characters, marking that it was cut.
 
+    Cuts the middle rather than the tail. Catalog identifiers are long
+    because they are paths, and what distinguishes two of them is usually
+    the last segment — `.../weathernext_2_0_0` from
+    `.../weathernext_2_0_0_mean`. Keeping only the head would render those
+    two rows identically, which is worse than not clipping at all.
+
     Args:
         text: The text to shorten.
         limit: Maximum length of the result, including the ellipsis.
 
     Returns:
-        str: `text` unchanged when it fits, else its first characters
-        followed by `...`.
+        str: `text` unchanged when it fits, else its head and tail joined
+        by `...`.
     """
     if len(text) <= limit:
         return text
-    return text[: limit - 3].rstrip() + "..."
+    keep = limit - 3
+    head = (keep + 1) // 2
+    return text[:head].rstrip() + "..." + text[len(text) - (keep - head) :].lstrip()
 
 
 def render_fragment(value: Any, field: str) -> str:
@@ -183,6 +191,17 @@ class SummarisedLeaf(BaseModel):
                 attribute, i.e. annotated without `ClassVar`.
         """
         super().__pydantic_init_subclass__(**kwargs)
+        near_miss = [
+            name
+            for name in (*vars(cls), *cls.__private_attributes__)
+            if name.startswith("_summary") and name != "_summary_fields"
+        ]
+        if near_miss:
+            raise TypeError(
+                f"{cls.__name__} declares {near_miss[0]!r}; the summary is "
+                "read from _summary_fields, so this would be ignored and the "
+                f"row would print as '{cls.__name__}()'."
+            )
         if "_summary_fields" in cls.__private_attributes__:
             raise TypeError(
                 f"{cls.__name__}._summary_fields is annotated without "
