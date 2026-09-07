@@ -768,8 +768,8 @@ class _FakeNetCDF:
     Implements the surfaces `aggregate_netcdf` consumes —
     `get_variable`, `read_array`, `get_time_variable`,
     `dimension_names`, `geotransform`, and (optionally) `sel`. Lets
-    tests exercise the body of `aggregate_netcdf` without writing a
-    real on-disk NetCDF (the test environment has no NetCDF writer).
+    tests exercise the body of `aggregate_netcdf` without the cost of a
+    real on-disk NetCDF per case.
     """
 
     def __init__(
@@ -779,19 +779,33 @@ class _FakeNetCDF:
         time_strs_by_var: dict[str, list[str] | None],
         dimension_names: list[str] | None = None,
         geotransform: tuple = (0.0, 1.0, 0.0, 1.0, 0.0, -1.0),
+        variable_geotransform: tuple | None = None,
         on_sel: object | None = None,
     ):
         self._array = array
         self._times = time_strs_by_var
         self.dimension_names = dimension_names
         self.geotransform = geotransform
+        # A real container is not a raster, so its geotransform is a
+        # placeholder while the variable carries the true one. Set this to
+        # model that split; leaving it None keeps the two identical.
+        self._variable_geotransform = variable_geotransform
         self._on_sel = on_sel
         self.band_reads: list[int | None] = []
         self.closed = False
 
     def get_variable(self, name: str) -> _FakeNetCDF:
-        """Return self — fake's variable cube has the same surface."""
-        return self
+        """Return the variable cube, which may carry its own geotransform."""
+        if self._variable_geotransform is None:
+            return self
+        cube = _FakeNetCDF(
+            array=self._array,
+            time_strs_by_var=self._times,
+            dimension_names=self.dimension_names,
+            geotransform=self._variable_geotransform,
+            on_sel=self._on_sel,
+        )
+        return cube
 
     def read_array(
         self, variable: str | None = None, band: int | None = None
@@ -1417,6 +1431,79 @@ class TestAggregateNetcdfRoundTrip:
         assert geo == source_geo, (
             f"Output geotransform should equal nc.geotransform regardless "
             f"of config.cell_size; got {geo}"
+        )
+
+    def test_geotransform_comes_from_the_variable_not_the_container(
+        self, monkeypatch, tmp_path, state_var
+    ):
+        """A container's placeholder transform must never reach the GeoTIFF."""
+        cube = self._daily_six_hourly_array(n_days=1)
+        # A multi-variable CF container reports a pixel-index transform rather
+        # than a CRS one: a real 67-variable GOES ABI file reads back as
+        # (-0.5, 1.0, 0, 1499.5, 0, -1.0). Only the variable carries the real
+        # transform, which is what this case pins.
+        placeholder = (0.0, 1.0, 0.0, 0.0, 0.0, -1.0)
+        real_geo = (-75.125, 0.25, 0.0, 5.125, 0.0, -0.25)
+        assert placeholder != real_geo
+        nc = _FakeNetCDF(
+            array=cube,
+            time_strs_by_var={"time": self._date_strings_six_hourly(1)},
+            dimension_names=["time", "lat", "lon"],
+            geotransform=placeholder,
+            variable_geotransform=real_geo,
+        )
+        _patch_netcdf_read(monkeypatch, nc)
+        writes = _patch_geotiff_write(monkeypatch)
+
+        aggregate_netcdf(
+            tmp_path / "fake.nc",
+            state_var,
+            AggregationConfig(freq="1D", op="mean", out_dir=tmp_path),
+        )
+        _, geo, _, _ = writes[0]
+        assert geo == real_geo, (
+            f"Expected the variable's geotransform {real_geo}, got {geo}. "
+            "A container is not a raster, so its geotransform is GDAL's "
+            "origin-(0,0), 1-degree placeholder."
+        )
+
+    def test_geotransform_follows_the_level_resolved_cube(
+        self, monkeypatch, tmp_path, state_var
+    ):
+        """On the 4-D path the transform comes from the level-pinned cube."""
+        cube = self._daily_six_hourly_array(n_days=1)
+        before_sel = (10.0, 0.5, 0.0, 20.0, 0.0, -0.5)
+        after_sel = (-75.125, 0.25, 0.0, 5.125, 0.0, -0.25)
+        assert before_sel != after_sel
+
+        pinned = _FakeNetCDF(
+            array=cube,
+            time_strs_by_var={"time": self._date_strings_six_hourly(1)},
+            dimension_names=["time", "lat", "lon"],
+            geotransform=after_sel,
+        )
+        nc = _FakeNetCDF(
+            array=cube,
+            time_strs_by_var={"time": self._date_strings_six_hourly(1)},
+            dimension_names=["time", "pressure_level", "lat", "lon"],
+            geotransform=(0.0, 1.0, 0.0, 0.0, 0.0, -1.0),
+            variable_geotransform=before_sel,
+            on_sel=pinned,
+        )
+        _patch_netcdf_read(monkeypatch, nc)
+        writes = _patch_geotiff_write(monkeypatch)
+
+        aggregate_netcdf(
+            tmp_path / "fake.nc",
+            state_var,
+            AggregationConfig(freq="1D", op="mean", out_dir=tmp_path, level=1000),
+        )
+
+        _, geo, _, _ = writes[0]
+        assert geo == after_sel, (
+            f"Expected the level-pinned cube's geotransform {after_sel}, got {geo}. "
+            "`_resolve_pressure_level` returns a new object, so the transform has "
+            "to be read after it, not before."
         )
 
     def test_geotransform_forwarded_to_geotiff_writer(
