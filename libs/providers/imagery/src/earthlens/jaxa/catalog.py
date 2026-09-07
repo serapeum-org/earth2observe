@@ -34,9 +34,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -80,7 +80,7 @@ def clear_catalog_cache() -> None:
 from earthlens.jaxa.auth import JaxaProtocol  # noqa: E402  (re-export)
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One JAXA dataset row.
 
     The row's `protocol` field is the discriminator the backend dispatches
@@ -140,6 +140,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "key",
+        "short_name",
+        "collection",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

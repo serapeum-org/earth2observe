@@ -27,7 +27,7 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog, OutputKind
+from earthlens.base import AbstractCatalog, OutputKind, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -41,7 +41,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class NWMVariable(BaseModel):
+class NWMVariable(SummarisedLeaf):
     """One variable carried by an NWM product (the "variable" analog).
 
     A frozen value object with descriptive metadata only — NWM variables
@@ -63,6 +63,11 @@ class NWMVariable(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "long_name",
+        "units",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

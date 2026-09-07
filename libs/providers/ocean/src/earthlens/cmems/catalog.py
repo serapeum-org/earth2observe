@@ -247,6 +247,11 @@ class Variable(FluxableLeaf):
             ```
     """
 
+    _summary_fields = (
+        "long_name",
+        "units",
+    )
+
     units: str
     long_name: str = ""
 

@@ -125,6 +125,11 @@ class Variable(FluxableLeaf):
         units: Unit string (e.g. `"mm/day"`, `"mm/month"`).
     """
 
+    _summary_fields = (
+        "name",
+        "units",
+    )
+
     # `model_config` (frozen=True, extra="forbid") + `types` field +
     # `is_flux` property are inherited from `FluxableLeaf`.
 

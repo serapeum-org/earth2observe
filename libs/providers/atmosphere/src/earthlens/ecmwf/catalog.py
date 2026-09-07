@@ -646,6 +646,20 @@ class Variable(FluxableLeaf):
             ```
     """
 
+    _summary_fields = ("units",)
+
+    def summary_parts(self) -> list[str]:
+        """Lead with the CDS name and the NetCDF name it arrives as.
+
+        Those two are what a caller actually reconciles — the request is
+        written against `cds_variable`, the file that comes back is keyed by
+        `nc_variable` — so they belong first, as a pair.
+
+        Returns:
+            list[str]: The `cds -> nc` pair, then units and the flux marker.
+        """
+        return [f"{self.cds_variable} -> {self.nc_variable}", *super().summary_parts()]
+
     # `model_config` (frozen=True, extra="forbid") and the `types` field
     # + `is_flux` property are inherited from `FluxableLeaf`.
 

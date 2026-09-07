@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     # strings at runtime, so the forward reference is free.
     from earthlens.gee.jobs import TaskInfo
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.providers import (
     Provider,
@@ -280,7 +280,7 @@ class Cadence(BaseModel):
     unit: Literal["minute", "hour", "day", "pentad", "dekad", "month", "year"]
 
 
-class Band(BaseModel):
+class Band(SummarisedLeaf):
     """Per-band metadata for one band of an Earth Engine dataset.
 
     A frozen value object; the band id is injected from the YAML
@@ -336,6 +336,8 @@ class Band(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    _summary_fields = ("id", "units", "description")
+
     id: str
     description: str | None = None
     units: str | None = None
@@ -347,7 +349,7 @@ class Band(BaseModel):
     estimated_range: bool = False
 
 
-class Extent(BaseModel):
+class Extent(SummarisedLeaf):
     """Spatial/temporal coverage of an Earth Engine dataset.
 
     Attributes:
@@ -386,8 +388,19 @@ class Extent(BaseModel):
     end_date: str | None = None
     bbox: tuple[float, float, float, float] | None = None
 
+    def summary_parts(self) -> list[str]:
+        """Return the covered period as a single `start..end` fragment.
 
-class Dataset(BaseModel):
+        An open-ended collection has no `end_date`; it reads as `present`
+        rather than being omitted, since "still updating" is the point.
+
+        Returns:
+            list[str]: One fragment, the period.
+        """
+        return [f"{self.start_date}..{self.end_date or 'present'}"]
+
+
+class Dataset(SummarisedLeaf):
     """One Earth Engine collection/image with curated metadata.
 
     A frozen value object; the asset id is injected from the YAML
@@ -459,6 +472,27 @@ class Dataset(BaseModel):
     terms_note: str | None = None
     source: Literal["ee_native", "republished", "community"] = "ee_native"
     bands: dict[str, Band] = Field(default_factory=dict)
+
+    def summary_parts(self) -> list[str]:
+        """Return id, title, provider, resolution, period and band count.
+
+        Composed rather than declared, because three of the six need shaping
+        the generic field renderer cannot do: the resolution carries a unit,
+        the period comes from a nested :class:`Extent`, and the bands render
+        as a count rather than a dump.
+
+        Returns:
+            list[str]: The fragments, skipping any the row does not carry.
+        """
+        parts = [self.id, self.title]
+        if self.provider:
+            parts.append(self.provider)
+        if self.spatial_resolution:
+            parts.append(f"{self.spatial_resolution:g} m")
+        parts.extend(self.extent.summary_parts())
+        if self.bands:
+            parts.append(f"{len(self.bands)} bands")
+        return parts
 
     @property
     def is_raster(self) -> bool:
