@@ -16,12 +16,44 @@ from pydantic import BaseModel, ConfigDict
 #: Collection types rendered as a count (`12 bands`) rather than dumped in full.
 _SIZED = (dict, list, tuple, set, frozenset)
 
+#: Longest single fragment. The shipped catalogs carry 186-character variable
+#: names and 100-character asset ids; past this the fragment stops informing
+#: and starts hiding the fragments after it.
+MAX_FRAGMENT = 60
 
-def _render(value: Any, field: str) -> str:
-    """Render one field value for a one-line summary, or `""` to omit it.
+#: Longest joined summary, so a six-fragment row cannot reach 296 characters
+#: (the longest before this cap) and stop being one readable line.
+MAX_SUMMARY = 180
+
+
+def _clip(text: str, limit: int) -> str:
+    """Shorten `text` to `limit` characters, marking that it was cut.
 
     Args:
-        value: The attribute's value.
+        text: The text to shorten.
+        limit: Maximum length of the result, including the ellipsis.
+
+    Returns:
+        str: `text` unchanged when it fits, else its first characters
+        followed by `...`.
+    """
+    if len(text) <= limit:
+        return text
+    return text[: limit - 3].rstrip() + "..."
+
+
+def render_fragment(value: Any, field: str) -> str:
+    """Render one field value for a one-line summary, or `""` to omit it.
+
+    Public because the composed `summary_parts` overrides need it: a backend
+    shaping its own fragments should still get the same whitespace collapsing
+    and length capping as a declared field, and reaching into a private core
+    symbol from a provider distribution is a layering violation.
+
+    Args:
+        value: The attribute's value. `None`, an empty string and an empty
+            collection all render as `""`; `0`, `0.0` and `False` are real
+            values and render as themselves.
         field: The attribute's name, used to label a collection's count.
 
     Returns:
@@ -31,25 +63,25 @@ def _render(value: Any, field: str) -> str:
     Examples:
         - A scalar renders as its stripped text:
             ```python
-            >>> _render("  K  ", "units")
+            >>> render_fragment("  K  ", "units")
             'K'
 
             ```
         - A collection renders as a count labelled with the field:
             ```python
-            >>> _render({"b1": 1, "b2": 2}, "bands")
+            >>> render_fragment({"b1": 1, "b2": 2}, "bands")
             '2 bands'
 
             ```
         - Nothing worth showing renders as the empty string:
             ```python
-            >>> [_render(v, "units") for v in (None, "", [])]
+            >>> [render_fragment(v, "units") for v in (None, "", [])]
             ['', '', '']
 
             ```
         - Zero is a real value, so it survives:
             ```python
-            >>> _render(0, "count")
+            >>> render_fragment(0, "count")
             '0'
 
             ```
@@ -57,9 +89,15 @@ def _render(value: Any, field: str) -> str:
     if value is None:
         return ""
     if isinstance(value, _SIZED):
-        return f"{len(value)} {field}" if value else ""
-    text = str(value).strip()
-    return text
+        if not value:
+            return ""
+        count = len(value)
+        label = field[:-1] if count == 1 and field.endswith("s") else field
+        return f"{count} {label}"
+    # Collapse runs of whitespace so an embedded newline cannot split the
+    # summary across lines; no shipped row does this today, but the summary
+    # promises to be one line and nothing else enforces it.
+    return _clip(" ".join(str(value).split()), MAX_FRAGMENT)
 
 
 class SummarisedLeaf(BaseModel):
@@ -88,7 +126,7 @@ class SummarisedLeaf(BaseModel):
             ...     title: str | None = None
             ...     bands: dict[str, int] = {}
             >>> print(Dataset(id="A/B", title="A title", bands={"b1": 1}))
-            Dataset(A/B, A title, 1 bands)
+            Dataset(A/B, A title, 1 band)
 
             ```
         - A sparse row stays short instead of printing `None` placeholders:
@@ -193,7 +231,7 @@ class SummarisedLeaf(BaseModel):
         """
         parts = []
         for field in self._summary_fields:
-            rendered = _render(getattr(self, field, None), field)
+            rendered = render_fragment(getattr(self, field, None), field)
             if rendered:
                 parts.append(rendered)
         return parts
@@ -230,7 +268,8 @@ class SummarisedLeaf(BaseModel):
 
                 ```
         """
-        return f"{type(self).__name__}({', '.join(self.summary_parts())})"
+        body = _clip(", ".join(self.summary_parts()), MAX_SUMMARY)
+        return f"{type(self).__name__}({body})"
 
 
 class FluxableLeaf(SummarisedLeaf):

@@ -60,7 +60,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from earthlens.base import AbstractCatalog, FluxableLeaf, Provider
+from earthlens.base import (
+    AbstractCatalog,
+    FluxableLeaf,
+    Provider,
+    render_fragment,
+)
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -689,7 +694,9 @@ class Variable(FluxableLeaf):
 
                 ```
         """
-        return [f"{self.cds_variable} -> {self.nc_variable}", *super().summary_parts()]
+        cds = render_fragment(self.cds_variable, "cds_variable")
+        nc = render_fragment(self.nc_variable, "nc_variable")
+        return [f"{cds} -> {nc}", *super().summary_parts()]
 
     # `model_config` (frozen=True, extra="forbid") and the `types` field
     # + `is_flux` property are inherited from `FluxableLeaf`.

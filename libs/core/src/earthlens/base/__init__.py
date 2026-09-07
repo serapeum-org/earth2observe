@@ -62,7 +62,7 @@ from earthlens.base.http import (
     redact_url,
     retry_login_forcing_ipv4,
 )
-from earthlens.base.leaves import FluxableLeaf, SummarisedLeaf
+from earthlens.base.leaves import FluxableLeaf, SummarisedLeaf, render_fragment
 from earthlens.base.naming import safe_filename
 from earthlens.base.providers import Provider, clear_providers_cache, load_providers
 from earthlens.base.raster import close_quietly
@@ -149,6 +149,7 @@ __all__ = [
     "normalize_aoi",
     "prefer_ipv4",
     "redact_url",
+    "render_fragment",
     "region_affinity",
     "resolve_aoi",
     "resolve_cadence",

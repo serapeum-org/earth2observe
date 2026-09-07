@@ -588,7 +588,7 @@ class TestSummaries:
         row = shipped_catalog.get_dataset("COPERNICUS/S5P/NRTI/L3_NO2")
         assert str(row) == (
             "Dataset(COPERNICUS/S5P/NRTI/L3_NO2, "
-            "Sentinel-5P NRTI NO2: Near-Real-Time Tropospheric Nitrogen Dioxide, "
+            "Sentinel-5P NRTI NO2: Near-Real-Time Tropospheric Nitroge..., "
             "copernicus, 1113.2 m, 2018-07-10..present, 4 bands)"
         )
 
@@ -601,6 +601,17 @@ class TestSummaries:
             extent=Extent(start_date="2000-01-01"),
         )
         assert "30 m" in str(row)
+
+    def test_an_over_long_title_is_clipped_rather_than_hiding_what_follows(self):
+        """A 66-character title would otherwise push the period and band count out."""
+        row = Dataset(
+            id="A/B",
+            title="x" * 200,
+            extent=Extent(start_date="2000-01-01"),
+        )
+        rendered = str(row)
+        assert "..." in rendered, rendered
+        assert rendered.endswith("2000-01-01..present)"), rendered
 
     def test_dataset_summary_omits_what_the_row_does_not_carry(self):
         """A sparse dataset row stays short instead of padding with `None`."""

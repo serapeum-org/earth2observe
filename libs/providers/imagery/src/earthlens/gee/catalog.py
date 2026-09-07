@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     # strings at runtime, so the forward reference is free.
     from earthlens.gee.jobs import TaskInfo
 
-from earthlens.base import AbstractCatalog, SummarisedLeaf
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_fragment
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.providers import (
     Provider,
@@ -527,7 +527,10 @@ class Dataset(SummarisedLeaf):
 
                 ```
         """
-        parts = [self.id, self.title]
+        parts = [render_fragment(self.id, "id")]
+        title = render_fragment(self.title, "title")
+        if title:
+            parts.append(title)
         if self.provider:
             parts.append(self.provider)
         if self.spatial_resolution:

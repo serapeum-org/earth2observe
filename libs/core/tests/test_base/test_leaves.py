@@ -6,7 +6,13 @@ from typing import ClassVar
 
 import pytest
 
-from earthlens.base.leaves import FluxableLeaf, SummarisedLeaf, _render
+from earthlens.base.leaves import (
+    MAX_FRAGMENT,
+    MAX_SUMMARY,
+    FluxableLeaf,
+    SummarisedLeaf,
+    render_fragment,
+)
 
 
 class Row(SummarisedLeaf):
@@ -80,31 +86,31 @@ class Pairing(Var):
         return ["a -> b", *super().summary_parts()]
 
 
-class TestRender:
-    """Tests for the `_render` field-value formatter."""
+class TestRenderFragment:
+    """Tests for the `render_fragment` field-value formatter."""
 
     def test_none_renders_as_nothing(self):
         """`None` carries no information and is dropped."""
-        assert _render(None, "units") == ""
+        assert render_fragment(None, "units") == ""
 
     def test_empty_string_renders_as_nothing(self):
         """An empty string is as absent as `None`."""
-        assert _render("", "units") == ""
+        assert render_fragment("", "units") == ""
 
     def test_whitespace_only_string_renders_as_nothing(self):
         """A blank string collapses to empty rather than a stray gap."""
-        assert _render("   ", "units") == ""
+        assert render_fragment("   ", "units") == ""
 
     def test_string_is_stripped(self):
         """Surrounding whitespace never reaches the summary."""
-        assert _render("  K  ", "units") == "K"
+        assert render_fragment("  K  ", "units") == "K"
 
     @pytest.mark.parametrize(
         "value, expected", [(0, "0"), (0.0, "0.0"), (False, "False")]
     )
     def test_falsy_scalars_still_render(self, value, expected):
         """Zero and `False` are real values, unlike `None` — they are kept."""
-        assert _render(value, "count") == expected, (
+        assert render_fragment(value, "count") == expected, (
             f"{value!r} should render as {expected!r}"
         )
 
@@ -115,7 +121,9 @@ class TestRender:
     )
     def test_empty_collections_render_as_nothing(self, value):
         """An empty collection is omitted rather than shown as a zero count."""
-        assert _render(value, "bands") == "", f"{value!r} should render as empty"
+        assert render_fragment(value, "bands") == "", (
+            f"{value!r} should render as empty"
+        )
 
     @pytest.mark.parametrize(
         "value",
@@ -124,13 +132,13 @@ class TestRender:
     )
     def test_non_empty_collections_render_as_a_labelled_count(self, value):
         """Every collection type shows its size against the field's name."""
-        assert _render(value, "bands") == "2 bands", (
+        assert render_fragment(value, "bands") == "2 bands", (
             f"{value!r} should render as a count"
         )
 
     def test_the_count_is_labelled_with_the_field_name(self):
         """The label comes from the field, so the count reads as prose."""
-        assert _render([1, 2, 3], "levels") == "3 levels"
+        assert render_fragment([1, 2, 3], "levels") == "3 levels"
 
 
 class TestFluxableLeaf:
@@ -197,7 +205,7 @@ class TestSummarisedLeafStr:
         row = Sized(
             tags=["a"], levels=(1, 2), codes={"x"}, frozen=frozenset({"y", "z"})
         )
-        assert str(row) == "Sized(1 tags, 2 levels, 1 codes, 2 frozen)"
+        assert str(row) == "Sized(1 tag, 2 levels, 1 code, 2 frozen)"
 
     def test_falsy_numbers_are_kept(self):
         """A zero count is a fact; only `None` and emptiness are dropped."""
@@ -308,3 +316,43 @@ class TestSummaryFieldsDeclaration:
                 _summary_fields: tuple[str, ...] = ("id",)
 
                 id: str = "A/B"
+
+
+class TestLengthAndWhitespace:
+    """Tests for the fragment/summary caps and whitespace collapsing."""
+
+    def test_a_long_fragment_is_clipped_with_an_ellipsis(self):
+        """A 186-character variable name would otherwise hide the fields after it."""
+        rendered = render_fragment("x" * 200, "title")
+        assert len(rendered) == MAX_FRAGMENT
+        assert rendered.endswith("...")
+
+    def test_a_fragment_at_the_limit_is_left_alone(self):
+        """Clipping starts past the limit, not at it."""
+        exact = "x" * MAX_FRAGMENT
+        assert render_fragment(exact, "title") == exact
+
+    def test_embedded_newlines_are_collapsed(self):
+        """The summary promises one line, and nothing else enforces it."""
+        assert render_fragment("a\nb\tc  d", "title") == "a b c d"
+
+    def test_the_whole_summary_is_capped(self):
+        """Six clipped fragments could still add up past one readable line."""
+        row = Sized(
+            tags=["x"] * 3, levels=(1,) * 4, codes={"a"}, frozen=frozenset({"b"})
+        )
+        assert len(str(row)) <= MAX_SUMMARY + len(type(row).__name__) + 2
+
+    def test_a_summary_over_the_cap_is_marked_as_cut(self):
+        """A clipped summary says so rather than just ending mid-word."""
+
+        class Wide(SummarisedLeaf):
+            _summary_fields = ("a", "b", "c", "d")
+
+            a: str = "x" * 55
+            b: str = "y" * 55
+            c: str = "z" * 55
+            d: str = "w" * 55
+
+        rendered = str(Wide())
+        assert rendered.endswith("...)"), rendered
