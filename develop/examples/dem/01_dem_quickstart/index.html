@@ -24561,6 +24561,9 @@ downloaded COG; downloads go to a per-notebook temp directory.</p>
 <span class="n">ELEVATION_BREAKS</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">750</span><span class="p">]</span>
 <span class="c1"># One spelling of the colour-bar label, shared by all three maps.</span>
 <span class="n">ELEVATION_LABEL</span> <span class="o">=</span> <span class="s1">'elevation (m, EGM2008)'</span>
+<span class="c1"># The axis labels are shared for the same reason.</span>
+<span class="n">LON_LABEL</span> <span class="o">=</span> <span class="s1">'longitude (°E)'</span>
+<span class="n">LAT_LABEL</span> <span class="o">=</span> <span class="s1">'latitude (°N)'</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import tempfile
 from pathlib import Path
@@ -24578,7 +24581,10 @@ print(f'downloads will land under: {download_root}')
 # delta sits in the first few metres, so the breaks crowd there.
 ELEVATION_BREAKS = [-25, -2, 0, 2, 4, 6, 10, 20, 50, 200, 750]
 # One spelling of the colour-bar label, shared by all three maps.
-ELEVATION_LABEL = 'elevation (m, EGM2008)'</div>
+ELEVATION_LABEL = 'elevation (m, EGM2008)'
+# The axis labels are shared for the same reason.
+LON_LABEL = 'longitude (°E)'
+LAT_LABEL = 'latitude (°N)'</div>
 </div>
 </div>
 </div>
@@ -24743,8 +24749,8 @@ elevation.</p>
     <span class="n">colorbar</span><span class="o">=</span><span class="n">ColorBar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">ELEVATION_LABEL</span><span class="p">),</span>
     <span class="n">title</span><span class="o">=</span><span class="s1">'Copernicus DEM GLO-30 — tile N30/E031, eastern delta margin'</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'longitude (°E)'</span><span class="p">)</span>
-<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude (°N)'</span><span class="p">)</span>
+<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">LON_LABEL</span><span class="p">)</span>
+<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">LAT_LABEL</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">dem = Dataset.read_file(paths[0])
 print(f'EPSG        : {dem.epsg}')
@@ -24758,8 +24764,8 @@ glyph = dem.plot(
     colorbar=ColorBar(label=ELEVATION_LABEL),
     title='Copernicus DEM GLO-30 — tile N30/E031, eastern delta margin',
 )
-glyph.ax.set_xlabel('longitude (°E)')
-glyph.ax.set_ylabel('latitude (°N)')</div>
+glyph.ax.set_xlabel(LON_LABEL)
+glyph.ax.set_ylabel(LAT_LABEL)</div>
 </div>
 </div>
 </div>
@@ -24805,8 +24811,8 @@ the raster to <code>pyramids.Dataset.crop</code> with the bbox in <code>[west, s
     <span class="n">colorbar</span><span class="o">=</span><span class="n">ColorBar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">ELEVATION_LABEL</span><span class="p">),</span>
     <span class="n">title</span><span class="o">=</span><span class="s1">'Copernicus DEM GLO-30 — cropped bbox'</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'longitude (°E)'</span><span class="p">)</span>
-<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude (°N)'</span><span class="p">)</span>
+<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">LON_LABEL</span><span class="p">)</span>
+<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">LAT_LABEL</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">cropped = dem.crop(bbox=(31.2, 30.2, 31.8, 30.8), epsg=4326)
 print(f'cropped shape (y, x): {cropped.rows} x {cropped.columns}')
@@ -24817,8 +24823,8 @@ glyph = cropped.plot(
     colorbar=ColorBar(label=ELEVATION_LABEL),
     title='Copernicus DEM GLO-30 — cropped bbox',
 )
-glyph.ax.set_xlabel('longitude (°E)')
-glyph.ax.set_ylabel('latitude (°N)')</div>
+glyph.ax.set_xlabel(LON_LABEL)
+glyph.ax.set_ylabel(LAT_LABEL)</div>
 </div>
 </div>
 </div>
@@ -24941,8 +24947,8 @@ print(f'{len(delta_paths)} tiles fetched')</div>
     <span class="n">colorbar</span><span class="o">=</span><span class="n">ColorBar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">ELEVATION_LABEL</span><span class="p">),</span>
     <span class="n">title</span><span class="o">=</span><span class="s1">'Copernicus DEM GLO-90 — the Nile Delta'</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'longitude (°E)'</span><span class="p">)</span>
-<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude (°N)'</span><span class="p">)</span>
+<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">LON_LABEL</span><span class="p">)</span>
+<span class="n">glyph</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">LAT_LABEL</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-7">from pyramids.dataset.merge import merge_rasters
 
@@ -24961,8 +24967,8 @@ glyph = delta.plot(
     colorbar=ColorBar(label=ELEVATION_LABEL),
     title='Copernicus DEM GLO-90 — the Nile Delta',
 )
-glyph.ax.set_xlabel('longitude (°E)')
-glyph.ax.set_ylabel('latitude (°N)')</div>
+glyph.ax.set_xlabel(LON_LABEL)
+glyph.ax.set_ylabel(LAT_LABEL)</div>
 </div>
 </div>
 </div>
