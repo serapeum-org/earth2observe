@@ -218,6 +218,20 @@ def test_flood_type_summary_leads_with_the_name():
     assert str(Catalog().datasets["River"]).startswith("FloodType(River,")
 
 
-def test_a_body_declaring_name_wins():
-    """An explicit `name` is not overwritten by the injected key."""
-    assert FloodType(name="custom", description="d").name == "custom"
+def test_a_body_declaring_name_wins(tmp_path):
+    """Through the loader, a catalog body's own `name` survives the injected key."""
+    path = tmp_path / "hanze_data_catalog.yaml"
+    path.write_text(
+        CATALOG_PATH.read_text(encoding="utf-8").replace(
+            "  River:\n", "  River:\n    name: explicit\n", 1
+        ),
+        encoding="utf-8",
+    )
+    assert Catalog.load(path).datasets["River"].name == "explicit"
+
+
+def test_the_key_is_injected_when_the_body_omits_it(tmp_path):
+    """The same loader path, with nothing in the body to override the key."""
+    path = tmp_path / "hanze_data_catalog.yaml"
+    path.write_text(CATALOG_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+    assert Catalog.load(path).datasets["River"].name == "River"

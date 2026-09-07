@@ -125,9 +125,29 @@ class TestStationIdentity:
         station = StationCatalog().datasets["KABR"]
         assert str(station).startswith("Station(KABR,"), str(station)
 
-    def test_a_body_declaring_code_wins(self):
-        """An explicit `code` in the catalog body is not overwritten by the key."""
-        assert (
-            Station(code="KOUN", name="Norman", latitude=35.2, longitude=-97.4).code
-            == "KOUN"
+    def test_a_body_declaring_code_wins(self, tmp_path, monkeypatch):
+        """Through the loader, a catalog body's own `code` survives the injected key."""
+        path = tmp_path / "stations.yaml"
+        path.write_text(
+            "stations:\n"
+            "  KTLX:\n"
+            "    code: EXPLICIT\n"
+            "    name: Norman\n"
+            "    latitude: 35.2\n"
+            "    longitude: -97.4\n"
         )
+        monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
+        assert StationCatalog().datasets["KTLX"].code == "EXPLICIT"
+
+    def test_the_key_is_injected_when_the_body_omits_it(self, tmp_path, monkeypatch):
+        """The same loader path, with nothing in the body to override the key."""
+        path = tmp_path / "stations.yaml"
+        path.write_text(
+            "stations:\n"
+            "  KTLX:\n"
+            "    name: Norman\n"
+            "    latitude: 35.2\n"
+            "    longitude: -97.4\n"
+        )
+        monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
+        assert StationCatalog().datasets["KTLX"].code == "KTLX"

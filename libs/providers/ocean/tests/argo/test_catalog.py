@@ -85,6 +85,15 @@ def test_family_summary_leads_with_the_name():
     assert str(Catalog().datasets["phy"]).startswith("Family(phy,")
 
 
-def test_a_body_declaring_name_wins():
-    """An explicit `name` is not overwritten by the injected key."""
-    assert Family(name="custom", description="d").name == "custom"
+def test_a_body_declaring_name_wins(tmp_path):
+    """Through the loader, a catalog body's own `name` survives the injected key."""
+    path = tmp_path / "argo_data_catalog.yaml"
+    path.write_text("families:\n  phy:\n    name: explicit\n", encoding="utf-8")
+    assert Catalog.load(path)["phy"].name == "explicit"
+
+
+def test_the_key_is_injected_when_the_body_omits_it(tmp_path):
+    """The same loader path, with nothing in the body to override the key."""
+    path = tmp_path / "argo_data_catalog.yaml"
+    path.write_text("families:\n  phy:\n    description: d\n", encoding="utf-8")
+    assert Catalog.load(path)["phy"].name == "phy"
