@@ -2730,8 +2730,12 @@ class GEE(LazyClientMixin, AbstractDataSource):
         # and drop whatever the tiles declared. Inherit it instead; "none"
         # leaves the output without a no-data value, as the tiles have.
         first_tile = PyramidsDataset.read_file(tile_paths[0])
-        tile_no_data = first_tile.no_data_value
-        first_tile.close()  # release the handle before the tiles are unlinked
+        try:
+            tile_no_data = first_tile.no_data_value
+        finally:
+            # Release before the tiles are removed: a live handle keeps a
+            # Windows lock and the cleanup below would fail silently.
+            first_tile.close()  # release the handle before the tiles are unlinked
         fill = (
             tile_no_data[0] if isinstance(tile_no_data, (list, tuple)) else tile_no_data
         )

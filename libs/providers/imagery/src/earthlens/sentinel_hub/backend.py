@@ -713,8 +713,12 @@ class SentinelHub(AbstractDataSource):
             # legitimate zero (a dark pixel, a zero-valued index) and discard
             # whatever the rendered tiles declare. Inherit theirs instead.
             first_tile = Dataset.read_file(tile_paths[0])
-            tile_no_data = first_tile.no_data_value
-            first_tile.close()  # release the handle before the tiles are removed
+            try:
+                tile_no_data = first_tile.no_data_value
+            finally:
+                # Release before the tiles are removed: a live handle keeps a
+                # Windows lock and the cleanup below would fail silently.
+                first_tile.close()
             fill = (
                 tile_no_data[0]
                 if isinstance(tile_no_data, (list, tuple))

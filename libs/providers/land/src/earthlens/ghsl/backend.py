@@ -702,8 +702,12 @@ class GHSL(AbstractDataSource):
         # JRC's own sentinel (-200, or 65535 on the uint16 products) would be
         # demoted to valid data. Inherit what the source tiles declare.
         first_tile = Dataset.read_file(tifs[0])
-        source_no_data = first_tile.no_data_value
-        first_tile.close()
+        try:
+            source_no_data = first_tile.no_data_value
+        finally:
+            # Release before the tiles are removed: a live handle keeps a
+            # Windows lock and the cleanup below would fail silently.
+            first_tile.close()
         fill = (
             source_no_data[0]
             if isinstance(source_no_data, (list, tuple))
