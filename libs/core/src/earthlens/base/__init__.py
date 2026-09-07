@@ -62,7 +62,13 @@ from earthlens.base.http import (
     redact_url,
     retry_login_forcing_ipv4,
 )
-from earthlens.base.leaves import FluxableLeaf, SummarisedLeaf, render_fragment
+from earthlens.base.leaves import (
+    MAX_FRAGMENT,
+    MAX_SUMMARY,
+    FluxableLeaf,
+    SummarisedLeaf,
+    render_fragment,
+)
 from earthlens.base.naming import safe_filename
 from earthlens.base.providers import Provider, clear_providers_cache, load_providers
 from earthlens.base.raster import close_quietly
@@ -102,6 +108,8 @@ __all__ = [
     "CADENCE_ALIASES",
     "DEFAULT_CONNECT_RETRIES",
     "DEFAULT_RETRY_EXCEPTIONS",
+    "MAX_FRAGMENT",
+    "MAX_SUMMARY",
     "FluxableLeaf",
     "HttpClient",
     "HttpRangeFile",

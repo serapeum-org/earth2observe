@@ -16,9 +16,42 @@ from pydantic import BaseModel, ConfigDict
 #: Collection types rendered as a count (`12 bands`) rather than dumped in full.
 _SIZED = (dict, list, tuple, set, frozenset)
 
-#: Longest single fragment. The shipped catalogs carry 186-character variable
-#: names and 100-character asset ids; past this the fragment stops informing
-#: and starts hiding the fragments after it.
+#: Plurals whose singular is not the word minus a trailing `s`. Latent today —
+#: no adopter declares such a field — but `render_fragment` is public, so a
+#: future backend declaring `aliases` should not read `1 aliase`.
+_IRREGULAR_SINGULARS = {
+    "aliases": "alias",
+    "analyses": "analysis",
+    "axes": "axis",
+    "indices": "index",
+    "series": "series",
+    "species": "species",
+}
+
+
+def _singular(field: str, count: int) -> str:
+    """Return the label for a count, singularised when the count is one.
+
+    Args:
+        field: The declared field name, normally a plural.
+        count: How many items the collection holds.
+
+    Returns:
+        str: `field` unchanged unless `count` is 1 and a singular is known.
+    """
+    if count != 1:
+        return field
+    if field in _IRREGULAR_SINGULARS:
+        return _IRREGULAR_SINGULARS[field]
+    # `status`, `analysis`, `class` merely end in `s`; they are already singular.
+    if field.endswith(("ss", "us", "is")):
+        return field
+    return field[:-1] if field.endswith("s") else field
+
+
+#: Longest single fragment. The longest value any shipped row declares is a
+#: 174-character mswep description, and asset ids reach 95 characters; past
+#: this width a fragment stops informing and starts hiding the ones after it.
 MAX_FRAGMENT = 60
 
 #: Longest joined summary, so a six-fragment row cannot reach 296 characters
@@ -53,10 +86,11 @@ def _clip(text: str, limit: int) -> str:
 def render_fragment(value: Any, field: str) -> str:
     """Render one field value for a one-line summary, or `""` to omit it.
 
-    Public because the composed `summary_parts` overrides need it: a backend
-    shaping its own fragments should still get the same whitespace collapsing
-    and length capping as a declared field, and reaching into a private core
-    symbol from a provider distribution is a layering violation.
+    Collapses runs of whitespace, clips to `MAX_FRAGMENT` characters (cutting
+    the middle, so both ends survive), and renders a non-empty collection as a
+    count labelled with the field name. A `summary_parts` override composing
+    its own fragment should call this so it gets the same treatment as a
+    declared field.
 
     Args:
         value: The attribute's value. `None`, an empty string and an empty
@@ -100,8 +134,7 @@ def render_fragment(value: Any, field: str) -> str:
         if not value:
             return ""
         count = len(value)
-        label = field[:-1] if count == 1 and field.endswith("s") else field
-        return f"{count} {label}"
+        return f"{count} {_singular(field, count)}"
     # Collapse runs of whitespace so an embedded newline cannot split the
     # summary across lines; no shipped row does this today, but the summary
     # promises to be one line and nothing else enforces it.

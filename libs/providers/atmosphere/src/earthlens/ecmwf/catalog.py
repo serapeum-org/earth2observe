@@ -653,6 +653,22 @@ class Variable(FluxableLeaf):
 
     _summary_fields = ("units",)
 
+    # `model_config` (frozen=True, extra="forbid") and the `types` field
+    # + `is_flux` property are inherited from `FluxableLeaf`.
+
+    cds_dataset: str
+    dataset_id: str | None = None
+    cds_variable: str
+    nc_variable: str
+    units: str
+    product_type: list[str] = Field(default_factory=list)
+    cds_pressure_level: list[str] | None = None
+    extras: dict[str, Any] = Field(default_factory=dict)
+    request_kind: str = "form"
+    endpoint: str = "cds"
+    grid_resolution: float | None = None
+    unhydratable: Literal["pseudo-slug"] | None = None
+
     def summary_parts(self) -> list[str]:
         """Lead with the CDS name and the NetCDF name it arrives as.
 
@@ -696,22 +712,6 @@ class Variable(FluxableLeaf):
         """
         pair = f"{self.cds_variable} -> {self.nc_variable}"
         return [render_fragment(pair, "cds_variable"), *super().summary_parts()]
-
-    # `model_config` (frozen=True, extra="forbid") and the `types` field
-    # + `is_flux` property are inherited from `FluxableLeaf`.
-
-    cds_dataset: str
-    dataset_id: str | None = None
-    cds_variable: str
-    nc_variable: str
-    units: str
-    product_type: list[str] = Field(default_factory=list)
-    cds_pressure_level: list[str] | None = None
-    extras: dict[str, Any] = Field(default_factory=dict)
-    request_kind: str = "form"
-    endpoint: str = "cds"
-    grid_resolution: float | None = None
-    unhydratable: Literal["pseudo-slug"] | None = None
 
     @field_validator("extras", mode="before")
     @classmethod

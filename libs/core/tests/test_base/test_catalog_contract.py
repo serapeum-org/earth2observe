@@ -1,10 +1,17 @@
 """Cross-backend AbstractCatalog contract checks.
 
-Every backend catalog must chain to `super().model_post_init()` so the
-base `catalog` field is populated from `get_catalog()`. This guards
-against a backend overriding `model_post_init` and silently leaving
-`catalog` empty (the H2 regression in
-the catalog-consistency alignment).
+Holds the rules that must be true of every backend catalog at once, each
+parametrized over the registry rather than a hand-kept list, so a new
+backend is covered the moment it ships.
+
+* `model_post_init` chains to `super()`, so the base `catalog` field is
+  populated from `get_catalog()` — a backend that overrode it and left
+  `catalog` empty was the original regression here.
+* Rows are frozen, since the parse cache shares them across callers.
+* `resolve` / `get_variable` are overridden or raise, and the
+  did-you-mean errors name the backend's own entry noun.
+* Every `_summary_fields` name a `SummarisedLeaf` row declares is real,
+  and every reachable row renders as one line naming its class.
 """
 
 from __future__ import annotations

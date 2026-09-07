@@ -400,8 +400,8 @@ class Extent(SummarisedLeaf):
         rather than being omitted, since "still updating" is the point.
 
         Returns:
-            list[str]: One fragment, the period, or none when no start is
-            known — `None..present` would be worse than saying nothing.
+            list[str]: One fragment, the period. `start_date` is required on
+            this model, so there is always exactly one.
 
         Examples:
             - A collection that is still updating reads as open-ended:
@@ -417,8 +417,6 @@ class Extent(SummarisedLeaf):
 
                 ```
         """
-        if not self.start_date:
-            return []
         return [f"{self.start_date}..{self.end_date or 'present'}"]
 
 

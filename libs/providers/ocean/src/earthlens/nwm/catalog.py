@@ -25,7 +25,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from earthlens.base import AbstractCatalog, OutputKind, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
@@ -65,12 +65,14 @@ class NWMVariable(SummarisedLeaf):
     """
 
     _summary_fields = (
+        "name",
         "long_name",
         "units",
     )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    name: str = ""
     units: str = ""
     long_name: str = ""
 
@@ -122,6 +124,31 @@ class NWMProduct(BaseModel):
     retro_zarr: str = ""
     description: str = ""
     variables: dict[str, NWMVariable] = Field(default_factory=dict)
+
+    @field_validator("variables", mode="before")
+    @classmethod
+    def _name_each_variable(cls, value: Any) -> Any:
+        """Copy each variable's key onto the row as `name`.
+
+        The key is the only thing that identifies a variable, and it lives in
+        this mapping rather than on the row, so without it a summary would
+        describe itself by its unit alone.
+
+        Args:
+            value: The raw `variables:` mapping from the catalog file.
+
+        Returns:
+            Any: The mapping, with `name` filled in on every row that did not
+            already declare one.
+        """
+        if not isinstance(value, dict):
+            return value
+        named = {}
+        for key, body in value.items():
+            if isinstance(body, dict):
+                body = {"name": key, **body}
+            named[key] = body
+        return named
 
 
 class NWMConfig(BaseModel):

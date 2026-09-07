@@ -136,6 +136,24 @@ class TestRenderFragment:
             f"{value!r} should render as a count"
         )
 
+    @pytest.mark.parametrize(
+        "field, expected",
+        [
+            ("bands", "1 band"),
+            ("codes", "1 code"),
+            ("aliases", "1 alias"),
+            ("axes", "1 axis"),
+            ("indices", "1 index"),
+            ("series", "1 series"),
+            ("status", "1 status"),
+            ("analysis", "1 analysis"),
+            ("bbox", "1 bbox"),
+        ],
+    )
+    def test_a_count_of_one_singularises_the_label(self, field, expected):
+        """Stripping a trailing `s` alone would give `1 aliase` and `1 statu`."""
+        assert render_fragment([1], field) == expected
+
     def test_the_count_is_labelled_with_the_field_name(self):
         """The label comes from the field, so the count reads as prose."""
         assert render_fragment([1, 2, 3], "levels") == "3 levels"

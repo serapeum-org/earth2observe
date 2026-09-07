@@ -36,6 +36,8 @@ recent it is — instead of pydantic's field-complete dump. A row opts in by inh
 declaring the fields worth showing:
 
 ```python
+from pydantic import Field
+
 from earthlens.base import SummarisedLeaf
 
 
@@ -44,11 +46,13 @@ class Dataset(SummarisedLeaf):
 
     id: str
     title: str | None = None
-    bands: dict[str, int] = {}
+    bands: dict[str, int] = Field(default_factory=dict)
 ```
 
 `print(row)` then gives `Dataset(A/B, A title, 3 bands)`. `None`, empty strings and empty collections are
-skipped so a sparse row stays short; a non-empty collection renders as a count. Only `__str__` is defined —
+skipped so a sparse row stays short; a non-empty collection renders as a count. Long fragments are
+clipped in the middle at `MAX_FRAGMENT` characters and the joined summary at `MAX_SUMMARY`, so a clipped asset
+path still shows the last segment that distinguishes it. Only `__str__` is defined —
 `__repr__` keeps pydantic's field-complete form, which is the debugging contract.
 
 Declare `_summary_fields` bare, or as an explicit `ClassVar`. Annotating it without `ClassVar` makes pydantic

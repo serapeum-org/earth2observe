@@ -92,21 +92,6 @@ class Dataset(SummarisedLeaf):
         "units",
     )
 
-    def summary_parts(self) -> list[str]:
-        """Append the resolution with its unit, so it is not a bare float.
-
-        `spatial_resolution` is a nominal metre count. Rendering it as a
-        declared field put `90.0` next to the data's own unit (`m`), reading
-        as a second quantity rather than a resolution.
-
-        Returns:
-            list[str]: The declared fragments, then `"<n> m"` when known.
-        """
-        parts = super().summary_parts()
-        if self.spatial_resolution:
-            parts.append(f"{self.spatial_resolution:g} m")
-        return parts
-
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str
@@ -122,6 +107,22 @@ class Dataset(SummarisedLeaf):
     crs: str = "EPSG:4326"
     nodata: float | None = -9999.0
     spatial_resolution: float | None = None
+
+    def summary_parts(self) -> list[str]:
+        """Append the resolution with its unit, so it is not a bare float.
+
+        `spatial_resolution` is a nominal metre count, and this row also
+        declares `units`, which is often `m` as well. `..., m, 90 m` reads as
+        two quantities, so the fragment carries its own label.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m resolution"`.
+        """
+        parts = super().summary_parts()
+        if self.spatial_resolution:
+            parts.append(f"{self.spatial_resolution:g} m resolution")
+        return parts
+
     base_url: str = ""
     filename_template: str = "Europe_RP{rp}_filled_depth.tif"
     return_periods: list[int] = Field(default_factory=list)
