@@ -164,3 +164,44 @@ def test_load_accepts_explicit_path(tmp_path: Path) -> None:
     assert cat.available() == ["country"]
     assert cat.download_url("country") == "https://h/c.zip"
     clear_catalog_cache()
+
+
+class TestParseRowsKeyField:
+    """Tests for the `key_field` opt-in on the shared row parser."""
+
+    def test_the_key_is_copied_onto_each_row(self):
+        """An admin level is addressed by its key, which the body does not carry."""
+        rows = catalog_module._parse_rows(
+            {"country": {"zip": "c.zip", "shapefile_stem": "c"}},
+            AdminLevel,
+            Path("catalog.yaml"),
+            "admin level",
+            key_field="level",
+        )
+        assert rows["country"].level == "country"
+
+    def test_without_the_opt_in_nothing_is_injected(self):
+        """`Scenario` shares this parser and declares no such field."""
+        rows = catalog_module._parse_rows(
+            {"country": {"zip": "c.zip", "shapefile_stem": "c"}},
+            AdminLevel,
+            Path("catalog.yaml"),
+            "admin level",
+        )
+        assert rows["country"].level == ""
+
+    def test_a_body_declaring_the_field_wins(self):
+        """The catalog file stays authoritative over the mapping key."""
+        rows = catalog_module._parse_rows(
+            {"country": {"level": "explicit", "zip": "c.zip", "shapefile_stem": "c"}},
+            AdminLevel,
+            Path("catalog.yaml"),
+            "admin level",
+            key_field="level",
+        )
+        assert rows["country"].level == "explicit"
+
+    def test_the_bundled_levels_carry_their_key(self):
+        """The shipped catalog goes through the same path."""
+        for key, level in Catalog().datasets.items():
+            assert level.level == key, f"{key} row carries level={level.level!r}"

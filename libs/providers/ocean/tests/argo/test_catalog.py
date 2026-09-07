@@ -71,3 +71,20 @@ def test_malformed_family_row_raises(tmp_path):
     bad.write_text("families:\n  phy:\n    bogus: 1\n", encoding="utf-8")
     with pytest.raises(ValueError, match="failed validation"):
         Catalog.load(bad)
+
+
+def test_family_name_carries_the_catalog_key():
+    """The family key is the only identifier; the row body does not hold it."""
+    catalog = Catalog()
+    for key, family in catalog.datasets.items():
+        assert family.name == key, f"{key} row carries name={family.name!r}"
+
+
+def test_family_summary_leads_with_the_name():
+    """Without the key the summary would open with a sentence of description."""
+    assert str(Catalog().datasets["phy"]).startswith("Family(phy,")
+
+
+def test_a_body_declaring_name_wins():
+    """An explicit `name` is not overwritten by the injected key."""
+    assert Family(name="custom", description="d").name == "custom"

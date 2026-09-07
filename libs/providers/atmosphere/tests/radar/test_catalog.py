@@ -107,3 +107,27 @@ class TestStation:
         """An out-of-range latitude is rejected."""
         with pytest.raises(ValidationError):
             Station(latitude=999, longitude=0)
+
+
+class TestStationIdentity:
+    """Tests for the site id the loader copies onto each station."""
+
+    def test_code_carries_the_site_id(self):
+        """The station is addressed by its ICAO id, which is not in the row body."""
+        catalog = StationCatalog()
+        for site_id, station in list(catalog.datasets.items())[:5]:
+            assert station.code == site_id, (
+                f"{site_id} row carries code={station.code!r}"
+            )
+
+    def test_summary_leads_with_the_code(self):
+        """`Station(Aberdeen, SD)` would omit the one field a caller looks up by."""
+        station = StationCatalog().datasets["KABR"]
+        assert str(station).startswith("Station(KABR,"), str(station)
+
+    def test_a_body_declaring_code_wins(self):
+        """An explicit `code` in the catalog body is not overwritten by the key."""
+        assert (
+            Station(code="KOUN", name="Norman", latitude=35.2, longitude=-97.4).code
+            == "KOUN"
+        )

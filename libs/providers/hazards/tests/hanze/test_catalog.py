@@ -204,3 +204,20 @@ class TestLoad:
         path = _write(tmp_path, body)
         with pytest.raises(ValueError, match="failed validation"):
             Catalog.load(path)
+
+
+def test_flood_type_name_carries_the_catalog_key():
+    """`description` is the row's only other field, so the key is the identifier."""
+    catalog = Catalog()
+    for key, flood_type in catalog.datasets.items():
+        assert flood_type.name == key, f"{key} row carries name={flood_type.name!r}"
+
+
+def test_flood_type_summary_leads_with_the_name():
+    """Without the key the summary would open with a sentence of description."""
+    assert str(Catalog().datasets["River"]).startswith("FloodType(River,")
+
+
+def test_a_body_declaring_name_wins():
+    """An explicit `name` is not overwritten by the injected key."""
+    assert FloodType(name="custom", description="d").name == "custom"
