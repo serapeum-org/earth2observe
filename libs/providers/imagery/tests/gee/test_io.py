@@ -5,6 +5,7 @@ from __future__ import annotations
 import functools
 import io
 import ssl
+from unittest.mock import Mock
 
 import geopandas as gpd
 import pandas as pd
@@ -83,6 +84,24 @@ class _BlankName:
         raise ConnectionResetError("boom")
 
 
+class _HasFuncAttribute:
+    """A callable carrying an unrelated `func` attribute that is not a partial."""
+
+    func = "not a partial"
+
+    def __call__(self, *_args, **_kwargs):
+        raise ConnectionResetError("boom")
+
+
+class _IntName:
+    """A callable whose `__name__` is not a string."""
+
+    __name__ = 123
+
+    def __call__(self, *_args, **_kwargs):
+        raise ConnectionResetError("boom")
+
+
 class TestCallableName:
     """Tests for the retry logger's display-name helper."""
 
@@ -112,6 +131,18 @@ class TestCallableName:
         """An empty `__name__` is treated as absent, not logged as a blank name."""
         assert _callable_name(_BlankName()) == "_BlankName"
 
+    def test_mock_terminates_instead_of_unwrapping_forever(self):
+        """A Mock synthesises a fresh `.func` on every access, so it must not be unwrapped."""
+        assert _callable_name(Mock()) == "Mock"
+
+    def test_non_partial_func_attribute_is_left_alone(self):
+        """A callable carrying an unrelated `func` attribute keeps its own name."""
+        assert _callable_name(_HasFuncAttribute()) == "_HasFuncAttribute"
+
+    def test_non_string_name_is_coerced(self):
+        """A non-string `__name__` is coerced, so the log format never breaks."""
+        assert _callable_name(_IntName()) == "123"
+
 
 class TestRetryOnTransientErrors:
     """Tests for the small retry helper (N2)."""
@@ -126,6 +157,20 @@ class TestRetryOnTransientErrors:
         wrapped = _retry_on_transient_errors(target, tries=2, sleep=lambda s: None)
         with pytest.raises(ConnectionResetError, match="boom"):
             wrapped()
+
+    def test_warning_names_the_unwrapped_callable(self):
+        """The retry warning reports the partial's target, not 'partial'."""
+        messages: list[str] = []
+        sink = io_module.logger.add(messages.append, level="WARNING")
+        try:
+            wrapped = _retry_on_transient_errors(
+                functools.partial(_always_reset, 1), tries=2, sleep=lambda s: None
+            )
+            with pytest.raises(ConnectionResetError):
+                wrapped()
+        finally:
+            io_module.logger.remove(sink)
+        assert any("_always_reset attempt 1/2" in m for m in messages), messages
 
     def test_returns_value_when_fn_succeeds_first_try(self):
         """A function that succeeds on first call is invoked exactly once."""
