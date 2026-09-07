@@ -1293,7 +1293,13 @@ class TestVariableSummary:
 
     def test_summary_pairs_the_cds_name_with_the_netcdf_name(self):
         """The request is written against one name and the file keyed by the other."""
-        row = Catalog().get_variable("reanalysis-era5-single-levels", "2m-temperature")
+        row = Variable(
+            cds_dataset="reanalysis-era5-single-levels",
+            cds_variable="2m_temperature",
+            nc_variable="t2m",
+            units="K",
+            types="state",
+        )
         assert str(row) == "Variable(2m_temperature -> t2m, K, state)"
 
     def test_a_flux_variable_is_marked_flux(self):
@@ -1309,7 +1315,12 @@ class TestVariableSummary:
 
     def test_the_summary_drops_the_empty_fields_the_dump_showed(self):
         """The four always-`None`/empty fields never reach the summary."""
-        row = Catalog().get_variable("reanalysis-era5-single-levels", "2m-temperature")
+        row = Variable(
+            cds_dataset="reanalysis-era5-single-levels",
+            cds_variable="2m_temperature",
+            nc_variable="t2m",
+            units="K",
+        )
         rendered = str(row)
         for noisy in (
             "cds_pressure_level",
@@ -1321,6 +1332,11 @@ class TestVariableSummary:
 
     def test_repr_still_carries_every_field(self):
         """`__repr__` is untouched, so the debugging contract survives."""
-        row = Catalog().get_variable("reanalysis-era5-single-levels", "2m-temperature")
+        row = Variable(
+            cds_dataset="reanalysis-era5-single-levels",
+            cds_variable="2m_temperature",
+            nc_variable="t2m",
+            units="K",
+        )
         assert "cds_pressure_level=None" in repr(row)
         assert repr(row) != str(row)

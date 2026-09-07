@@ -581,16 +581,35 @@ class TestCatalogCache:
 class TestSummaries:
     """Tests for the one-line `__str__` on the GEE catalog rows."""
 
-    def test_dataset_summary_names_the_six_facts_a_reader_wants(
+    def test_dataset_summary_names_the_six_facts_a_reader_wants(self):
+        """The dataset summary carries id, title, provider, resolution, period, bands."""
+        row = Dataset(
+            id="COPERNICUS/S5P/NRTI/L3_NO2",
+            title="Sentinel-5P NRTI NO2",
+            provider="copernicus",
+            spatial_resolution=1113.2,
+            extent=Extent(start_date="2018-07-10"),
+            bands={"a": Band(id="a"), "b": Band(id="b")},
+        )
+        assert str(row) == (
+            "Dataset(COPERNICUS/S5P/NRTI/L3_NO2, Sentinel-5P NRTI NO2, "
+            "copernicus, 1113.2 m, 2018-07-10..present, 2 bands)"
+        )
+
+    def test_a_shipped_row_summarises_without_placeholders(
         self, shipped_catalog: Catalog
     ):
-        """The dataset summary carries id, title, provider, resolution, period and band count."""
-        row = shipped_catalog.get_dataset("COPERNICUS/S5P/NRTI/L3_NO2")
-        assert str(row) == (
-            "Dataset(COPERNICUS/S5P/NRTI/L3_NO2, "
-            "Sentinel-5P NRTI NO2: Near-Real-Time Tropospheric Nitroge..., "
-            "copernicus, 1113.2 m, 2018-07-10..present, 4 bands)"
-        )
+        """Smoke test on real data, asserting shape rather than catalog text.
+
+        Deliberately not pinned to the title or band count: a
+        `datasets refresh gee` legitimately changes both, and this test is
+        about the formatting, not the catalog contents.
+        """
+        rendered = str(shipped_catalog.get_dataset("COPERNICUS/S5P/NRTI/L3_NO2"))
+        assert rendered.startswith("Dataset(COPERNICUS/S5P/NRTI/L3_NO2, ")
+        assert rendered.endswith(")")
+        assert "None" not in rendered, rendered
+        assert "\n" not in rendered, rendered
 
     def test_dataset_resolution_drops_a_trailing_zero(self):
         """A whole-metre resolution reads as `30 m`, not `30.0 m`."""

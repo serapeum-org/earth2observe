@@ -55,6 +55,15 @@ def _discover_catalogs() -> list[tuple[str, str]]:
 #: (module, catalog-class-name) for every backend that ships a catalog.
 CATALOG_BACKENDS = _discover_catalogs()
 
+# This list and SUMMARISED_LEAVES below are built from imports that skip a
+# backend whose SDK is absent, so an environment change could quietly reduce
+# either to nothing and every parametrized gate would pass by collecting no
+# cases. Fail at import instead.
+assert len(CATALOG_BACKENDS) > 40, (
+    f"only {len(CATALOG_BACKENDS)} backend catalogs importable; the "
+    "cross-backend gates would pass vacuously"
+)
+
 
 def _build(module_name: str, class_name: str):
     """Import and instantiate a backend's catalog from the bundled YAML."""
@@ -470,6 +479,11 @@ def _summarised_leaf_classes() -> list[tuple[str, type]]:
 #: (class path, class) for every shipped catalog row that summarises itself.
 SUMMARISED_LEAVES = _summarised_leaf_classes()
 
+assert len(SUMMARISED_LEAVES) > 10, (
+    f"only {len(SUMMARISED_LEAVES)} summarising rows discovered; the summary "
+    "gates would pass vacuously"
+)
+
 
 def _reachable_summarised_rows(catalog: AbstractCatalog) -> list[SummarisedLeaf]:
     """Collect every `SummarisedLeaf` reachable from a built catalog.
@@ -516,11 +530,15 @@ def test_declared_summary_fields_exist(path: str, cls: type):
     failure.
     """
     missing = [
-        f for f in getattr(cls, "_summary_fields", ()) if f not in cls.model_fields
+        f
+        for f in getattr(cls, "_summary_fields", ())
+        if f not in cls.model_fields and not hasattr(cls, f)
     ]
     assert not missing, (
         f"{path} declares {missing} in _summary_fields but carries no such "
-        "field; the fragment would be silently dropped from its summary"
+        "field or attribute; the fragment would be silently dropped from its "
+        "summary. A value computed from other fields belongs in a "
+        "summary_parts() override, the way FluxableLeaf adds is_flux."
     )
 
 
