@@ -24790,9 +24790,7 @@ the user picking.</p>
     <span class="s2">"volumetric-soil-water-layer-1"</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">spec</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"reanalysis-era5-land"</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">:</span><span class="s2">35s</span><span class="si">}</span><span class="s2">  nc=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">nc_variable</span><span class="si">:</span><span class="s2">6s</span><span class="si">}</span><span class="s2">  units=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">units</span><span class="si">:</span><span class="s2">25s</span><span class="si">}</span><span class="s2">  is_flux=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">is_flux</span><span class="si">}</span><span class="s2">"</span>
-    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">:</span><span class="s2">35s</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">cat = Catalog()
 for code in (
@@ -24802,9 +24800,7 @@ for code in (
     "volumetric-soil-water-layer-1",
 ):
     spec = cat.get_variable("reanalysis-era5-land", code)
-    print(
-        f"{code:35s}  nc={spec.nc_variable:6s}  units={spec.units:25s}  is_flux={spec.is_flux}"
-    )</div>
+    print(f"{code:35s}  {spec}")</div>
 </div>
 </div>
 </div>

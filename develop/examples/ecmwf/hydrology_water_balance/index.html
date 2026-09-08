@@ -24879,18 +24879,14 @@ set so the auto-routing picks <code>sum</code>.</p>
 <span class="n">cat</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"total-precipitation"</span><span class="p">,</span> <span class="s2">"evaporation"</span><span class="p">,</span> <span class="s2">"surface-runoff"</span><span class="p">):</span>
     <span class="n">spec</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"reanalysis-era5-single-levels"</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">:</span><span class="s2">25s</span><span class="si">}</span><span class="s2">  nc=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">nc_variable</span><span class="si">:</span><span class="s2">5s</span><span class="si">}</span><span class="s2">  units=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">units</span><span class="si">:</span><span class="s2">25s</span><span class="si">}</span><span class="s2">  is_flux=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">is_flux</span><span class="si">}</span><span class="s2">"</span>
-    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">:</span><span class="s2">25s</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">from earthlens.ecmwf import Catalog
 
 cat = Catalog()
 for code in ("total-precipitation", "evaporation", "surface-runoff"):
     spec = cat.get_variable("reanalysis-era5-single-levels", code)
-    print(
-        f"{code:25s}  nc={spec.nc_variable:5s}  units={spec.units:25s}  is_flux={spec.is_flux}"
-    )</div>
+    print(f"{code:25s}  {spec}")</div>
 </div>
 </div>
 </div>
