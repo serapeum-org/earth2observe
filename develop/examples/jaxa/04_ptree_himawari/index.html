@@ -24535,10 +24535,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 <span class="n">cat</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
 <span class="n">row</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'himawari-ahi-fldk'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'canonical key:'</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'aliases:      '</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">aliases</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'protocol:     '</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">protocol</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'default_band: '</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">default_band</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'description:  '</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'by_protocol("ptree"):'</span><span class="p">,</span> <span class="n">cat</span><span class="o">.</span><span class="n">by_protocol</span><span class="p">(</span><span class="s1">'ptree'</span><span class="p">))</span>
 </pre></div>
@@ -24546,10 +24547,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 cat = Catalog()
 row = cat.get('himawari-ahi-fldk')
-print(row)
+print('canonical key:', row.key)
 print('aliases:      ', row.aliases)
 print('protocol:     ', row.protocol)
 print('default_band: ', row.default_band)
+print('description:  ', row.description)
 print()
 print('by_protocol("ptree"):', cat.by_protocol('ptree'))</div>
 </div>

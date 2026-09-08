@@ -24630,15 +24630,27 @@ just enrich metadata and error messages.</p>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">cat</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'variable :'</span><span class="p">,</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="s1">'tas'</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'scenario :'</span><span class="p">,</span> <span class="s1">'ssp585 -&gt;'</span><span class="p">,</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="s1">'ssp585'</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'table    :'</span><span class="p">,</span> <span class="s1">'Amon -&gt;'</span><span class="p">,</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="s1">'Amon'</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s1">'variable :'</span><span class="p">,</span>
+    <span class="n">cat</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="s1">'tas'</span><span class="p">)</span><span class="o">.</span><span class="n">long_name</span><span class="p">,</span>
+    <span class="s1">'('</span><span class="p">,</span>
+    <span class="n">cat</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="s1">'tas'</span><span class="p">)</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+    <span class="s1">')'</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'scenario :'</span><span class="p">,</span> <span class="s1">'ssp585 -&gt;'</span><span class="p">,</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="s1">'ssp585'</span><span class="p">)</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'table    :'</span><span class="p">,</span> <span class="s1">'Amon -&gt;'</span><span class="p">,</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="s1">'Amon'</span><span class="p">)</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'CSV index:'</span><span class="p">,</span> <span class="n">cat</span><span class="o">.</span><span class="n">csv_url</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">cat = Catalog()
-print('variable :', cat.get_dataset('tas'))
-print('scenario :', 'ssp585 -&gt;', cat.get_experiment('ssp585'))
-print('table    :', 'Amon -&gt;', cat.get_table('Amon'))
+print(
+    'variable :',
+    cat.get_dataset('tas').long_name,
+    '(',
+    cat.get_dataset('tas').units,
+    ')',
+)
+print('scenario :', 'ssp585 -&gt;', cat.get_experiment('ssp585').description)
+print('table    :', 'Amon -&gt;', cat.get_table('Amon').description)
 print('CSV index:', cat.csv_url)</div>
 </div>
 </div>
