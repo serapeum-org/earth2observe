@@ -226,13 +226,30 @@ class _FakeHTTPResponse:
 class _FakePyramidsHandle:
     """Stand-in for a `pyramids.dataset.Dataset` returned by `from_bytes`."""
 
-    def __init__(self, body: bytes):
+    def __init__(self, body: bytes, no_data_value=(None,)):
+        _FakePyramidsHandle.opened_handles.append(self)
         self._body = body
+        # Real getDownloadURL tiles declare no no-data; the backend reads this
+        # to inherit it rather than letting merge_rasters stamp its 0 default.
+        self.no_data_value = no_data_value
 
     def to_file(self, path: str) -> None:
         from pathlib import Path as _Path
 
         _Path(path).write_bytes(self._body)
+
+    opened_handles: list[_FakePyramidsHandle] = []
+    closed_handles: list[_FakePyramidsHandle] = []
+
+    @classmethod
+    def reset_handle_log(cls) -> None:
+        """Clear the open/close log so a test starts from a known state."""
+        cls.opened_handles = []
+        cls.closed_handles = []
+
+    def close(self) -> None:
+        """Record the release so tests can assert the handle is not leaked."""
+        _FakePyramidsHandle.closed_handles.append(self)
 
 
 class _FakePyramidsDataset:
@@ -1646,11 +1663,74 @@ class TestAutoSplit:
 
         assert len(merge_calls) == 1
         assert merge_calls[0]["dst"] == str(target)
+        assert merge_calls[0]["kwargs"]["no_data_value"] == "none"
         assert len(merge_calls[0]["src"]) > 1
         for tile_path in merge_calls[0]["src"]:
             assert tile_path.endswith(".tif")
             assert "_tile_" in tile_path
             assert not Path(tile_path).exists()  # tile files cleaned up post-merge
+
+    def test_tiles_that_declare_a_no_data_have_it_inherited(
+        self, make_gee, monkeypatch, tmp_path
+    ):
+        """A declared tile no-data reaches merge_rasters instead of the fallback."""
+        merge_calls: list[dict] = []
+
+        def _fake_merge(src, dst, **kwargs):
+            merge_calls.append({"kwargs": kwargs})
+            Path(dst).write_bytes(b"merged")
+
+        monkeypatch.setattr(backend_module, "merge_rasters", _fake_merge)
+        monkeypatch.setattr(
+            _FakePyramidsDataset,
+            "read_file",
+            classmethod(lambda cls, path, **kw: _FakePyramidsHandle(b"", (-9999.0,))),
+        )
+        _FakePyramidsHandle.reset_handle_log()
+
+        gee = make_gee(
+            lat_lim=[0.0, 40.0], lon_lim=[0.0, 40.0], scale=30.0, auto_split=True
+        )
+        gee.download(progress_bar=False)
+
+        assert merge_calls[0]["kwargs"]["no_data_value"] == -9999.0, (
+            "the tiles' own sentinel should be inherited, not the 'none' fallback"
+        )
+        leaked = [
+            handle
+            for handle in _FakePyramidsHandle.opened_handles
+            if handle not in _FakePyramidsHandle.closed_handles
+        ]
+        assert not leaked, (
+            f"{len(leaked)} of {len(_FakePyramidsHandle.opened_handles)} handles were "
+            "never released; the no-data probe must close its own"
+        )
+
+    def test_the_no_data_probe_handle_is_released_on_the_fallback_branch(
+        self, make_gee, monkeypatch, tmp_path
+    ):
+        """The probe handle is closed even when the tiles declare nothing."""
+        monkeypatch.setattr(
+            backend_module,
+            "merge_rasters",
+            lambda src, dst, **kw: Path(dst).write_bytes(b"merged"),
+        )
+        _FakePyramidsHandle.reset_handle_log()
+
+        gee = make_gee(
+            lat_lim=[0.0, 40.0], lon_lim=[0.0, 40.0], scale=30.0, auto_split=True
+        )
+        gee.download(progress_bar=False)
+
+        leaked = [
+            handle
+            for handle in _FakePyramidsHandle.opened_handles
+            if handle not in _FakePyramidsHandle.closed_handles
+        ]
+        assert not leaked, (
+            f"{len(leaked)} of {len(_FakePyramidsHandle.opened_handles)} handles were "
+            "never released on the fallback branch"
+        )
 
     def test_each_tile_request_is_within_the_synchronous_cap(
         self, make_gee, monkeypatch

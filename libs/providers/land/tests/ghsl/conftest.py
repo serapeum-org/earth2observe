@@ -24,7 +24,7 @@ def make_tiny_tif(
     epsg: int = 54009,
     geo: tuple[float, float, float, float, float, float] | None = None,
     values: np.ndarray | None = None,
-    no_data: float = -200.0,
+    no_data: float | None = -200.0,
 ) -> Path:
     """Write a tiny real GeoTIFF (default 5x5 Mollweide) and return its path."""
     if geo is None:

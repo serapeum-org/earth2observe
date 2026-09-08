@@ -501,6 +501,8 @@ nav:
     - Authentication: examples/authentication.md
     - Data Sources: examples/data-sources.md
     - Data Catalog: examples/catalog.md
+    - Basics:
+      - Choosing an area of interest: examples/basics/01_area_of_interest.ipynb
     - Showcase — real-world events:
       - Suez Canal blockage (Ever Given): examples/showcase/suez_canal_ever_given.ipynb
       - Hunga Tonga eruption: examples/showcase/tonga_eruption.ipynb
@@ -532,6 +534,8 @@ nav:
       - Danube true-colour time-lapse: examples/showcases/danube_truecolour_timelapse.ipynb
       - Rhine-Danube low flow, 2026: examples/showcases/rhine_danube_lowflow_2026.ipynb
       - Rhine Landsat, wet year vs 2026 drought: examples/showcases/rhine_landsat_wetyear_vs_2026.ipynb
+      - 2026 Super El Niño, ONI + SST anomaly: examples/showcases/el_nino_2026.ipynb
+      - Europe's summer of extreme heat, 2026: examples/showcases/european_heatwave_summer_2026.ipynb
       - Every satellite earthlens can reach (3D): examples/showcase/earthlens-satellites.ipynb
       - Total solar eclipse 2026, geometry (3D): examples/showcase/eclipse/eclipse_geometry_3d.ipynb
       - Total solar eclipse 2026 from Meteosat-12 (MTG FCI): examples/showcase/eclipse/solar_eclipse_2026_eumetsat_fci.ipynb
@@ -838,6 +842,7 @@ nav:
     - Base contracts: reference/base/contracts.md
     - Bounded results (base): reference/base/bounded-results.md
     - Extents & warnings: reference/base/extents.md
+    - Area of interest: reference/base/area-of-interest.md
     - Authentication API: reference/base/auth-api.md
     - Catalog & utilities: reference/base/catalog-api.md
     - HTTP client (base): reference/base/http-client.md

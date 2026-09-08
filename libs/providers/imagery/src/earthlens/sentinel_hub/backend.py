@@ -652,8 +652,12 @@ class SentinelHub(AbstractDataSource):
 
         Splits the request bbox into ≤2500 px Process tiles, renders each tile,
         and mosaics them into one GeoTIFF per product with
-        `pyramids.dataset.merge.merge_rasters`. Tile temporaries are written
-        under a per-product subdirectory and removed after the merge.
+        `pyramids.dataset.merge.merge_rasters`. The mosaic inherits whatever
+        no-data the rendered tiles declare rather than `merge_rasters`' `0`
+        default, which would mask a legitimate zero (a dark pixel, a
+        zero-valued index); tiles that declare nothing send `"none"`, leaving
+        the mosaic without one. Tile temporaries are written under a
+        per-product subdirectory and removed after the merge.
 
         Args:
             products: The list returned by :meth:`_search`.
@@ -667,6 +671,7 @@ class SentinelHub(AbstractDataSource):
         """
         import shutil
 
+        from pyramids.dataset import Dataset
         from pyramids.dataset.merge import merge_rasters
 
         sentinelhub = import_sentinelhub()
@@ -708,7 +713,26 @@ class SentinelHub(AbstractDataSource):
                 )
                 tile_paths.append(str(rendered))
             merged = Path(self.root_dir) / f"{safe_filename(product.id)}.tif"
-            merge_rasters(tile_paths, str(merged))
+            # merge_rasters defaults no_data_value to 0, which would mask a
+            # legitimate zero (a dark pixel, a zero-valued index) and discard
+            # whatever the rendered tiles declare. Inherit theirs instead.
+            first_tile = Dataset.read_file(tile_paths[0])
+            try:
+                tile_no_data = first_tile.no_data_value
+            finally:
+                # Release before the tiles are removed: a live handle keeps a
+                # Windows lock and the cleanup below would fail silently.
+                first_tile.close()
+            fill = (
+                tile_no_data[0]
+                if isinstance(tile_no_data, (list, tuple))
+                else tile_no_data
+            )
+            merge_rasters(
+                tile_paths,
+                str(merged),
+                no_data_value=fill if fill is not None else "none",
+            )
             shutil.rmtree(tile_dir, ignore_errors=True)
             out.append(merged)
         logger.info(f"Sentinel Hub tiling: merged {len(tiles)} tile(s) per product")

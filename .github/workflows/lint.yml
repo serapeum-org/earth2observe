@@ -32,9 +32,11 @@ jobs:
   # beautysh, shellcheck, nbstripout. Formatting and linting are identical on every OS
   # and Python version, so this runs ONCE (no matrix) on a plain runner in ~1-2 min.
   #
-  # SKIP drops the hooks that need the uv dev env: pytest-check and notebook-check are
-  # already the tests.yml matrix's job (running them here would duplicate it and pin to
-  # one Python), while mypy and doctest run in the `static` job below. no-commit-to-branch
+  # SKIP drops the hooks that need the uv dev env: pytest-check is already the
+  # tests.yml matrix's job (running it here would duplicate it and pin to one
+  # Python). notebook-check is skipped outright — no workflow executes the
+  # example notebooks, by choice: they need live provider credentials. mypy and
+  # doctest run in the `static` job below. no-commit-to-branch
   # is a local commit guard that would misfire in CI, which legitimately runs on main.
   #
   # uv-lock-check is deliberately out of scope here: tests.yml already gates lock freshness

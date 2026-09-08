@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pyramids.dataset as pyramids_dataset
 import pyramids.dataset.merge as merge_mod
 import pytest
 
@@ -34,11 +35,23 @@ def recorded_merge(monkeypatch):
     calls = []
 
     def _fake_merge(src, dst, **kwargs):
-        calls.append((list(src), str(dst)))
+        calls.append((list(src), str(dst), kwargs))
         Path(dst).write_bytes(b"II*\x00merged")
 
     monkeypatch.setattr(merge_mod, "merge_rasters", _fake_merge)
     return calls
+
+
+class _UndeclaredHandle:
+    """Probe stand-in for a tile that declares no no-data."""
+
+    def __init__(self, closed: list[_UndeclaredHandle]) -> None:
+        self.no_data_value = (None,)
+        self._closed = closed
+
+    def close(self) -> None:
+        """Record the release so the test can assert the handle is not leaked."""
+        self._closed.append(self)
 
 
 class TestTiling:
@@ -52,11 +65,34 @@ class TestTiling:
         assert len(paths) == 1
         assert paths[0].name == "sentinel-2-l2a-ndvi.tif"
         assert paths[0].exists()
+        # the rendered tiles' own no-data reaches merge_rasters, not its 0 default
+        assert recorded_merge[-1][2]["no_data_value"] == -9999.0
         # one merge call, four tile sources
         assert len(recorded_merge) == 1
-        srcs, dst = recorded_merge[0]
+        srcs, dst, _kw = recorded_merge[0]
         assert len(srcs) == 4
         assert dst == str(paths[0])
+
+    def test_merge_unsets_no_data_when_the_tiles_declare_nothing(
+        self, fake_sh, recorded_merge, output_dir: Path, monkeypatch
+    ):
+        """Tiles without a declared no-data send "none", not merge_rasters' 0."""
+        closed: list[_UndeclaredHandle] = []
+        # The backend imports Dataset inside the function, so patch the class
+        # pyramids hands it rather than a module attribute.
+        monkeypatch.setattr(
+            pyramids_dataset.Dataset,
+            "read_file",
+            staticmethod(lambda path, **kw: _UndeclaredHandle(closed)),
+        )
+
+        _tiling_backend(output_dir).download()
+
+        assert recorded_merge[-1][2]["no_data_value"] == "none", (
+            "undeclared tiles must unset the mosaic no-data rather than let "
+            "merge_rasters stamp its 0 default"
+        )
+        assert closed, "the probe handle must be released before the tiles are removed"
 
     def test_tiles_cover_the_request_bbox(
         self, fake_sh, recorded_merge, output_dir: Path
