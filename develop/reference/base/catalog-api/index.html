@@ -27400,6 +27400,19 @@ caller has no path to hand.</p>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="o">...</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="ne">ValueError</span><span class="p">:</span> <span class="n">station</span> <span class="s1">&#39;KTLX&#39;</span> <span class="n">declares</span> <span class="n">code</span><span class="o">=</span><span class="s1">&#39;KOUN&#39;</span><span class="p">,</span> <span class="n">which</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">match</span> <span class="n">the</span> <span class="n">key</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">filed</span> <span class="n">under</span><span class="o">.</span> <span class="n">Remove</span> <span class="n">the</span> <span class="n">field</span> <span class="ow">or</span> <span class="n">rename</span> <span class="n">the</span> <span class="n">entry</span><span class="o">.</span>
 </code></pre></div></li>
+<li>Naming the source puts the offending file in front of the reader:
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">row_fields_with_key</span><span class="p">(</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="o">...</span>     <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Coastal&quot;</span><span class="p">},</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="o">...</span>     <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="o">...</span>     <span class="s2">&quot;River&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="o">...</span>     <span class="n">noun</span><span class="o">=</span><span class="s2">&quot;flood type&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="o">...</span>     <span class="n">source</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;hanze_data_catalog.yaml&quot;</span><span class="p">),</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="o">...</span> <span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="o">...</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="ne">ValueError</span><span class="p">:</span> <span class="n">hanze_data_catalog</span><span class="o">.</span><span class="n">yaml</span> <span class="n">flood</span> <span class="nb">type</span> <span class="s1">&#39;River&#39;</span> <span class="n">declares</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Coastal&#39;</span><span class="p">,</span> <span class="n">which</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">match</span> <span class="n">the</span> <span class="n">key</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">filed</span> <span class="n">under</span><span class="o">.</span> <span class="n">Remove</span> <span class="n">the</span> <span class="n">field</span> <span class="ow">or</span> <span class="n">rename</span> <span class="n">the</span> <span class="n">entry</span><span class="o">.</span>
+</code></pre></div></li>
 </ul>
 
 
@@ -27473,7 +27486,22 @@ caller has no path to hand.</p>
 <span class="normal"><a href="#__codelineno-0-351">351</a></span>
 <span class="normal"><a href="#__codelineno-0-352">352</a></span>
 <span class="normal"><a href="#__codelineno-0-353">353</a></span>
-<span class="normal"><a href="#__codelineno-0-354">354</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="k">def</span><span class="w"> </span><span class="nf">row_fields_with_key</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-354">354</a></span>
+<span class="normal"><a href="#__codelineno-0-355">355</a></span>
+<span class="normal"><a href="#__codelineno-0-356">356</a></span>
+<span class="normal"><a href="#__codelineno-0-357">357</a></span>
+<span class="normal"><a href="#__codelineno-0-358">358</a></span>
+<span class="normal"><a href="#__codelineno-0-359">359</a></span>
+<span class="normal"><a href="#__codelineno-0-360">360</a></span>
+<span class="normal"><a href="#__codelineno-0-361">361</a></span>
+<span class="normal"><a href="#__codelineno-0-362">362</a></span>
+<span class="normal"><a href="#__codelineno-0-363">363</a></span>
+<span class="normal"><a href="#__codelineno-0-364">364</a></span>
+<span class="normal"><a href="#__codelineno-0-365">365</a></span>
+<span class="normal"><a href="#__codelineno-0-366">366</a></span>
+<span class="normal"><a href="#__codelineno-0-367">367</a></span>
+<span class="normal"><a href="#__codelineno-0-368">368</a></span>
+<span class="normal"><a href="#__codelineno-0-369">369</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-286" name="__codelineno-0-286"></a><span class="k">def</span><span class="w"> </span><span class="nf">row_fields_with_key</span><span class="p">(</span>
 <a id="__codelineno-0-287" name="__codelineno-0-287"></a>    <span class="n">body</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <a id="__codelineno-0-288" name="__codelineno-0-288"></a>    <span class="n">key_field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <a id="__codelineno-0-289" name="__codelineno-0-289"></a>    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -27530,18 +27558,33 @@ caller has no path to hand.</p>
 <a id="__codelineno-0-340" name="__codelineno-0-340"></a><span class="sd">            ValueError: station &#39;KTLX&#39; declares code=&#39;KOUN&#39;, which does not match the key it is filed under. Remove the field or rename the entry.</span>
 <a id="__codelineno-0-341" name="__codelineno-0-341"></a>
 <a id="__codelineno-0-342" name="__codelineno-0-342"></a><span class="sd">            ```</span>
-<a id="__codelineno-0-343" name="__codelineno-0-343"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-344" name="__codelineno-0-344"></a>    <span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">body</span> <span class="ow">or</span> <span class="p">{})</span>
-<a id="__codelineno-0-345" name="__codelineno-0-345"></a>    <span class="n">declared</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_field</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-<a id="__codelineno-0-346" name="__codelineno-0-346"></a>    <span class="k">if</span> <span class="n">declared</span> <span class="o">!=</span> <span class="n">key</span><span class="p">:</span>
-<a id="__codelineno-0-347" name="__codelineno-0-347"></a>        <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-0-348" name="__codelineno-0-348"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-<a id="__codelineno-0-349" name="__codelineno-0-349"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">where</span><span class="si">}{</span><span class="n">noun</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> declares </span><span class="si">{</span><span class="n">key_field</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">declared</span><span class="si">!r}</span><span class="s2">, which &quot;</span>
-<a id="__codelineno-0-350" name="__codelineno-0-350"></a>            <span class="s2">&quot;does not match the key it is filed under. Remove the field or &quot;</span>
-<a id="__codelineno-0-351" name="__codelineno-0-351"></a>            <span class="s2">&quot;rename the entry.&quot;</span>
-<a id="__codelineno-0-352" name="__codelineno-0-352"></a>        <span class="p">)</span>
-<a id="__codelineno-0-353" name="__codelineno-0-353"></a>    <span class="n">fields</span><span class="p">[</span><span class="n">key_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
-<a id="__codelineno-0-354" name="__codelineno-0-354"></a>    <span class="k">return</span> <span class="n">fields</span>
+<a id="__codelineno-0-343" name="__codelineno-0-343"></a><span class="sd">        - Naming the source puts the offending file in front of the reader:</span>
+<a id="__codelineno-0-344" name="__codelineno-0-344"></a><span class="sd">            ```python</span>
+<a id="__codelineno-0-345" name="__codelineno-0-345"></a><span class="sd">            &gt;&gt;&gt; from pathlib import Path</span>
+<a id="__codelineno-0-346" name="__codelineno-0-346"></a><span class="sd">            &gt;&gt;&gt; row_fields_with_key(</span>
+<a id="__codelineno-0-347" name="__codelineno-0-347"></a><span class="sd">            ...     {&quot;name&quot;: &quot;Coastal&quot;},</span>
+<a id="__codelineno-0-348" name="__codelineno-0-348"></a><span class="sd">            ...     &quot;name&quot;,</span>
+<a id="__codelineno-0-349" name="__codelineno-0-349"></a><span class="sd">            ...     &quot;River&quot;,</span>
+<a id="__codelineno-0-350" name="__codelineno-0-350"></a><span class="sd">            ...     noun=&quot;flood type&quot;,</span>
+<a id="__codelineno-0-351" name="__codelineno-0-351"></a><span class="sd">            ...     source=Path(&quot;hanze_data_catalog.yaml&quot;),</span>
+<a id="__codelineno-0-352" name="__codelineno-0-352"></a><span class="sd">            ... )</span>
+<a id="__codelineno-0-353" name="__codelineno-0-353"></a><span class="sd">            Traceback (most recent call last):</span>
+<a id="__codelineno-0-354" name="__codelineno-0-354"></a><span class="sd">                ...</span>
+<a id="__codelineno-0-355" name="__codelineno-0-355"></a><span class="sd">            ValueError: hanze_data_catalog.yaml flood type &#39;River&#39; declares name=&#39;Coastal&#39;, which does not match the key it is filed under. Remove the field or rename the entry.</span>
+<a id="__codelineno-0-356" name="__codelineno-0-356"></a>
+<a id="__codelineno-0-357" name="__codelineno-0-357"></a><span class="sd">            ```</span>
+<a id="__codelineno-0-358" name="__codelineno-0-358"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-359" name="__codelineno-0-359"></a>    <span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">body</span> <span class="ow">or</span> <span class="p">{})</span>
+<a id="__codelineno-0-360" name="__codelineno-0-360"></a>    <span class="n">declared</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_field</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+<a id="__codelineno-0-361" name="__codelineno-0-361"></a>    <span class="k">if</span> <span class="n">declared</span> <span class="o">!=</span> <span class="n">key</span><span class="p">:</span>
+<a id="__codelineno-0-362" name="__codelineno-0-362"></a>        <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-0-363" name="__codelineno-0-363"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+<a id="__codelineno-0-364" name="__codelineno-0-364"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">where</span><span class="si">}{</span><span class="n">noun</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> declares </span><span class="si">{</span><span class="n">key_field</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">declared</span><span class="si">!r}</span><span class="s2">, which &quot;</span>
+<a id="__codelineno-0-365" name="__codelineno-0-365"></a>            <span class="s2">&quot;does not match the key it is filed under. Remove the field or &quot;</span>
+<a id="__codelineno-0-366" name="__codelineno-0-366"></a>            <span class="s2">&quot;rename the entry.&quot;</span>
+<a id="__codelineno-0-367" name="__codelineno-0-367"></a>        <span class="p">)</span>
+<a id="__codelineno-0-368" name="__codelineno-0-368"></a>    <span class="n">fields</span><span class="p">[</span><span class="n">key_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+<a id="__codelineno-0-369" name="__codelineno-0-369"></a>    <span class="k">return</span> <span class="n">fields</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
