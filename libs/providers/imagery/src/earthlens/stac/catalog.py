@@ -28,7 +28,7 @@ from typing import Any, Literal, cast
 
 from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog, SummarisedLeaf
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_measure
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -195,8 +195,9 @@ class Collection(SummarisedLeaf):
             list[str]: The declared fragments, then `"<n> m"` when known.
         """
         parts = super().summary_parts()
-        if self.resolution:
-            parts.append(f"{self.resolution:g} m")
+        measure = render_measure(self.resolution)
+        if measure:
+            parts.append(measure)
         return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")

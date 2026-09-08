@@ -33,7 +33,7 @@ from typing import Any, Literal, cast
 
 from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog, SummarisedLeaf
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_measure
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -174,8 +174,9 @@ class Sensor(SummarisedLeaf):
             list[str]: The declared fragments, then `"<n> m"` when known.
         """
         parts = super().summary_parts()
-        if self.resolution_m:
-            parts.append(f"{self.resolution_m:g} m")
+        measure = render_measure(self.resolution_m)
+        if measure:
+            parts.append(measure)
         return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")

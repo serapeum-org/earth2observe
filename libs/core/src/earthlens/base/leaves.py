@@ -179,6 +179,45 @@ def render_fragment(value: Any, field: str) -> str:
     return _clip(" ".join(str(value).split()), MAX_FRAGMENT)
 
 
+def render_measure(value: float | int | None, unit: str = "m") -> str:
+    """Render a bare numeric measure with its unit, or `""` when unknown.
+
+    A nominal resolution stored as a plain number renders as a lone figure
+    with nothing saying what it measured. Five row classes needed the same
+    two lines to fix that, so it lives here once.
+
+    Args:
+        value: The measure, or `None` / `0` when the row does not carry one.
+        unit: The unit to append. Defaults to metres.
+
+    Returns:
+        str: `"<n> <unit>"` with a trailing zero trimmed, or `""`.
+
+    Examples:
+        - A whole number drops its trailing zero:
+            ```python
+            >>> render_measure(30.0)
+            '30 m'
+
+            ```
+        - A fractional value keeps its precision, and the unit is free:
+            ```python
+            >>> render_measure(1113.2), render_measure(3.75, "arc-second")
+            ('1113.2 m', '3.75 arc-second')
+
+            ```
+        - An absent measure contributes nothing:
+            ```python
+            >>> render_measure(None)
+            ''
+
+            ```
+    """
+    if not value:
+        return ""
+    return f"{value:g} {unit}"
+
+
 class SummarisedLeaf(BaseModel):
     """Catalog row that prints as one readable line instead of a field dump.
 
@@ -239,7 +278,9 @@ class SummarisedLeaf(BaseModel):
 
     #: Field names to include in `__str__`, in order. Empty means no summary
     #: beyond the class name, which is the honest answer for a row that has
-    #: not declared one.
+    #: not declared one. A subclass declaration **replaces** its parent's
+    #: rather than extending it — to keep a parent's fragments, override
+    #: :meth:`summary_parts` and call `super()`, as `FluxableLeaf` does.
     _summary_fields: ClassVar[tuple[str, ...]] = ()
 
     @classmethod
