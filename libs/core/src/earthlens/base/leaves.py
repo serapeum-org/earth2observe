@@ -59,6 +59,13 @@ MAX_FRAGMENT = 60
 MAX_SUMMARY = 180
 
 
+#: Fraction of a clipped prose fragment kept as the head. Prose front-loads its
+#: meaning, so a title reads better with most of its opening intact — but a
+#: tail still has to survive, or two long titles sharing an opening collapse
+#: onto the same summary.
+_PROSE_HEAD_SHARE = 0.75
+
+
 def _reads_as_prose(text: str) -> bool:
     """Whether `text` is a sentence rather than an identifier.
 
@@ -66,43 +73,47 @@ def _reads_as_prose(text: str) -> bool:
         text: The fragment being clipped.
 
     Returns:
-        bool: `True` when the text has spaces and no path or token
-        separators — a title or description rather than an id or a path.
+        bool: `True` when the text contains a space. Catalog ids and paths
+        never do, and a title that happens to carry `/` or `:` is still a
+        title — `"Antarctic Ocean - Sea Ice, CFOSAT/SSMI interpolated"` reads
+        as prose despite the slash.
     """
-    return " " in text and not any(sep in text for sep in "/:|")
+    return " " in text
 
 
 def _clip(text: str, limit: int) -> str:
     """Shorten `text` to `limit` characters, marking that it was cut.
 
-    Where the cut falls depends on what the text is.
+    Always keeps both ends, because what distinguishes two long values is
+    often only their tail — `.../weathernext_2_0_0` from
+    `..._mean`, or two dataset titles differing in a trailing qualifier.
+    Dropping the tail outright collapses such rows onto one summary, which is
+    worse than clipping them at all.
 
-    An **identifier** is cut in the middle. Catalog ids are long because
-    they are paths, and what distinguishes two of them is usually the last
-    segment — `.../weathernext_2_0_0` from `.../weathernext_2_0_0_mean`.
-    Keeping only the head would render those two rows identically, which is
-    worse than not clipping at all.
-
-    **Prose** is cut at the end. A title or description carries its meaning
-    front-loaded, and splicing its two ends together reads as damage rather
-    than as truncation: `heavy-rainfall events with a...t least 5 years`.
+    How much of each end survives depends on what the text is. An
+    **identifier** is split evenly: a path carries as much meaning at its end
+    as its start. **Prose** keeps `_PROSE_HEAD_SHARE` of the budget as head,
+    since a title front-loads its meaning and reads as a truncation rather
+    than as damage — while still retaining enough tail to tell two similar
+    titles apart.
 
     Args:
         text: The text to shorten.
         limit: Maximum length of the result, including the ellipsis.
 
     Returns:
-        str: `text` unchanged when it fits, else a clipped form ending in
-        `...` for prose, or joining head and tail by `...` for an
-        identifier.
+        str: `text` unchanged when it fits, else its head and tail joined by
+        `...`.
     """
     if len(text) <= limit:
         return text
     keep = limit - 3
-    if _reads_as_prose(text):
+    share = _PROSE_HEAD_SHARE if _reads_as_prose(text) else 0.5
+    head = max(1, round(keep * share))
+    tail = keep - head
+    if tail <= 0:
         return text[:keep].rstrip() + "..."
-    head = (keep + 1) // 2
-    return text[:head].rstrip() + "..." + text[len(text) - (keep - head) :].lstrip()
+    return text[:head].rstrip() + "..." + text[len(text) - tail :].lstrip()
 
 
 def render_fragment(value: Any, field: str) -> str:
