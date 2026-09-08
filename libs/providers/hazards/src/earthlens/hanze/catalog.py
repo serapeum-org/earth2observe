@@ -34,7 +34,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
@@ -55,7 +55,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class ZenodoRecord(BaseModel):
+class ZenodoRecord(SummarisedLeaf):
     """The pinned Zenodo version record HANZE is fetched from.
 
     Attributes:
@@ -82,6 +82,12 @@ class ZenodoRecord(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "version",
+        "record",
+        "concept_doi",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     record: int
@@ -92,7 +98,7 @@ class ZenodoRecord(BaseModel):
     attribution: str = ""
 
 
-class HanzeFile(BaseModel):
+class HanzeFile(SummarisedLeaf):
     """One downloadable Zenodo object of the pinned HANZE record.
 
     Attributes:
@@ -109,6 +115,11 @@ class HanzeFile(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -169,7 +180,7 @@ class FloodType(SummarisedLeaf):
     description: str = ""
 
 
-class GeometryJoin(BaseModel):
+class GeometryJoin(SummarisedLeaf):
     """The region-shapefile join configuration for `with_geometry`.
 
     Attributes:
@@ -193,6 +204,8 @@ class GeometryJoin(BaseModel):
 
             ```
     """
+
+    _summary_fields = ("member_stem",)
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

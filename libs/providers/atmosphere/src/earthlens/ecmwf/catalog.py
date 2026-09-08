@@ -58,12 +58,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
 from earthlens.base import (
     AbstractCatalog,
     FluxableLeaf,
     Provider,
+    SummarisedLeaf,
     render_fragment,
 )
 from earthlens.base.catalog_source import (
@@ -865,7 +866,7 @@ class Variable(FluxableLeaf):
         return "-monthly" in self.cds_dataset
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One CDS dataset's section in the catalog.
 
     Mirrors the shape of a single `datasets.<name>:` block in the
@@ -926,6 +927,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "monthly",
+        "request_kind",
+        "grid_resolution",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

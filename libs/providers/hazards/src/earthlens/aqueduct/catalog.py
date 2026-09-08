@@ -93,7 +93,7 @@ class AdminLevel(SummarisedLeaf):
     container_zip: str | None = None
 
 
-class Scenario(BaseModel):
+class Scenario(SummarisedLeaf):
     """One climate × socio-economic scenario's code and valid years.
 
     Attributes:
@@ -113,6 +113,8 @@ class Scenario(BaseModel):
 
             ```
     """
+
+    _summary_fields = ("code",)
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -36,9 +36,9 @@ import datetime as _dt
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
-from earthlens.base import AbstractCatalog, FluxableLeaf
+from earthlens.base import AbstractCatalog, FluxableLeaf, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -262,7 +262,7 @@ class Variable(FluxableLeaf):
     long_name: str = ""
 
 
-class TemporalCoverage(BaseModel):
+class TemporalCoverage(SummarisedLeaf):
     """Temporal coverage of a CMEMS dataset (start + optional end).
 
     Mirrors the `temporal:` block in the YAML. `end: null` (or a
@@ -295,6 +295,11 @@ class TemporalCoverage(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "start",
+        "end",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start: str | None = None
@@ -317,7 +322,7 @@ class TemporalCoverage(BaseModel):
         return value
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One curated CMEMS dataset row.
 
     Mirrors a single `datasets.<dataset_id>:` block in one of the
@@ -359,6 +364,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "product",
+        "title",
+        "cadence",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

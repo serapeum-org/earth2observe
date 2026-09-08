@@ -39,7 +39,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 from pandas import DataFrame
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, ValidationError
+from pydantic import ConfigDict, Field, PrivateAttr, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
@@ -214,7 +214,7 @@ def native_source_crs(resolution: str) -> str:
 DEFAULT_TILED_RESOLUTIONS: tuple[str, ...] = ("10m", "100m", "3ss")
 
 
-class Availability(BaseModel):
+class Availability(SummarisedLeaf):
     """The (epochs × resolutions × CRS) a product offers for one release.
 
     Attributes:
@@ -236,6 +236,11 @@ class Availability(BaseModel):
             `{stem}_{region}_{release}/` sub-product directory (the R2022A
             layout) rather than directly under the family directory (R2023A).
     """
+
+    _summary_fields = (
+        "region",
+        "nested",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

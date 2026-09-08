@@ -24,7 +24,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
@@ -45,7 +45,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Variable(BaseModel):
+class Variable(SummarisedLeaf):
     """One selectable variable / band of a dataset.
 
     The friendly key (`"t2m"`, `"B04"`, `"elevation"`) is the map key in
@@ -78,6 +78,12 @@ class Variable(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "description",
+        "units",
+        "nc_variable",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

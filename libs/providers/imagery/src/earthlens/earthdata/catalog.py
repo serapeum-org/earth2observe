@@ -33,7 +33,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import (
-    BaseModel,
     ConfigDict,
     Field,
     PrivateAttr,
@@ -256,7 +255,7 @@ def _load_catalog_data(
     return _CATALOG_CACHE[key]
 
 
-class EarthdataDAAC(BaseModel):
+class EarthdataDAAC(SummarisedLeaf):
     """One DAAC's entry in the CMR provider registry (`providers.yaml`).
 
     Maps a CMR provider code (the `provider:` field on a dataset row,
@@ -286,6 +285,12 @@ class EarthdataDAAC(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "display_name",
+        "daac",
+        "s3_credentials_endpoint",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     cmr_provider: str
@@ -296,7 +301,7 @@ class EarthdataDAAC(BaseModel):
     s3_credentials_endpoint: str = ""
 
 
-class Band(BaseModel):
+class Band(SummarisedLeaf):
     """One band / variable's metadata row inside an Earthdata dataset.
 
     Bands are **informational** for the whole-granule fetch the MVP
@@ -319,13 +324,18 @@ class Band(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "long_name",
+        "units",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     long_name: str = ""
     units: str = ""
 
 
-class TemporalCoverage(BaseModel):
+class TemporalCoverage(SummarisedLeaf):
     """Temporal coverage of an Earthdata dataset (start + optional end).
 
     Mirrors the `temporal:` block in the YAML. `end: null` (or a
@@ -346,6 +356,11 @@ class TemporalCoverage(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "start",
+        "end",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

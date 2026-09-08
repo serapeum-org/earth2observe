@@ -27,7 +27,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
@@ -257,7 +257,7 @@ class Dataset(SummarisedLeaf):
         return self
 
 
-class Region(BaseModel):
+class Region(SummarisedLeaf):
     """One GTN-G first-order region row (RGI per-region download metadata).
 
     Attributes:
@@ -281,6 +281,11 @@ class Region(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "id",
+        "name",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

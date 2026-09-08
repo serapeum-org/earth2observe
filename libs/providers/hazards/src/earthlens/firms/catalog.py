@@ -31,7 +31,7 @@ import datetime as dt
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
@@ -50,7 +50,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class SensorColumn(BaseModel):
+class SensorColumn(SummarisedLeaf):
     """One FIRMS CSV column's metadata (the "variable" analog).
 
     A frozen value object describing a single column a sensor emits in
@@ -74,13 +74,18 @@ class SensorColumn(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "long_name",
+        "units",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     units: str = ""
     long_name: str = ""
 
 
-class Temporal(BaseModel):
+class Temporal(SummarisedLeaf):
     """A sensor's coverage window and quality tier.
 
     Attributes:
@@ -103,6 +108,11 @@ class Temporal(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "start",
+        "end",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

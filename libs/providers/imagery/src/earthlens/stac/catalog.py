@@ -26,7 +26,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
@@ -70,7 +70,7 @@ def _yaml_files_for(path: Path) -> list[Path]:
     return yaml_files_for(path, provider='STAC', shard_noun='per-endpoint')
 
 
-class Asset(BaseModel):
+class Asset(SummarisedLeaf):
     """Per-asset (band) metadata for one asset of a STAC collection.
 
     Frozen value object; the asset key is the parent mapping key and is not
@@ -83,6 +83,12 @@ class Asset(BaseModel):
         title: Human description of the asset, or `None`.
     """
 
+    _summary_fields = (
+        "common_name",
+        "title",
+        "dtype",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     common_name: str | None = None
@@ -91,7 +97,7 @@ class Asset(BaseModel):
     title: str | None = None
 
 
-class Extent(BaseModel):
+class Extent(SummarisedLeaf):
     """Spatial/temporal coverage of a STAC collection.
 
     Attributes:
@@ -100,6 +106,11 @@ class Extent(BaseModel):
         bbox: `[west, south, east, north]` in EPSG:4326, or `None` for global.
     """
 
+    _summary_fields = (
+        "start_date",
+        "end_date",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start_date: str | None = None
@@ -107,7 +118,7 @@ class Extent(BaseModel):
     bbox: tuple[float, float, float, float] | None = None
 
 
-class Endpoint(BaseModel):
+class Endpoint(SummarisedLeaf):
     """One STAC API endpoint: its URL, signer type, and optional region.
 
     Attributes:
@@ -119,6 +130,11 @@ class Endpoint(BaseModel):
             `"mpc-sas"`, `"earthdata"`, `"cdse"`, `"cdse-s3"`, `"bdc-token"`).
         region: Optional AWS region for requester-pays / S3 endpoints.
     """
+
+    _summary_fields = (
+        "key",
+        "region",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

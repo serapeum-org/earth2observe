@@ -32,7 +32,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
@@ -70,7 +70,7 @@ def _yaml_files_for(path: Path) -> list[Path]:
     return yaml_files_for(path, provider='Sentinel Hub')
 
 
-class Extent(BaseModel):
+class Extent(SummarisedLeaf):
     """Spatial/temporal coverage of a Sentinel Hub collection.
 
     Attributes:
@@ -79,6 +79,11 @@ class Extent(BaseModel):
         bbox: `[west, south, east, north]` in EPSG:4326, or `None` for global.
     """
 
+    _summary_fields = (
+        "start_date",
+        "end_date",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start_date: str | None = None
@@ -86,7 +91,7 @@ class Extent(BaseModel):
     bbox: tuple[float, float, float, float] | None = None
 
 
-class Band(BaseModel):
+class Band(SummarisedLeaf):
     """Per-band metadata for one band of a Sentinel Hub collection.
 
     Frozen value object; the band name is the parent mapping key and is not
@@ -100,6 +105,12 @@ class Band(BaseModel):
         resolution: Native ground sample distance in metres, or `None`.
         center_wavelength: Central wavelength in micrometres (optical), or `None`.
     """
+
+    _summary_fields = (
+        "common_name",
+        "description",
+        "units",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -162,7 +173,7 @@ class Collection(SummarisedLeaf):
         return list(self.default_bands or list(self.bands))
 
 
-class EvalscriptRecipe(BaseModel):
+class EvalscriptRecipe(SummarisedLeaf):
     """One curated evalscript recipe fixing a base collection + a `.js` file.
 
     Attributes:
@@ -177,6 +188,12 @@ class EvalscriptRecipe(BaseModel):
             for the Statistical API).
         description: One-line human summary, or `None`.
     """
+
+    _summary_fields = (
+        "description",
+        "kind",
+        "output_bands",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -208,7 +225,7 @@ class EvalscriptRecipe(BaseModel):
         return value
 
 
-class ResolvedRequest(BaseModel):
+class ResolvedRequest(SummarisedLeaf):
     """The uniform shape a resolved collection-or-recipe key takes.
 
     Both a plain collection and a recipe resolve to this so the backend's
@@ -226,6 +243,12 @@ class ResolvedRequest(BaseModel):
         kind: `"render"` or `"stats"` (recipes only; `"render"` for a plain
             collection).
     """
+
+    _summary_fields = (
+        "key",
+        "kind",
+        "sh_collection",
+    )
 
     model_config = ConfigDict(frozen=True)
 

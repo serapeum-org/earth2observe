@@ -33,7 +33,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
@@ -55,7 +55,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class ZenodoRecord(BaseModel):
+class ZenodoRecord(SummarisedLeaf):
     """The pinned Zenodo record FLODIS is fetched from.
 
     Attributes:
@@ -79,6 +79,12 @@ class ZenodoRecord(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "version",
+        "record",
+        "concept_doi",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -26,7 +26,7 @@ import difflib
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
@@ -42,7 +42,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class GOESChannel(BaseModel):
+class GOESChannel(SummarisedLeaf):
     """One of the 16 ABI spectral bands (reference metadata).
 
     Attributes:
@@ -59,13 +59,18 @@ class GOESChannel(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "name",
+        "wavelength_um",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     wavelength_um: float
     name: str = ""
 
 
-class GOESDomain(BaseModel):
+class GOESDomain(SummarisedLeaf):
     """One ABI scan domain (CONUS / Full Disk / Mesoscale).
 
     Attributes:
@@ -88,6 +93,11 @@ class GOESDomain(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "cadence_minutes",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
