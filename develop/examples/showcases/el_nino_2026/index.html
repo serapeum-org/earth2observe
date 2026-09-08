@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -25116,9 +25116,21 @@ plt.show()</div>
     <span class="c1"># Render once to mp4 (yuv444p avoids the chroma subsampling that would</span>
     <span class="c1"># otherwise degrade a GIF derived from it) and derive the GIF from that file</span>
     <span class="c1"># rather than re-rendering the whole animation a second time -- exactly</span>
-    <span class="c1"># cleopatra's own documented pattern for `gif_from_video`.</span>
+    <span class="c1"># cleopatra's own documented pattern for `gif_from_video`. Without an explicit</span>
+    <span class="c1"># full-range scale + color_range tag, ffmpeg's default RGB-&gt;YUV conversion</span>
+    <span class="c1"># compresses pixel values into 16-235 ("limited"/tv range) rather than the</span>
+    <span class="c1"># true 0-255 -- a real loss of contrast, not just a player misreading a tag,</span>
+    <span class="c1"># confirmed by inspecting the raw encoded Y-plane bytes. That reads pale/</span>
+    <span class="c1"># washed out in any player that doesn't guess the same limited-range</span>
+    <span class="c1"># convention ffmpeg's own decoder assumes.</span>
     <span class="n">mp4_path</span> <span class="o">=</span> <span class="n">gif_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".mp4"</span><span class="p">)</span>
-    <span class="n">glyph</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp4_path</span><span class="p">),</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span> <span class="n">pix_fmt</span><span class="o">=</span><span class="s2">"yuv444p"</span><span class="p">,</span> <span class="n">crf</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+    <span class="n">glyph</span><span class="o">.</span><span class="n">save_animation</span><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">mp4_path</span><span class="p">),</span>
+        <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span>
+        <span class="n">pix_fmt</span><span class="o">=</span><span class="s2">"yuv444p"</span><span class="p">,</span>
+        <span class="n">crf</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span>
+        <span class="n">extra_args</span><span class="o">=</span><span class="p">[</span><span class="s2">"-vf"</span><span class="p">,</span> <span class="s2">"scale=out_range=full"</span><span class="p">,</span> <span class="s2">"-color_range"</span><span class="p">,</span> <span class="s2">"pc"</span><span class="p">],</span>
+    <span class="p">)</span>
     <span class="n">gif_from_video</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mp4_path</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">gif_path</span><span class="p">),</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s2">"all"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">gif_path</span>
@@ -25330,9 +25342,21 @@ def animate_sst_anomaly(tif_paths, labels, extent, gif_path, fps=5):
     # Render once to mp4 (yuv444p avoids the chroma subsampling that would
     # otherwise degrade a GIF derived from it) and derive the GIF from that file
     # rather than re-rendering the whole animation a second time -- exactly
-    # cleopatra's own documented pattern for `gif_from_video`.
+    # cleopatra's own documented pattern for `gif_from_video`. Without an explicit
+    # full-range scale + color_range tag, ffmpeg's default RGB-&gt;YUV conversion
+    # compresses pixel values into 16-235 ("limited"/tv range) rather than the
+    # true 0-255 -- a real loss of contrast, not just a player misreading a tag,
+    # confirmed by inspecting the raw encoded Y-plane bytes. That reads pale/
+    # washed out in any player that doesn't guess the same limited-range
+    # convention ffmpeg's own decoder assumes.
     mp4_path = gif_path.with_suffix(".mp4")
-    glyph.save_animation(str(mp4_path), fps=fps, pix_fmt="yuv444p", crf=18)
+    glyph.save_animation(
+        str(mp4_path),
+        fps=fps,
+        pix_fmt="yuv444p",
+        crf=18,
+        extra_args=["-vf", "scale=out_range=full", "-color_range", "pc"],
+    )
     gif_from_video(str(mp4_path), str(gif_path), fps=fps)
     plt.close("all")
     return gif_path
