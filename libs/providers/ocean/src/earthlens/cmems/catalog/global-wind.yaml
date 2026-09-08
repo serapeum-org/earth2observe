@@ -940,13 +940,13 @@ datasets:
         units: '1'
         long_name: Wind speed number of observation
       product_info:
-        units: None
+        units: ''
         long_name: Status flag
       quality_level:
-        units: None
+        units: ''
         long_name: Aggregate quality flag
       rejection_flag:
-        units: None
+        units: ''
         long_name: Aggregate quality flag
       wind_speed:
         units: m s-1
@@ -989,13 +989,13 @@ datasets:
         units: '1'
         long_name: Wind speed number of observation
       product_info:
-        units: None
+        units: ''
         long_name: Status flag
       quality_level:
-        units: None
+        units: ''
         long_name: Aggregate quality flag
       rejection_flag:
-        units: None
+        units: ''
         long_name: Aggregate quality flag
       wind_speed:
         units: m s-1

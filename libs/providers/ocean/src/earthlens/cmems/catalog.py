@@ -293,17 +293,38 @@ class TemporalCoverage(SummarisedLeaf):
             True
 
             ```
-    """
+        - The summary reads as a range, and says so when neither date is
+          pinned:
 
-    _summary_fields = (
-        "start",
-        "end",
-    )
+            ```python
+            >>> from earthlens.cmems.catalog import TemporalCoverage
+            >>> print(TemporalCoverage(start="2007-01-01"))
+            TemporalCoverage(2007-01-01 to present)
+            >>> print(TemporalCoverage())
+            TemporalCoverage(dates unknown)
+
+            ```
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start: str | None = None
     end: str | None = None
+
+    def summary_parts(self) -> list[str]:
+        """Render the coverage as one date range rather than two bare dates.
+
+        Both fields are unset on about half the shipped rows, which as two
+        independent fragments would summarise to nothing at all. A range says
+        what the row means: an open end is the rolling NRT case, and no dates
+        at all is a catalogue that never pinned them.
+
+        Returns:
+            list[str]: A single fragment naming the range.
+        """
+        if self.start is None and self.end is None:
+            return ["dates unknown"]
+        return [f"{self.start or 'start unknown'} to {self.end or 'present'}"]
 
     @field_validator("start", "end", mode="before")
     @classmethod

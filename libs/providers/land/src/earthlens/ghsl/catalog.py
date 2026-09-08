@@ -327,6 +327,8 @@ class Product(SummarisedLeaf):
     _summary_fields = (
         "code",
         "unit",
+        "categorical",
+        "default_resolution",
     )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
