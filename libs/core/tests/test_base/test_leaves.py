@@ -105,14 +105,20 @@ class TestRenderFragment:
         """Surrounding whitespace never reaches the summary."""
         assert render_fragment("  K  ", "units") == "K"
 
-    @pytest.mark.parametrize(
-        "value, expected", [(0, "0"), (0.0, "0.0"), (False, "False")]
-    )
-    def test_falsy_scalars_still_render(self, value, expected):
-        """Zero and `False` are real values, unlike `None` — they are kept."""
+    @pytest.mark.parametrize("value, expected", [(0, "0"), (0.0, "0.0")])
+    def test_falsy_numbers_still_render(self, value, expected):
+        """Zero is a real value, unlike `None` — it is kept."""
         assert render_fragment(value, "count") == expected, (
             f"{value!r} should render as {expected!r}"
         )
+
+    def test_a_set_flag_renders_as_its_own_name(self):
+        """`categorical` says more than a bare `True` beside four other fragments."""
+        assert render_fragment(True, "categorical") == "categorical"
+
+    def test_a_clear_flag_renders_as_nothing(self):
+        """A flag that is off has nothing to contribute and only takes up room."""
+        assert render_fragment(False, "categorical") == ""
 
     @pytest.mark.parametrize(
         "value",
@@ -226,8 +232,8 @@ class TestSummarisedLeafStr:
         assert str(row) == "Sized(1 tag, 2 levels, 1 code, 2 frozen)"
 
     def test_falsy_numbers_are_kept(self):
-        """A zero count is a fact; only `None` and emptiness are dropped."""
-        assert str(Numeric()) == "Numeric(0, 0.0, False)"
+        """A zero count is a fact; a cleared flag is not."""
+        assert str(Numeric()) == "Numeric(0, 0.0)"
 
     def test_undeclared_leaf_prints_only_its_name(self):
         """A row declaring no fields says so honestly rather than guessing."""
@@ -435,3 +441,38 @@ class TestLengthAndWhitespace:
             id: str = "A/B"
 
         assert str(Other()) == "Other(A/B)"
+
+
+class TestSummaryLevelClip:
+    """Tests for the cap on the joined summary."""
+
+    def test_a_dropped_fragment_is_marked(self) -> None:
+        """A summary cut short says so rather than just ending."""
+
+        class Wide(SummarisedLeaf):
+            _summary_fields = ("a", "b", "c", "d", "e")
+
+            a: str = "x" * 55
+            b: str = "y" * 55
+            c: str = "z" * 55
+            d: str = "w" * 55
+            e: str = "v" * 55
+
+        rendered = str(Wide())
+        assert rendered.endswith(", ...)"), rendered
+
+    def test_the_cut_falls_on_a_fragment_boundary(self) -> None:
+        """Splicing a comma-separated list mid-word is what makes it unreadable."""
+
+        class Wide(SummarisedLeaf):
+            _summary_fields = ("a", "b", "c", "d", "e")
+
+            a: str = "x" * 55
+            b: str = "y" * 55
+            c: str = "z" * 55
+            d: str = "w" * 55
+            e: str = "v" * 55
+
+        body = str(Wide())[len("Wide(") : -1]
+        for fragment in body.split(", "):
+            assert fragment == "..." or len(set(fragment)) == 1, fragment

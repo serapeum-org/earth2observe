@@ -49,13 +49,14 @@ def _singular(field: str, count: int) -> str:
     return field[:-1] if field.endswith("s") else field
 
 
-#: Longest single fragment. The longest value any shipped row declares is a
-#: 174-character mswep description, and asset ids reach 95 characters; past
-#: this width a fragment stops informing and starts hiding the ones after it.
+#: Longest single fragment. The longest value a shipped row declares is a
+#: 335-character description, and asset ids reach 100; past this width a
+#: fragment stops informing and starts crowding out the ones after it.
 MAX_FRAGMENT = 60
 
-#: Longest joined summary, so a six-fragment row cannot reach 296 characters
-#: (the longest before this cap) and stop being one readable line.
+#: Longest joined summary, so a row with many fragments still reads as one
+#: line. The longest shipped summary sits at 189 characters — this cap plus
+#: the class name and brackets.
 MAX_SUMMARY = 180
 
 
@@ -163,6 +164,10 @@ def render_fragment(value: Any, field: str) -> str:
     """
     if value is None:
         return ""
+    if isinstance(value, bool):
+        # A flag reads as its own name when set; when clear it has nothing to
+        # say, and `False` beside four other fragments only takes up room.
+        return field if value else ""
     if isinstance(value, _SIZED):
         if not value:
             return ""
@@ -354,7 +359,20 @@ class SummarisedLeaf(BaseModel):
 
                 ```
         """
-        body = _clip(", ".join(self.summary_parts()), MAX_SUMMARY)
+        parts = self.summary_parts()
+        kept: list[str] = []
+        used = 0
+        for part in parts:
+            extra = len(part) + (2 if kept else 0)
+            if used + extra > MAX_SUMMARY:
+                break
+            kept.append(part)
+            used += extra
+        body = ", ".join(kept)
+        if len(kept) < len(parts):
+            # Cut on a fragment boundary rather than mid-word: splicing a
+            # comma-separated list is what makes a clipped summary unreadable.
+            body = f"{body}, ..." if body else "..."
         return f"{type(self).__name__}({body})"
 
 
