@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -24787,18 +24787,12 @@ forwards a <code>pressure_level</code> field; the catalog's per-row default is
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">cat</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"temperature"</span><span class="p">,</span> <span class="s2">"u-component-of-wind"</span><span class="p">,</span> <span class="s2">"v-component-of-wind"</span><span class="p">):</span>
     <span class="n">spec</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"reanalysis-era5-pressure-levels"</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">:</span><span class="s2">25s</span><span class="si">}</span><span class="s2">  nc=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">nc_variable</span><span class="si">:</span><span class="s2">5s</span><span class="si">}</span><span class="s2">  units=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">units</span><span class="si">:</span><span class="s2">5s</span><span class="si">}</span><span class="s2">  "</span>
-        <span class="sa">f</span><span class="s2">"levels=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">cds_pressure_level</span><span class="si">}</span><span class="s2">  is_flux=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">is_flux</span><span class="si">}</span><span class="s2">"</span>
-    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">code</span><span class="si">:</span><span class="s2">25s</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">  levels=</span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">cds_pressure_level</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">cat = Catalog()
 for code in ("temperature", "u-component-of-wind", "v-component-of-wind"):
     spec = cat.get_variable("reanalysis-era5-pressure-levels", code)
-    print(
-        f"{code:25s}  nc={spec.nc_variable:5s}  units={spec.units:5s}  "
-        f"levels={spec.cds_pressure_level}  is_flux={spec.is_flux}"
-    )</div>
+    print(f"{code:25s}  {spec}  levels={spec.cds_pressure_level}")</div>
 </div>
 </div>
 </div>

@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -24870,18 +24870,12 @@ ds.close()  # release the file handle before the next download</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.ecmwf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
 
 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">Catalog</span><span class="p">()</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="n">DATASET</span><span class="p">]</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">44</span><span class="si">}</span><span class="s2"> nc=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">nc_variable</span><span class="si">:</span><span class="s2">8</span><span class="si">}</span><span class="s2"> units=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">units</span><span class="si">:</span><span class="s2">6</span><span class="si">}</span><span class="s2"> "</span>
-        <span class="sa">f</span><span class="s2">"timespan=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'timespan'</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
-    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">44</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">  timespan=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'timespan'</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">from earthlens.ecmwf import Catalog
 
 for name, var in Catalog().datasets[DATASET].variables.items():
-    print(
-        f"{name:44} nc={var.nc_variable:8} units={var.units:6} "
-        f"timespan={var.extras.get('timespan')}"
-    )</div>
+    print(f"{name:44} {var}  timespan={var.extras.get('timespan')}")</div>
 </div>
 </div>
 </div>
