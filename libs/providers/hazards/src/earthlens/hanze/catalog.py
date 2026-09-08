@@ -156,7 +156,9 @@ class FloodType(SummarisedLeaf):
 
     Attributes:
         name: The flood type's catalog key, injected by the loader; the
-            row carries no other identifier.
+            row carries no other identifier. A body declaring a different
+            value is rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         description: Short note on what the flood type covers.
 
     Examples:

@@ -57,6 +57,9 @@ class AdminLevel(SummarisedLeaf):
     Attributes:
         level: The admin-level name, taken from the catalog key. Empty only
             for a row built directly rather than through the loader.
+            A body declaring a different value is
+            rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         zip: The zip file name the shapefile lives in — a direct download under
             `base_url` when :attr:`container_zip` is `None`, otherwise the entry
             to extract from that outer bundle first.

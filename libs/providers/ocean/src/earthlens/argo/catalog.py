@@ -48,7 +48,9 @@ class Family(SummarisedLeaf):
 
     Attributes:
         name: The family's catalog key, injected by the loader; the row
-            carries no other identifier.
+            carries no other identifier. A body declaring a different value is
+            rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         description: Short note on what the family covers.
         parameters: Map from canonical Argo parameter name (`"TEMP"`,
             `"DOXY"`) to its reporting units (`"degC"`).

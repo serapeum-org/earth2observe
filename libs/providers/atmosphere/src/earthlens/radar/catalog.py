@@ -89,6 +89,9 @@ class Station(SummarisedLeaf):
     Attributes:
         code: The station's catalog key (its ICAO id, e.g. `"KABR"`),
             injected by the loader; it is how a station is addressed.
+            A body declaring a different value is
+            rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         name: Human-readable site name / location.
         latitude: Site latitude in degrees (south negative).
         longitude: Site longitude in degrees (west negative).
