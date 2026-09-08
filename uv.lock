@@ -1227,7 +1227,7 @@ wheels = [
 
 [[package]]
 name = "cleopatra"
-version = "0.35.0"
+version = "0.37.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "hpc-utils" },
@@ -1237,9 +1237,9 @@ dependencies = [
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-15-earthlens-ocean-argo' and extra == 'extra-17-earthlens-imagery-openeo')" },
     { name = "pillow" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/56/85/d580c7ae662b5ead341314a67aee6282aed60ab324cd95ed52f6e7ee4c72/cleopatra-0.35.0.tar.gz", hash = "sha256:f09a56ac34c44c9ffa88db6383235d03cf4921333d7038efbb102aa8a03322c0", size = 5007971, upload-time = "2026-08-29T16:22:09.265Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/e7/659b1717f049e92f96b7c5754f3032806b0321d11b17814bf99f44725128/cleopatra-0.37.0.tar.gz", hash = "sha256:0e0cbe19c0a66d846d5bb1d93ee45ca5d13a6bc5826dc32fd2096faf9b728a05", size = 5063566, upload-time = "2026-09-07T20:26:34.38Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/1f/0ca8e48ae53d13e5a3f54744730b90326eab25d650d2377e85250d2fa194/cleopatra-0.35.0-py3-none-any.whl", hash = "sha256:c52d9ed64c3210e1d0f2d3981c280d8d2de3fe03f954d2b785700c98ef036f2d", size = 357224, upload-time = "2026-08-29T16:22:07.726Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/7f/953e45154f52fadc89658db626b1da037eaa69a83f03a49ede805ff27fe4/cleopatra-0.37.0-py3-none-any.whl", hash = "sha256:45f734a0de275e909edc2fa4ecec9cfaa2133f2cc38193692c75ad8d1369cb3c", size = 369947, upload-time = "2026-09-07T20:26:32.884Z" },
 ]
 
 [package.optional-dependencies]
@@ -1776,6 +1776,26 @@ wheels = [
 ]
 
 [[package]]
+name = "digitalearth"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cleopatra", extra = ["tiles"] },
+    { name = "geopandas" },
+    { name = "geostatista" },
+    { name = "loguru" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'extra-15-earthlens-ocean-argo' and extra == 'extra-17-earthlens-imagery-openeo')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-15-earthlens-ocean-argo' and extra == 'extra-17-earthlens-imagery-openeo')" },
+    { name = "pyramids-eo" },
+    { name = "pyramids-gis" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e2/b1/a3f400272433c01cc4711271c7db5091450a9ac1c84b4c4ead7519a74547/digitalearth-0.9.0.tar.gz", hash = "sha256:fa22edfe9c0aa9b55d5391b31d5d9888a8396e2d961d2fcb441258afd4ecf19e", size = 356431, upload-time = "2026-09-06T18:48:24.303Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e6/47/4d03f11a0bb5ffcb11e4b6b516fa20e0b2535bf444b1ecea49899a351e60/digitalearth-0.9.0-py3-none-any.whl", hash = "sha256:bb3d357a5462f2429e658b4e409d0908ec1bb3115bf07e49ed8fb9f36ac4057e", size = 247364, upload-time = "2026-09-06T18:48:23.207Z" },
+]
+
+[[package]]
 name = "distlib"
 version = "0.4.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2101,6 +2121,7 @@ dev = [
     { name = "cleopatra", extra = ["tiles"] },
     { name = "commitizen" },
     { name = "coverage" },
+    { name = "digitalearth" },
     { name = "hypothesis" },
     { name = "jupyter" },
     { name = "jupyterlab" },
@@ -2120,6 +2141,7 @@ dev = [
 ]
 docs = [
     { name = "cleopatra", extra = ["tiles"] },
+    { name = "digitalearth" },
     { name = "imageio-ffmpeg" },
     { name = "matplotlib" },
     { name = "mike" },
@@ -2240,6 +2262,7 @@ dev = [
     { name = "cleopatra", extras = ["tiles"], specifier = ">=0.35.0" },
     { name = "commitizen", specifier = ">=4.8.4" },
     { name = "coverage" },
+    { name = "digitalearth", specifier = ">=0.9.0" },
     { name = "hypothesis", specifier = ">=6.100" },
     { name = "jupyter" },
     { name = "jupyterlab", specifier = ">=4.6.2" },
@@ -2259,6 +2282,7 @@ dev = [
 ]
 docs = [
     { name = "cleopatra", extras = ["tiles"], specifier = ">=0.35.0" },
+    { name = "digitalearth", specifier = ">=0.9.0" },
     { name = "imageio-ffmpeg", specifier = ">=0.5" },
     { name = "matplotlib", specifier = ">=3.5" },
     { name = "mike", specifier = ">=2.1.3" },
@@ -3075,6 +3099,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/da/0c/b4e42a0495293f6c94364baba4c657c68bc8d8efec784259cc943f4ba28b/geopy-2.5.0.tar.gz", hash = "sha256:7b6c849f18108dcce4faa3d614e2801107b465f7b05fd3c1db9db12e225ae950", size = 122254, upload-time = "2026-07-12T19:50:06.051Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/66/e5/de8b557b279e31cdfb2070ac83eb45dc7e29bd93cd544128756f658e52c7/geopy-2.5.0-py3-none-any.whl", hash = "sha256:8ad8cc226b505ca4d272ae9a2eeba08b8a2c565fc9a04eaefc33ad49c32b51aa", size = 114619, upload-time = "2026-07-12T19:50:04.839Z" },
+]
+
+[[package]]
+name = "geostatista"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "geopandas" },
+    { name = "loguru" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'extra-15-earthlens-ocean-argo' and extra == 'extra-17-earthlens-imagery-openeo')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-15-earthlens-ocean-argo' and extra == 'extra-17-earthlens-imagery-openeo')" },
+    { name = "pyramids-gis" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'extra-15-earthlens-ocean-argo' and extra == 'extra-17-earthlens-imagery-openeo')" },
+    { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-15-earthlens-ocean-argo' and extra == 'extra-17-earthlens-imagery-openeo')" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/69/fa/70b8a9beb1d617e91770dceff7fc56e770dd5212504e4077bd9e051b49b4/geostatista-0.3.0.tar.gz", hash = "sha256:7b7e810fad6f71f2547f93526fb3952c8fb0857b2681a21024a6a42616c2c3d5", size = 52240, upload-time = "2026-09-05T00:45:35.992Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/20/3e/53305f3b4c83fd7001dc0b2aa758c3780727f4aac2a08cb1508b628d24c0/geostatista-0.3.0-py3-none-any.whl", hash = "sha256:0b22a133a3c0aff0cbd255410beb795f9601a3af04de597faac0d8031085a20e", size = 41587, upload-time = "2026-09-05T00:45:34.787Z" },
 ]
 
 [[package]]

@@ -154,6 +154,16 @@ dev = [
     # It arrives transitively through pyramids-gis[viz], but an imported package
     # is declared here rather than relied on to come in sideways.
     "cleopatra[tiles] >=0.35.0",
+    # digitalearth: the visualisation layer the example notebooks compose their
+    # maps, charts and animations with. It sits on top of pyramids + cleopatra --
+    # `quickmap` auto-styles a pyramids Dataset/FeatureCollection into a finished
+    # Map, `Map.animate` renders a Dataset stack on one shared colour scale, and
+    # `grid` / `shared_colorbar` lay several maps out in a single figure -- so the
+    # notebooks stop hand-rolling matplotlib around pyramids' own plot(). 0.9.0 is
+    # the floor because it is the first release whose `Map.animate` takes the
+    # per-frame `titles=` the timelapse notebooks pass. Not a runtime dep of
+    # earthlens itself.
+    "digitalearth >=0.9.0",
     "pre-commit >=3.7.1",
     "pre-commit-hooks >=4.6.0",
     # mypy: the `mypy` pre-commit hook and the lint.yml `static` job type-check src.
@@ -229,6 +239,9 @@ docs = [
     # It arrives transitively through pyramids-gis[viz], but an imported package
     # is declared here rather than relied on to come in sideways.
     "cleopatra[tiles] >=0.35.0",
+    # digitalearth: mkdocs-jupyter renders the example notebooks, which import it
+    # for their maps, charts and animations. Also in `dev` -- see the comment there.
+    "digitalearth >=0.9.0",
     # python-dotenv: showcase notebooks load credentials from a repo-root .env.
     "python-dotenv >=1.0",
     # scipy: the satellite showcase blurs the logo's drop shadow with
