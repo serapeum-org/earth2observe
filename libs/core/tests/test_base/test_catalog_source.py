@@ -34,7 +34,8 @@ class TestRowFieldsWithKey:
             row_fields_with_key({"code": "KOUN"}, "code", "KTLX", noun="station")
         message = str(excinfo.value)
         assert "station" in message
-        assert "'KTLX'" in message and "'KOUN'" in message
+        assert "'KTLX'" in message
+        assert "'KOUN'" in message
         assert "code=" in message
 
     @pytest.mark.parametrize("body", [None, {}], ids=["none", "empty"])
@@ -53,7 +54,8 @@ class TestRowFieldsWithKey:
         fields = row_fields_with_key(
             {"name": "Norman", "latitude": 35.2}, "code", "KTLX"
         )
-        assert fields["name"] == "Norman" and fields["latitude"] == 35.2
+        assert fields["name"] == "Norman"
+        assert fields["latitude"] == 35.2
 
     def test_the_default_noun_is_used_when_none_is_given(self) -> None:
         """A caller that does not name its row kind still gets a readable error."""

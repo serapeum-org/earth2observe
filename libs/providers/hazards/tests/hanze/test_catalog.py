@@ -227,8 +227,9 @@ class TestFloodTypeIdentity:
             "  River: {name: Coastal, description: Riverine.}",
             1,
         )
+        path = _write(tmp_path, body)
         with pytest.raises(ValueError, match="does not match the key"):
-            Catalog.load(_write(tmp_path, body))
+            Catalog.load(path)
 
     def test_the_key_is_injected_when_the_body_omits_it(self, tmp_path: Path) -> None:
         """The same loader path, with nothing in the body to override the key."""

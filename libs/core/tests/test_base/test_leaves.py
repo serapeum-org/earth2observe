@@ -378,7 +378,8 @@ class TestLengthAndWhitespace:
             "projects/malariaatlasproject/assets/accessibility/friction_surface/2019_v5_1",
             "id",
         )
-        assert "..." in rendered and not rendered.endswith("..."), rendered
+        assert "..." in rendered, rendered
+        assert not rendered.endswith("..."), rendered
 
     def test_a_real_shipped_title_is_clipped_as_prose(self):
         """A synthetic value cannot show the heuristic meets real catalog text."""
