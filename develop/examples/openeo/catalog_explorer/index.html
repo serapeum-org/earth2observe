@@ -24547,16 +24547,12 @@ print('available processes  (full index):', len(cat.available_processes))</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">col</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_collection</span><span class="p">(</span><span class="s1">'sentinel-2-l2a'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'collection_id:'</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">collection_id</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'cadence:      '</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">cadence</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'resolution:   '</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="s1">'m'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'default bands:'</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">default_bands</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'all bands:    '</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">bands</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">col = cat.get_collection('sentinel-2-l2a')
-print('collection_id:', col.collection_id)
-print('cadence:      ', col.cadence)
-print('resolution:   ', col.resolution, 'm')
+print(col)
 print('default bands:', col.default_bands)
 print('all bands:    ', col.bands)</div>
 </div>

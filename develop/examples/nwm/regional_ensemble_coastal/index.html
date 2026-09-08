@@ -24813,8 +24813,7 @@ domain, <code>step_width</code>, cadence and horizon the backend uses to build k
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">hi</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s1">'short_range_hawaii'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="s1">'domain:'</span><span class="p">,</span>
-    <span class="n">hi</span><span class="o">.</span><span class="n">domain</span><span class="p">,</span>
+    <span class="n">hi</span><span class="p">,</span>
     <span class="s1">'| step_width:'</span><span class="p">,</span>
     <span class="n">hi</span><span class="o">.</span><span class="n">step_width</span><span class="p">,</span>
     <span class="s1">'| cadence(min):'</span><span class="p">,</span>
@@ -24825,8 +24824,7 @@ domain, <code>step_width</code>, cadence and horizon the backend uses to build k
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">hi = cat.get_config('short_range_hawaii')
 print(
-    'domain:',
-    hi.domain,
+    hi,
     '| step_width:',
     hi.step_width,
     '| cadence(min):',

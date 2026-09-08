@@ -24625,11 +24625,11 @@ print('recipes:', len(cat.recipes))</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">resolved</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="s1">'sentinel-2-l2a-ndvi'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">resolved</span><span class="o">.</span><span class="n">sh_collection</span><span class="p">,</span> <span class="n">resolved</span><span class="o">.</span><span class="n">evalscript</span><span class="p">,</span> <span class="n">resolved</span><span class="o">.</span><span class="n">is_recipe</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resolved</span><span class="p">,</span> <span class="s1">'|'</span><span class="p">,</span> <span class="n">resolved</span><span class="o">.</span><span class="n">evalscript</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">read_evalscript</span><span class="p">(</span><span class="n">resolved</span><span class="o">.</span><span class="n">evalscript</span><span class="p">))</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">resolved = cat.resolve('sentinel-2-l2a-ndvi')
-print(resolved.sh_collection, resolved.evalscript, resolved.is_recipe)
+print(resolved, '|', resolved.evalscript)
 print(read_evalscript(resolved.evalscript))</div>
 </div>
 </div>
