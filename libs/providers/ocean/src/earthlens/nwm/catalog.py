@@ -25,7 +25,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
 from earthlens.base import AbstractCatalog, OutputKind, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
@@ -77,7 +77,7 @@ class NWMVariable(SummarisedLeaf):
     long_name: str = ""
 
 
-class NWMProduct(BaseModel):
+class NWMProduct(SummarisedLeaf):
     """One NWM product's row (the "dataset" analog).
 
     The product key (`"chrtout"`) is the parent key in
@@ -115,6 +115,12 @@ class NWMProduct(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "product",
+        "description",
+        "output_kind",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     product: str
@@ -151,7 +157,7 @@ class NWMProduct(BaseModel):
         return named
 
 
-class NWMConfig(BaseModel):
+class NWMConfig(SummarisedLeaf):
     """One NWM operational configuration's row.
 
     The configuration key (`"short_range"`) is the parent key in
@@ -199,6 +205,12 @@ class NWMConfig(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "key",
+        "description",
+        "domain",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

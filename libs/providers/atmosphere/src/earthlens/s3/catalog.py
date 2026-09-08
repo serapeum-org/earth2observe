@@ -24,9 +24,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -45,7 +45,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Variable(BaseModel):
+class Variable(SummarisedLeaf):
     """One selectable variable / band of a dataset.
 
     The friendly key (`"t2m"`, `"B04"`, `"elevation"`) is the map key in
@@ -79,6 +79,12 @@ class Variable(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "description",
+        "units",
+        "nc_variable",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     native: str
@@ -89,7 +95,7 @@ class Variable(BaseModel):
     nc_variable: str | None = None
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One registered (or passthrough) AWS Open-Data S3 dataset.
 
     Carries everything the backend needs to turn a uniform request into S3
@@ -137,6 +143,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "bucket",
+        "cadence",
+        "format",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

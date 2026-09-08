@@ -20,9 +20,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -82,7 +82,7 @@ def _load_catalog_data(path: Path) -> dict[str, Product]:
     return rows
 
 
-class Product(BaseModel):
+class Product(SummarisedLeaf):
     """One PVGIS tool's catalog row.
 
     The product id is the parent key in `Catalog.datasets`; the row carries
@@ -111,6 +111,11 @@ class Product(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "tool",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

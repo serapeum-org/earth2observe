@@ -33,9 +33,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, ValidationError
+from pydantic import ConfigDict, Field, PrivateAttr, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog, yaml_files_for
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -235,7 +235,7 @@ def _parse_catalog(files: list[Path]) -> tuple[list[str], dict[str, HdxDataset]]
     return merged_available, structural
 
 
-class HdxDataset(BaseModel):
+class HdxDataset(SummarisedLeaf):
     """One curated HDX dataset row.
 
     Mirrors a single `datasets.<key>:` block in one of the per-theme
@@ -277,6 +277,12 @@ class HdxDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "hdx_id",
+        "org",
+        "title",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

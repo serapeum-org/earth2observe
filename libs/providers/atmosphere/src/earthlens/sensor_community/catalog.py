@@ -28,9 +28,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -50,7 +50,7 @@ def clear_catalog_cache() -> None:
 PollutantGroup = Literal["particulate", "meteorological", "other"]
 
 
-class Pollutant(BaseModel):
+class Pollutant(SummarisedLeaf):
     """One Sensor.Community pollutant's dispatch row.
 
     The user-facing name is the parent key in `Catalog.pollutants` and is
@@ -81,6 +81,13 @@ class Pollutant(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "display_name",
+        "units",
+        "group",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

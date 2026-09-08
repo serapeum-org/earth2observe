@@ -18,8 +18,9 @@ from earthlens.radar import StationCatalog
 
 cat = StationCatalog()
 len(cat.datasets)                       # 210
-cat.get_station("KTLX")                 # Station(name='Oklahoma City', ...)
-cat.in_bbox(-100, 33, -95, 37)          # ['KFDR', 'KINX', 'KTLX', 'KVNX', ...]
+cat.get_station("KTLX")                 # Station(code='KTLX', name='Oklahoma City', ...)
+print(cat.get_station("KTLX"))          # Station(KTLX, Oklahoma City, OK)
+cat.in_bbox(-100, 33, -95, 37)          # ['KCRI', 'KFDR', 'KINX', 'KOUN', 'KTLX', ...]
 ```
 
 `get_station` raises a `ValueError` with a did-you-mean hint for an

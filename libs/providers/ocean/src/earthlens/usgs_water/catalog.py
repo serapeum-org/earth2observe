@@ -25,9 +25,9 @@ import re
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -104,7 +104,7 @@ ParameterGroup = Literal[
 ]
 
 
-class Parameter(BaseModel):
+class Parameter(SummarisedLeaf):
     """One NWIS parameter code's catalog row.
 
     The user-facing name is the parent key in
@@ -133,6 +133,12 @@ class Parameter(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "code",
+        "name",
+        "units",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -369,3 +369,29 @@ class TestRegionAndVeg:
         veg = Catalog().get("GHS_BUILT_C_VEG")
         assert veg.categorical is True
         assert veg.legend is None
+
+
+@pytest.mark.ghsl
+class TestProductSummary:
+    """A product's summary says more than the key it is already filed under."""
+
+    def test_a_measured_product_names_its_unit_and_resolution(self):
+        """The two things a caller picks a raster product by."""
+        assert str(Catalog().get("GHS_POP")) == "Product(GHS_POP, people/cell, 100m)"
+
+    def test_a_categorical_product_says_it_is_categorical(self):
+        """Class codes carry no unit, so without the flag the row said nothing."""
+        assert str(Catalog().get("GHS_SMOD")) == "Product(GHS_SMOD, categorical, 1km)"
+
+    def test_a_tabular_product_says_it_is_a_table(self):
+        """A side table has neither unit nor pixel size."""
+        assert str(Catalog().get("GHS_DUC")) == "Product(GHS_DUC, table)"
+
+    def test_no_product_summarises_to_its_code_alone(self):
+        """19 of the 29 rows used to render as nothing but their catalog key."""
+        bare = [
+            product.code
+            for product in Catalog().datasets.values()
+            if str(product) == f"Product({product.code})"
+        ]
+        assert not bare, f"{len(bare)} products summarise to just their code: {bare}"

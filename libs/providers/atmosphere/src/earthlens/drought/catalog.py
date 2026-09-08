@@ -27,9 +27,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -149,7 +149,7 @@ def _load_catalog_data(
     return _CATALOG_CACHE[key]
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One curated drought dataset row (USDM / EDO / GDO / SPEIbase).
 
     Mirrors a single `datasets.<id>:` block in one of the per-source
@@ -210,6 +210,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "id",
+        "source",
+        "cadence",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

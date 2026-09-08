@@ -28,9 +28,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -138,7 +138,7 @@ def _load_catalog_data(path: Path) -> dict[str, Any]:
     return parsed
 
 
-class Variable(BaseModel):
+class Variable(SummarisedLeaf):
     """One requestable variable and the archive column it maps to.
 
     The friendly name is the parent key in the catalog's `variables:` block and
@@ -171,6 +171,12 @@ class Variable(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "description",
+        "units",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -212,7 +218,7 @@ class Variable(BaseModel):
         return self.column
 
 
-class ArchiveFile(BaseModel):
+class ArchiveFile(SummarisedLeaf):
     """One downloadable Zenodo artifact and how it is packaged.
 
     Attributes:
@@ -243,6 +249,12 @@ class ArchiveFile(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "record",
+        "root_prefix",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -283,7 +295,7 @@ class ArchiveFile(BaseModel):
         return f"https://zenodo.org/api/records/{self.record}/files/{self.name}/content"
 
 
-class Source(BaseModel):
+class Source(SummarisedLeaf):
     """One source dataset directory inside an archive.
 
     An extension is a Zenodo record; a source is a folder *within* it. Every
@@ -297,13 +309,18 @@ class Source(BaseModel):
         name: Human-readable name of the upstream dataset.
     """
 
+    _summary_fields = (
+        "name",
+        "n_catchments",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     n_catchments: int = 0
     name: str = ""
 
 
-class Version(BaseModel):
+class Version(SummarisedLeaf):
     """One pinned, reproducible release of an extension.
 
     Attributes:
@@ -321,6 +338,12 @@ class Version(BaseModel):
         column_set: Which timeseries column-set variant this release ships.
         files: Per timeseries format, the :class:`ArchiveFile` to read.
     """
+
+    _summary_fields = (
+        "doi",
+        "release_date",
+        "n_catchments",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -353,7 +376,7 @@ class Version(BaseModel):
         return archive
 
 
-class Extension(BaseModel):
+class Extension(SummarisedLeaf):
     """One Caravan extension — a Zenodo record set with its releases.
 
     Attributes:
@@ -383,6 +406,12 @@ class Extension(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "key",
+        "title",
+        "default_version",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

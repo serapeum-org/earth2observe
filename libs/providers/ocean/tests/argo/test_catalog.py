@@ -71,3 +71,37 @@ def test_malformed_family_row_raises(tmp_path):
     bad.write_text("families:\n  phy:\n    bogus: 1\n", encoding="utf-8")
     with pytest.raises(ValueError, match="failed validation"):
         Catalog.load(bad)
+
+
+def test_family_name_carries_the_catalog_key():
+    """The family key is the only identifier; the row body does not hold it."""
+    catalog = Catalog()
+    for key, family in catalog.datasets.items():
+        assert family.name == key, f"{key} row carries name={family.name!r}"
+
+
+def test_family_summary_leads_with_the_name():
+    """Without the key the summary would open with a sentence of description."""
+    assert str(Catalog().datasets["phy"]).startswith("Family(phy,")
+
+
+def test_a_body_contradicting_the_key_is_rejected(tmp_path):
+    """A family filed under one key may not claim another; it would misname itself."""
+    path = tmp_path / "argo_data_catalog.yaml"
+    path.write_text("families:\n  phy:\n    name: bgc\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="does not match the key"):
+        Catalog.load(path)
+
+
+def test_a_body_repeating_the_key_is_accepted(tmp_path):
+    """Restating the key is redundant, not wrong."""
+    path = tmp_path / "argo_data_catalog.yaml"
+    path.write_text("families:\n  phy:\n    name: phy\n", encoding="utf-8")
+    assert Catalog.load(path)["phy"].name == "phy"
+
+
+def test_the_key_is_injected_when_the_body_omits_it(tmp_path):
+    """The same loader path, with nothing in the body to override the key."""
+    path = tmp_path / "argo_data_catalog.yaml"
+    path.write_text("families:\n  phy:\n    description: d\n", encoding="utf-8")
+    assert Catalog.load(path)["phy"].name == "phy"

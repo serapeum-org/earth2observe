@@ -62,7 +62,7 @@ class ProvisionalValueError(ValueError):
     """
 
 
-class MswepVersion(BaseModel):
+class MswepVersion(SummarisedLeaf):
     """One dataset version and the Drive root folder it lives in.
 
     Roots are version-stamped and coexist in the share (`MSWEP_V280`
@@ -86,6 +86,12 @@ class MswepVersion(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "version",
+        "description",
+        "provisional",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -187,7 +193,7 @@ class MswepVariant(SummarisedLeaf):
         return not (self.end is not None and day > self.end)
 
 
-class MswepResolution(BaseModel):
+class MswepResolution(SummarisedLeaf):
     """One temporal resolution: its Drive folder and file-name stem.
 
     Attributes:
@@ -212,6 +218,11 @@ class MswepResolution(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "resolution",
+        "units",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     resolution: str = ""
@@ -222,7 +233,7 @@ class MswepResolution(BaseModel):
     provisional: bool = False
 
 
-class MswepVariable(BaseModel):
+class MswepVariable(SummarisedLeaf):
     """One requestable variable.
 
     For MSWEP this is the single `precipitation` field. For MSWX the key
@@ -246,6 +257,12 @@ class MswepVariable(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "variable",
+        "long_name",
+        "provisional",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     variable: str = ""
@@ -255,7 +272,7 @@ class MswepVariable(BaseModel):
     provisional: bool = False
 
 
-class GaugeMetadataFile(BaseModel):
+class GaugeMetadataFile(SummarisedLeaf):
     """One auxiliary gauge-metadata CSV.
 
     Attributes:
@@ -273,13 +290,18 @@ class GaugeMetadataFile(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "name",
+        "description",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     name: str = ""
     description: str = ""
 
 
-class GaugeMetadata(BaseModel):
+class GaugeMetadata(SummarisedLeaf):
     """The `Gauge_metadata` folder and the CSVs inside it.
 
     Describes the rain gauges behind MSWEP's gauge-correction step. The
@@ -303,13 +325,15 @@ class GaugeMetadata(BaseModel):
             ```
     """
 
+    _summary_fields = ("files",)
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     folder: str = "Gauge_metadata"
     files: dict[str, GaugeMetadataFile] = Field(default_factory=dict)
 
 
-class MswepProduct(BaseModel):
+class MswepProduct(SummarisedLeaf):
     """One product (`mswep` or `mswx`) and everything needed to path it.
 
     Attributes:
@@ -337,6 +361,12 @@ class MswepProduct(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "product",
+        "description",
+        "default_version",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -19,9 +19,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -37,7 +37,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class CatRaReDataset(BaseModel):
+class CatRaReDataset(SummarisedLeaf):
     """One CatRaRE threshold selection's spec.
 
     The threshold key (`"t5"` / `"w3"`) is the parent key in
@@ -57,6 +57,11 @@ class CatRaReDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "threshold",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -19,9 +19,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_measure
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -35,7 +35,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class DEMDataset(BaseModel):
+class DEMDataset(SummarisedLeaf):
     """One Copernicus DEM dataset row.
 
     A frozen value object that pins the exact S3 bucket, region, and the
@@ -70,6 +70,27 @@ class DEMDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "key",
+        "long_name",
+    )
+
+    def summary_parts(self) -> list[str]:
+        """Append the nominal resolution with its unit.
+
+        `native_resolution_m` is a bare metre count, so rendering it as a declared field
+        put a lone number beside the other fragments with nothing saying what
+        it measured.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m"` when known.
+        """
+        parts = super().summary_parts()
+        measure = render_measure(self.native_resolution_m)
+        if measure:
+            parts.append(measure)
+        return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
