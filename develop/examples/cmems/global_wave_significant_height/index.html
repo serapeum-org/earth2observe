@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -12796,6 +12796,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../showcases/el_nino_2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 2026 Super El Nino — a climbing index and a warming ocean
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../showcases/european_heatwave_summer_2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Europe's summer of extreme heat, 2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../showcase/earthlens-satellites/" class="md-nav__link">
         
   
@@ -24647,15 +24703,17 @@ point (NE Atlantic, west of Brittany) used later for the time-series.</p>
 <span class="n">POINT_LAT</span><span class="p">,</span> <span class="n">POINT_LON</span> <span class="o">=</span> <span class="mf">48.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">16.0</span>  <span class="c1"># NE Atlantic, west of Brittany</span>
 
 <span class="n">ds_meta</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">DATASET_ID</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">DATASET_ID</span><span class="si">}</span><span class="s1">: domain=</span><span class="si">{</span><span class="n">ds_meta</span><span class="o">.</span><span class="n">domain</span><span class="si">}</span><span class="s1">, cadence=</span><span class="si">{</span><span class="n">ds_meta</span><span class="o">.</span><span class="n">cadence</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'VHM0 units:'</span><span class="p">,</span> <span class="n">ds_meta</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">'VHM0'</span><span class="p">]</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ds_meta</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'domain: </span><span class="si">{</span><span class="n">ds_meta</span><span class="o">.</span><span class="n">domain</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ds_meta</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">'VHM0'</span><span class="p">])</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">DATASET_ID = 'cmems_mod_glo_wav_my_0.2deg_PT3H-i'
 POINT_LAT, POINT_LON = 48.0, -16.0  # NE Atlantic, west of Brittany
 
 ds_meta = Catalog().get_dataset(DATASET_ID)
-print(f'{DATASET_ID}: domain={ds_meta.domain}, cadence={ds_meta.cadence}')
-print('VHM0 units:', ds_meta.variables['VHM0'].units)</div>
+print(ds_meta)
+print(f'domain: {ds_meta.domain}')
+print(ds_meta.variables['VHM0'])</div>
 </div>
 </div>
 </div>
