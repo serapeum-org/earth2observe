@@ -115,7 +115,7 @@ class TestStationIdentity:
     def test_code_carries_the_site_id(self):
         """The station is addressed by its ICAO id, which is not in the row body."""
         catalog = StationCatalog()
-        for site_id, station in list(catalog.datasets.items())[:5]:
+        for site_id, station in catalog.datasets.items():
             assert station.code == site_id, (
                 f"{site_id} row carries code={station.code!r}"
             )

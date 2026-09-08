@@ -169,7 +169,7 @@ def test_load_accepts_explicit_path(tmp_path: Path) -> None:
 class TestParseRowsKeyField:
     """Tests for the `key_field` opt-in on the shared row parser."""
 
-    def test_the_key_is_copied_onto_each_row(self):
+    def test_the_key_is_copied_onto_each_row(self) -> None:
         """An admin level is addressed by its key, which the body does not carry."""
         rows = catalog_module._parse_rows(
             {"country": {"zip": "c.zip", "shapefile_stem": "c"}},
@@ -180,8 +180,8 @@ class TestParseRowsKeyField:
         )
         assert rows["country"].level == "country"
 
-    def test_without_the_opt_in_nothing_is_injected(self):
-        """`Scenario` shares this parser and declares no such field."""
+    def test_without_the_opt_in_nothing_is_injected(self) -> None:
+        """Without the opt-in the parser leaves the row exactly as the file wrote it."""
         rows = catalog_module._parse_rows(
             {"country": {"zip": "c.zip", "shapefile_stem": "c"}},
             AdminLevel,
@@ -190,7 +190,7 @@ class TestParseRowsKeyField:
         )
         assert rows["country"].level == ""
 
-    def test_a_body_contradicting_the_key_is_rejected(self):
+    def test_a_body_contradicting_the_key_is_rejected(self) -> None:
         """A row filed under one key may not claim another; it would misname itself."""
         with pytest.raises(ValueError, match="does not match the key"):
             catalog_module._parse_rows(
@@ -201,7 +201,7 @@ class TestParseRowsKeyField:
                 key_field="level",
             )
 
-    def test_a_body_repeating_the_key_is_accepted(self):
+    def test_a_body_repeating_the_key_is_accepted(self) -> None:
         """Restating the key is redundant, not wrong."""
         rows = catalog_module._parse_rows(
             {"country": {"level": "country", "zip": "c.zip", "shapefile_stem": "c"}},
@@ -212,7 +212,7 @@ class TestParseRowsKeyField:
         )
         assert rows["country"].level == "country"
 
-    def test_the_bundled_levels_carry_their_key(self):
+    def test_the_bundled_levels_carry_their_key(self) -> None:
         """The shipped catalog goes through the same path."""
         for key, level in Catalog().datasets.items():
             assert level.level == key, f"{key} row carries level={level.level!r}"

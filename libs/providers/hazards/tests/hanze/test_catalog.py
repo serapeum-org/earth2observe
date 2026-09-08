@@ -206,33 +206,34 @@ class TestLoad:
             Catalog.load(path)
 
 
-def test_flood_type_name_carries_the_catalog_key():
-    """`description` is the row's only other field, so the key is the identifier."""
-    catalog = Catalog()
-    for key, flood_type in catalog.datasets.items():
-        assert flood_type.name == key, f"{key} row carries name={flood_type.name!r}"
+@pytest.mark.hanze
+class TestFloodTypeIdentity:
+    """Tests for the type string the loader copies onto each flood type."""
 
+    def test_flood_type_name_carries_the_catalog_key(self) -> None:
+        """`description` is the row's only other field, so the key is the identifier."""
+        catalog = Catalog()
+        for key, flood_type in catalog.datasets.items():
+            assert flood_type.name == key, f"{key} row carries name={flood_type.name!r}"
 
-def test_flood_type_summary_leads_with_the_name():
-    """Without the key the summary would open with a sentence of description."""
-    assert str(Catalog().datasets["River"]).startswith("FloodType(River,")
+    def test_flood_type_summary_leads_with_the_name(self) -> None:
+        """Without the key the summary would open with a sentence of description."""
+        assert str(Catalog().datasets["River"]).startswith("FloodType(River,")
 
+    def test_a_body_contradicting_the_key_is_rejected(self, tmp_path: Path) -> None:
+        """A flood type filed under one key may not claim another."""
+        path = tmp_path / "hanze_data_catalog.yaml"
+        path.write_text(
+            CATALOG_PATH.read_text(encoding="utf-8").replace(
+                "  River:\n", "  River:\n    name: Coastal\n", 1
+            ),
+            encoding="utf-8",
+        )
+        with pytest.raises(ValueError, match="does not match the key"):
+            Catalog.load(path)
 
-def test_a_body_contradicting_the_key_is_rejected(tmp_path):
-    """A flood type filed under one key may not claim another."""
-    path = tmp_path / "hanze_data_catalog.yaml"
-    path.write_text(
-        CATALOG_PATH.read_text(encoding="utf-8").replace(
-            "  River:\n", "  River:\n    name: Coastal\n", 1
-        ),
-        encoding="utf-8",
-    )
-    with pytest.raises(ValueError, match="does not match the key"):
-        Catalog.load(path)
-
-
-def test_the_key_is_injected_when_the_body_omits_it(tmp_path):
-    """The same loader path, with nothing in the body to override the key."""
-    path = tmp_path / "hanze_data_catalog.yaml"
-    path.write_text(CATALOG_PATH.read_text(encoding="utf-8"), encoding="utf-8")
-    assert Catalog.load(path).datasets["River"].name == "River"
+    def test_the_key_is_injected_when_the_body_omits_it(self, tmp_path: Path) -> None:
+        """The same loader path, with nothing in the body to override the key."""
+        path = tmp_path / "hanze_data_catalog.yaml"
+        path.write_text(CATALOG_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+        assert Catalog.load(path).datasets["River"].name == "River"
