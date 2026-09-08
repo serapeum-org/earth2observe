@@ -159,10 +159,16 @@ dev = [
     # `quickmap` auto-styles a pyramids Dataset/FeatureCollection into a finished
     # Map, `Map.animate` renders a Dataset stack on one shared colour scale, and
     # `grid` / `shared_colorbar` lay several maps out in a single figure -- so the
-    # notebooks stop hand-rolling matplotlib around pyramids' own plot(). 0.9.0 is
-    # the floor because it is the first release whose `Map.animate` takes the
-    # per-frame `titles=` the timelapse notebooks pass. Not a runtime dep of
-    # earthlens itself.
+    # notebooks stop hand-rolling matplotlib around pyramids' own plot(). Not a
+    # runtime dep of earthlens itself.
+    #
+    # FLOOR IS STALE ON PURPOSE: the showcase notebooks call
+    # `Map.animate(kind="rgb_composite", ...)` and hand `animate` a
+    # DatasetCollection, neither of which 0.9.0 supports -- 0.9.0 rejects the
+    # composite kind outright, and a collection iterates to numpy arrays there.
+    # Both land in Digital-Earth#153 (issues #150 / #154 / #155). Raise this to
+    # `>=0.10.0` and re-lock as soon as that release is cut; until then the true
+    # colour notebooks only run against a source install of that branch.
     "digitalearth >=0.9.0",
     "pre-commit >=3.7.1",
     "pre-commit-hooks >=4.6.0",
