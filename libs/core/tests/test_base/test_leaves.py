@@ -11,6 +11,7 @@ from earthlens.base.leaves import (
     MAX_SUMMARY,
     FluxableLeaf,
     SummarisedLeaf,
+    _clip,
     render_fragment,
     render_measure,
 )
@@ -69,6 +70,22 @@ class Nested(SummarisedLeaf):
 
     id: str = "outer"
     inner: Undeclared | None = None
+
+
+class Wide(SummarisedLeaf):
+    """A leaf whose five fragments together overrun `MAX_SUMMARY`.
+
+    Each field is one repeated character, so a fragment that survived the cut
+    intact is recognisable by holding a single distinct character.
+    """
+
+    _summary_fields = ("a", "b", "c", "d", "e")
+
+    a: str = "x" * 55
+    b: str = "y" * 55
+    c: str = "z" * 55
+    d: str = "w" * 55
+    e: str = "v" * 55
 
 
 class Var(FluxableLeaf):
@@ -358,6 +375,8 @@ class TestSummaryFieldsDeclaration:
         with pytest.raises(TypeError, match="annotated without ClassVar"):
 
             class Swallowed(SummarisedLeaf):
+                """The annotated spelling pydantic captures as a private attr."""
+
                 _summary_fields: tuple[str, ...] = ("id",)
 
                 id: str = "A/B"
@@ -367,6 +386,8 @@ class TestSummaryFieldsDeclaration:
         with pytest.raises(TypeError, match=r"degrade to 'Swallowed\(\)'"):
 
             class Swallowed(SummarisedLeaf):
+                """The annotated spelling pydantic captures as a private attr."""
+
                 _summary_fields: tuple[str, ...] = ("id",)
 
                 id: str = "A/B"
@@ -474,6 +495,8 @@ class TestLengthAndWhitespace:
         with pytest.raises(TypeError, match="_summary_field"):
 
             class Typo(SummarisedLeaf):
+                """The singular misspelling nothing would ever read."""
+
                 _summary_field = ("id",)
 
                 id: str = "A/B"
@@ -482,6 +505,8 @@ class TestLengthAndWhitespace:
         """Only near-misses of the declaration name are refused."""
 
         class Other(SummarisedLeaf):
+            """A private name that is not a near-miss of the declaration."""
+
             _cache_key = "x"
             _summary_fields = ("id",)
 
@@ -490,36 +515,48 @@ class TestLengthAndWhitespace:
         assert str(Other()) == "Other(A/B)"
 
 
+class TestClipAtTinyLimits:
+    """Tests for `_clip`'s guard against a limit with no room for a tail.
+
+    Neither module constant reaches it — at `MAX_FRAGMENT` the weighted split
+    leaves 14 characters of tail — so the guard is only exercised by a caller
+    passing a very small limit. Untested it would be free to return a string
+    longer than the limit it was given.
+    """
+
+    @pytest.mark.parametrize(
+        "text",
+        ["hello world", "S2A_MSIL2A_T31UFT"],
+        ids=["prose", "identifier"],
+    )
+    def test_a_limit_leaving_no_tail_keeps_only_the_head(self, text):
+        """Both shares round to the whole of a one-character budget."""
+        assert _clip(text, 4) == f"{text[0]}..."
+
+    def test_the_result_never_exceeds_the_limit(self):
+        """Splicing a tail onto a one-character head would overrun it."""
+        for limit in range(4, 12):
+            assert len(_clip("hello world", limit)) <= limit, limit
+
+    def test_trailing_whitespace_is_dropped_before_the_ellipsis(self):
+        """`a ...` reads as a gap in the text rather than a cut."""
+        assert _clip("a   bcdefgh", 5) == "a..."
+
+    def test_a_text_that_fits_is_returned_unchanged(self):
+        """The guard sits past the fits-already exit, not in front of it."""
+        assert _clip("abcd", 4) == "abcd"
+
+
 class TestSummaryLevelClip:
     """Tests for the cap on the joined summary."""
 
     def test_a_dropped_fragment_is_marked(self) -> None:
         """A summary cut short says so rather than just ending."""
-
-        class Wide(SummarisedLeaf):
-            _summary_fields = ("a", "b", "c", "d", "e")
-
-            a: str = "x" * 55
-            b: str = "y" * 55
-            c: str = "z" * 55
-            d: str = "w" * 55
-            e: str = "v" * 55
-
         rendered = str(Wide())
         assert rendered.endswith(", ...)"), rendered
 
     def test_the_cut_falls_on_a_fragment_boundary(self) -> None:
         """Splicing a comma-separated list mid-word is what makes it unreadable."""
-
-        class Wide(SummarisedLeaf):
-            _summary_fields = ("a", "b", "c", "d", "e")
-
-            a: str = "x" * 55
-            b: str = "y" * 55
-            c: str = "z" * 55
-            d: str = "w" * 55
-            e: str = "v" * 55
-
         body = str(Wide())[len("Wide(") : -1]
         for fragment in body.split(", "):
             assert fragment == "..." or len(set(fragment)) == 1, fragment
