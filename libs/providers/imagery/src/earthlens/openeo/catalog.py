@@ -110,10 +110,14 @@ class Band(SummarisedLeaf):
     """
 
     _summary_fields = (
+        "id",
         "common_name",
-        "description",
         "units",
     )
+
+    id: str = Field(
+        default="", exclude=True
+    )  # mirrors the band key; not part of the row's data
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -341,7 +345,7 @@ def _load_catalog_data(
         bands_yaml = dict(body.pop("bands", {}) or {})
         try:
             bands = {
-                name: Band(**dict(band_body or {}))
+                name: Band(**{"id": name, **dict(band_body or {})})
                 for name, band_body in bands_yaml.items()
             }
             extent = Extent(**dict(extent_body)) if extent_body else None
