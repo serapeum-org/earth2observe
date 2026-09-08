@@ -96,6 +96,21 @@ class Asset(SummarisedLeaf):
     nodata: float | int | None = None
     title: str | None = None
 
+    def summary_parts(self) -> list[str]:
+        """Name the fill value, which on some assets is all the row carries.
+
+        Declared as an override rather than a `_summary_fields` entry so the
+        number is labelled: a bare trailing `0` reads as a truncation.
+
+        Returns:
+            list[str]: The declared fragments, plus the labelled fill value
+            when the asset declares one.
+        """
+        parts = super().summary_parts()
+        if self.nodata is not None:
+            parts.append(f"nodata {self.nodata:g}")
+        return parts
+
 
 class Extent(SummarisedLeaf):
     """Spatial/temporal coverage of a STAC collection.

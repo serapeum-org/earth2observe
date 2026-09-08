@@ -173,3 +173,11 @@ class TestStationIdentity:
         assert "code" not in station.model_dump()
         assert station.code == "KTLX"
         assert "code:" not in str(StationCatalog())
+
+    def test_the_injected_code_participates_in_equality(self):
+        """`frozen=True` makes the new field part of `__eq__`, so record it."""
+        catalogued = StationCatalog().datasets["KTLX"]
+        without_code = Station(**catalogued.model_dump())
+        assert without_code != catalogued
+        assert Station(code="KTLX", **catalogued.model_dump()) == catalogued
+        assert hash(without_code) != hash(catalogued)

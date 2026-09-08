@@ -576,6 +576,54 @@ def test_row_summaries_are_one_line(module_name: str, class_name: str):
         )
 
 
+def _populated_fields(row: BaseModel) -> list[str]:
+    """Return the names of `row`'s fields that carry something.
+
+    Args:
+        row: Any pydantic row.
+
+    Returns:
+        list[str]: The field names whose value is neither `None` nor an empty
+        string or collection. `0` and `False` count as populated, matching
+        `render_fragment`.
+    """
+    empty: tuple[Any, ...] = (None, "", [], {}, (), set(), frozenset())
+    return [
+        name
+        for name in type(row).model_fields
+        if not any(
+            getattr(row, name, None) is blank or getattr(row, name, None) == blank
+            for blank in empty
+        )
+    ]
+
+
+@pytest.mark.parametrize("module_name, class_name", CATALOG_BACKENDS)
+def test_a_row_that_holds_something_summarises_to_something(
+    module_name: str, class_name: str
+):
+    """No row renders as a bare `ClassName()` while carrying real values.
+
+    `SummarisedLeaf` calls an empty summary the honest answer for an empty
+    row, and it is — but a row that *does* hold values and still renders as
+    nothing has declared the wrong fields, which is strictly worse than the
+    pydantic dump it replaced. Three backends shipped that way.
+    """
+    rows = _reachable_summarised_rows(_build(module_name, class_name))
+    if not rows:
+        pytest.skip(f"{module_name} exposes no summarising rows")
+    silent = [
+        (type(row).__name__, _populated_fields(row))
+        for row in rows
+        if str(row) == f"{type(row).__name__}()" and _populated_fields(row)
+    ]
+    assert not silent, (
+        f"{module_name} renders {len(silent)} populated row(s) as an empty "
+        f"summary, e.g. {silent[0][0]} carrying {silent[0][1]}. Declare a "
+        "field that identifies the row, or compose one in summary_parts()."
+    )
+
+
 #: Catalog container classes, which hold rows rather than being one. Kept as an
 #: escape hatch: a backend whose container genuinely subclasses `BaseModel`
 #: (rather than `AbstractCatalog`) would otherwise trip the gate below.

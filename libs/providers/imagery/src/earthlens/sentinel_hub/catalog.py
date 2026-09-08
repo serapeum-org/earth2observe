@@ -90,6 +90,22 @@ class Extent(SummarisedLeaf):
     end_date: str | None = None
     bbox: tuple[float, float, float, float] | None = None
 
+    def summary_parts(self) -> list[str]:
+        """Fall back to the footprint when the collection pins no dates.
+
+        `bbox` is a tuple, so declaring it would render as a count rather
+        than the corners. A collection that pins neither date would otherwise
+        summarise to nothing at all.
+
+        Returns:
+            list[str]: The declared date fragments, or the bounding box when
+            there are none.
+        """
+        parts = super().summary_parts()
+        if parts or self.bbox is None:
+            return parts
+        return [f"bbox {', '.join(format(edge, 'g') for edge in self.bbox)}"]
+
 
 class Band(SummarisedLeaf):
     """Per-band metadata for one band of a Sentinel Hub collection.

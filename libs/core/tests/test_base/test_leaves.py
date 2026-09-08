@@ -400,6 +400,13 @@ class TestLengthAndWhitespace:
         base = "projects/gcp-public-data-weathernext/assets/weathernext_2_0_0"
         assert render_fragment(base, "id") != render_fragment(base + "_mean", "id")
 
+    def test_clipping_keeps_the_tail_that_distinguishes_two_titles(self):
+        """The prose mirror of the path case: a shared head, a differing tail."""
+        head = "Global Ocean Physics Reanalysis, daily mean fields for the "
+        assert render_fragment(head + "Atlantic", "title") != render_fragment(
+            head + "Pacific", "title"
+        )
+
     def test_a_fragment_at_the_limit_is_left_alone(self):
         """Clipping starts past the limit, not at it."""
         exact = "x" * MAX_FRAGMENT
