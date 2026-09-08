@@ -237,10 +237,29 @@ class Availability(SummarisedLeaf):
             layout) rather than directly under the family directory (R2023A).
     """
 
-    _summary_fields = (
-        "region",
-        "nested",
-    )
+    _summary_fields = ("region",)
+
+    def summary_parts(self) -> list[str]:
+        """Append the epoch span and the resolutions actually offered.
+
+        `epochs` and `resolutions` are lists, so declaring them would render
+        two counts rather than what is available — and a count does not tell
+        two releases apart.
+
+        Returns:
+            list[str]: The region, then the epoch span and the resolutions.
+        """
+        parts = super().summary_parts()
+        if self.epochs:
+            span = (
+                f"{min(self.epochs)}-{max(self.epochs)}"
+                if len(self.epochs) > 1
+                else str(self.epochs[0])
+            )
+            parts.append(span)
+        if self.resolutions:
+            parts.append("/".join(str(r) for r in self.resolutions))
+        return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

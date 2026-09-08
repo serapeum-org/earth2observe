@@ -220,10 +220,14 @@ class Dataset(SummarisedLeaf):
     """
 
     _summary_fields = (
-        "start_date",
+        "name",
         "region",
         "temporal_resolution",
     )
+
+    name: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -455,6 +459,7 @@ def _build_chc_dataset(
 
     try:
         ds = Dataset(
+            name=ds_key,
             ftp_bases=ds_body["ftp_bases"],
             file_patterns=ds_body.get("file_patterns") or None,
             discrete_files=ds_body.get("discrete_files") or None,

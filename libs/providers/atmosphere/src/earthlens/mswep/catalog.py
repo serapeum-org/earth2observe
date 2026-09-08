@@ -219,9 +219,8 @@ class MswepResolution(SummarisedLeaf):
     """
 
     _summary_fields = (
-        "folder",
-        "units",
         "resolution",
+        "units",
     )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -326,7 +325,7 @@ class GaugeMetadata(SummarisedLeaf):
             ```
     """
 
-    _summary_fields = ("folder",)
+    _summary_fields = ("files",)
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
