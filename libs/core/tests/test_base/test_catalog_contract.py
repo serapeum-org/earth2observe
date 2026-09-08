@@ -576,8 +576,74 @@ def test_row_summaries_are_one_line(module_name: str, class_name: str):
         )
 
 
-#: Catalog container classes, which hold rows rather than being one.
+#: Catalog container classes, which hold rows rather than being one. Kept as an
+#: escape hatch: a backend whose container genuinely subclasses `BaseModel`
+#: (rather than `AbstractCatalog`) would otherwise trip the gate below.
 _CONTAINER_CLASSES = {"Catalog", "StationCatalog"}
+
+
+def _provider_catalog_sources() -> list[tuple[pathlib.Path, str]]:
+    """Return `(path, source)` for every provider `catalog.py`.
+
+    Resolved from this test file rather than from `earthlens.base.__file__`:
+    under a non-editable wheel install the package lives in `site-packages`
+    and the source tree is not beneath it, so a package-relative glob would
+    match nothing and every check built on it would pass by scanning zero
+    files.
+
+    Returns:
+        list[tuple[pathlib.Path, str]]: One pair per provider catalog module.
+    """
+    root = pathlib.Path(__file__).resolve().parents[3] / "providers"
+    return [
+        (path, path.read_text(encoding="utf-8"))
+        for path in sorted(root.glob("*/src/earthlens/*/catalog.py"))
+    ]
+
+
+def _basemodel_aliases(tree: ast.Module) -> set[str]:
+    """Return every name in `tree` that refers to `pydantic.BaseModel`.
+
+    `from pydantic import BaseModel as Model` and a bare `import pydantic`
+    both hide the class from a plain name match, which is how a row could
+    quietly rejoin `BaseModel` without tripping the gate.
+
+    Args:
+        tree: The parsed module.
+
+    Returns:
+        set[str]: The local names bound to `BaseModel`, plus the dotted
+        spellings reachable through an imported `pydantic` module.
+    """
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module == "pydantic":
+            names |= {a.asname or a.name for a in node.names if a.name == "BaseModel"}
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "pydantic":
+                    names.add(f"{alias.asname or 'pydantic'}.BaseModel")
+    return names
+
+
+def _base_names(node: ast.ClassDef) -> set[str]:
+    """Return the spellings of `node`'s bases, plain and dotted.
+
+    Args:
+        node: A class definition.
+
+    Returns:
+        set[str]: `"BaseModel"` for a bare base, `"pydantic.BaseModel"` for an
+        attribute base, ignoring subscripted generics like
+        `AbstractCatalog[Row]`.
+    """
+    spellings = set()
+    for base in node.bases:
+        if isinstance(base, ast.Name):
+            spellings.add(base.id)
+        elif isinstance(base, ast.Attribute) and isinstance(base.value, ast.Name):
+            spellings.add(f"{base.value.id}.{base.attr}")
+    return spellings
 
 
 def _row_classes_still_on_basemodel() -> list[str]:
@@ -588,21 +654,35 @@ def _row_classes_still_on_basemodel() -> list[str]:
     populates would never be instantiated at all. Reading the source catches
     both.
 
+    Walks every class in the module, not only the top-level ones, and resolves
+    `BaseModel` through its import aliases, so the spellings a plain name match
+    would miss are still seen.
+
     Returns:
         list[str]: `"<backend>.<ClassName>"` for each row still on
         `BaseModel`, sorted.
     """
-    root = pathlib.Path(earthlens.base.__file__).parents[3].parent
     found = []
-    for path in sorted(root.glob("providers/*/src/earthlens/*/catalog.py")):
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        for node in tree.body:
+    for path, source in _provider_catalog_sources():
+        tree = ast.parse(source)
+        aliases = _basemodel_aliases(tree)
+        for node in ast.walk(tree):
             if not isinstance(node, ast.ClassDef):
                 continue
-            bases = [b.id for b in node.bases if isinstance(b, ast.Name)]
-            if "BaseModel" in bases and node.name not in _CONTAINER_CLASSES:
+            if node.name in _CONTAINER_CLASSES:
+                continue
+            if _base_names(node) & aliases:
                 found.append(f"{path.parent.name}.{node.name}")
     return sorted(found)
+
+
+def test_the_catalog_scan_actually_reads_the_sources():
+    """Guard the guard: the gate below is worthless if it scans nothing."""
+    sources = _provider_catalog_sources()
+    assert len(sources) > 40, (
+        f"only {len(sources)} provider catalog modules found; "
+        "test_every_catalog_row_summarises_itself would pass vacuously"
+    )
 
 
 def test_every_catalog_row_summarises_itself():
