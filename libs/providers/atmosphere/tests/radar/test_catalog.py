@@ -166,3 +166,10 @@ class TestStationIdentity:
         )
         monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
         assert StationCatalog().datasets["KTLX"].code == "KTLX"
+
+    def test_the_injected_code_stays_out_of_the_serialised_row(self):
+        """It mirrors the key, so dumping it would repeat `dataset_id` and widen the YAML."""
+        station = StationCatalog().datasets["KTLX"]
+        assert "code" not in station.model_dump()
+        assert station.code == "KTLX"
+        assert "code:" not in str(StationCatalog())

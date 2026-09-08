@@ -87,7 +87,9 @@ class AdminLevel(SummarisedLeaf):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    level: str = ""
+    level: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     zip: str
     shapefile_stem: str
     container_zip: str | None = None

@@ -109,7 +109,9 @@ class Station(SummarisedLeaf):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    code: str = ""
+    code: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     name: str = ""
     latitude: float = Field(ge=-90.0, le=90.0)
     longitude: float = Field(ge=-180.0, le=180.0)

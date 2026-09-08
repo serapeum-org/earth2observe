@@ -176,7 +176,9 @@ class FloodType(SummarisedLeaf):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    name: str = ""
+    name: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     description: str = ""
 
 

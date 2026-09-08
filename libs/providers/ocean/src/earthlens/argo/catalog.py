@@ -71,7 +71,9 @@ class Family(SummarisedLeaf):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    name: str = ""
+    name: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     description: str = ""
     parameters: dict[str, str] = Field(default_factory=dict)
 
