@@ -55,7 +55,7 @@ class AdminLevel(SummarisedLeaf):
     :attr:`level` so a resolved level is self-describing.
 
     Attributes:
-        level: The admin-level name, copied from the catalog key. Empty only
+        level: The admin-level name, taken from the catalog key. Empty only
             for a row built directly rather than through the loader.
         zip: The zip file name the shapefile lives in — a direct download under
             `base_url` when :attr:`container_zip` is `None`, otherwise the entry
@@ -139,7 +139,9 @@ def _parse_rows(
         label: The row kind, named in a validation error (`"admin level"`).
         key_field: When given, the mapping key is copied onto each row under
             this field name, so a row that is addressed by its key can name
-            itself. A body that already declares it wins.
+            itself. The key is authoritative: a body may repeat it, but a body
+            that declares a different value is rejected rather than allowed to
+            misname the row.
 
     Returns:
         dict[str, Any]: One validated `model` instance per key.
@@ -152,7 +154,14 @@ def _parse_rows(
         try:
             fields = dict(body or {})
             if key_field:
-                fields.setdefault(key_field, name)
+                declared = fields.get(key_field, name)
+                if declared != name:
+                    raise ValueError(
+                        f"{path} {label} {name!r} declares {key_field}="
+                        f"{declared!r}, which does not match the key it is "
+                        f"filed under. Remove the field or rename the entry."
+                    )
+                fields[key_field] = name
             parsed[name] = model(**fields)
         except ValidationError as exc:
             raise ValueError(

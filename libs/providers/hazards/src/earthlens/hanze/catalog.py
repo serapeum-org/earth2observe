@@ -215,6 +215,32 @@ class GeometryJoin(SummarisedLeaf):
     crs: str = "EPSG:3035"
 
 
+def _flood_type(name: str, body: Any) -> FloodType:
+    """Build one `FloodType`, taking its name from the catalog key.
+
+    Args:
+        name: The mapping key the row is filed under.
+        body: The row body from the catalog YAML.
+
+    Returns:
+        FloodType: The row, with `name` set from the key.
+
+    Raises:
+        ValueError: If the body declares a `name` that differs from the key,
+            which would leave the row misnaming how it is addressed.
+    """
+    fields = dict(body or {})
+    declared = fields.get("name", name)
+    if declared != name:
+        raise ValueError(
+            f"flood type {name!r} declares name={declared!r}, which does not "
+            "match the key it is filed under. Remove the field or rename the "
+            "entry."
+        )
+    fields["name"] = name
+    return FloodType(**fields)
+
+
 def _parse_catalog(files: list[Path]) -> dict[str, Any]:
     """Parse the HANZE catalog YAML into the :class:`Catalog` field payload.
 
@@ -254,8 +280,7 @@ def _parse_catalog(files: list[Path]) -> dict[str, Any]:
             name: HanzeFile(**dict(body or {})) for name, body in files_yaml.items()
         }
         flood_types = {
-            name: FloodType(**{"name": name, **dict(body or {})})
-            for name, body in flood_types_yaml.items()
+            name: _flood_type(name, body) for name, body in flood_types_yaml.items()
         }
         geometry = GeometryJoin(**dict(geometry_yaml))
     except ValidationError as exc:

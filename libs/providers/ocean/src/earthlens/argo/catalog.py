@@ -100,7 +100,14 @@ def _parse_argo_catalog(files: list[Path]):
     families: dict[str, Family] = {}
     for name, body in families_yaml.items():
         try:
-            families[name] = Family(**{"name": name, **dict(body or {})})
+            declared = dict(body or {}).get("name", name)
+            if declared != name:
+                raise ValueError(
+                    f"{catalog_path} family {name!r} declares name={declared!r}, "
+                    "which does not match the key it is filed under. Remove "
+                    "the field or rename the entry."
+                )
+            families[name] = Family(**{**dict(body or {}), "name": name})
         except ValidationError as exc:
             raise ValueError(
                 f"{catalog_path} family {name!r} failed validation:\n{exc}"

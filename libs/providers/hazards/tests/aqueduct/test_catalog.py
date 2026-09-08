@@ -190,16 +190,27 @@ class TestParseRowsKeyField:
         )
         assert rows["country"].level == ""
 
-    def test_a_body_declaring_the_field_wins(self):
-        """The catalog file stays authoritative over the mapping key."""
+    def test_a_body_contradicting_the_key_is_rejected(self):
+        """A row filed under one key may not claim another; it would misname itself."""
+        with pytest.raises(ValueError, match="does not match the key"):
+            catalog_module._parse_rows(
+                {"country": {"level": "basin", "zip": "c.zip", "shapefile_stem": "c"}},
+                AdminLevel,
+                Path("catalog.yaml"),
+                "admin level",
+                key_field="level",
+            )
+
+    def test_a_body_repeating_the_key_is_accepted(self):
+        """Restating the key is redundant, not wrong."""
         rows = catalog_module._parse_rows(
-            {"country": {"level": "explicit", "zip": "c.zip", "shapefile_stem": "c"}},
+            {"country": {"level": "country", "zip": "c.zip", "shapefile_stem": "c"}},
             AdminLevel,
             Path("catalog.yaml"),
             "admin level",
             key_field="level",
         )
-        assert rows["country"].level == "explicit"
+        assert rows["country"].level == "country"
 
     def test_the_bundled_levels_carry_their_key(self):
         """The shipped catalog goes through the same path."""

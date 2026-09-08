@@ -125,19 +125,34 @@ class TestStationIdentity:
         station = StationCatalog().datasets["KABR"]
         assert str(station).startswith("Station(KABR,"), str(station)
 
-    def test_a_body_declaring_code_wins(self, tmp_path, monkeypatch):
-        """Through the loader, a catalog body's own `code` survives the injected key."""
+    def test_a_body_contradicting_the_key_is_rejected(self, tmp_path, monkeypatch):
+        """A row filed under one id may not claim another; it would misname itself."""
         path = tmp_path / "stations.yaml"
         path.write_text(
             "stations:\n"
             "  KTLX:\n"
-            "    code: EXPLICIT\n"
+            "    code: KOUN\n"
             "    name: Norman\n"
             "    latitude: 35.2\n"
             "    longitude: -97.4\n"
         )
         monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
-        assert StationCatalog().datasets["KTLX"].code == "EXPLICIT"
+        with pytest.raises(ValueError, match="does not match the key"):
+            StationCatalog()
+
+    def test_a_body_repeating_the_key_is_accepted(self, tmp_path, monkeypatch):
+        """Restating the key is redundant, not wrong."""
+        path = tmp_path / "stations.yaml"
+        path.write_text(
+            "stations:\n"
+            "  KTLX:\n"
+            "    code: KTLX\n"
+            "    name: Norman\n"
+            "    latitude: 35.2\n"
+            "    longitude: -97.4\n"
+        )
+        monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
+        assert StationCatalog().datasets["KTLX"].code == "KTLX"
 
     def test_the_key_is_injected_when_the_body_omits_it(self, tmp_path, monkeypatch):
         """The same loader path, with nothing in the body to override the key."""

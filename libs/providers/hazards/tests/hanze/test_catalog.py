@@ -218,16 +218,17 @@ def test_flood_type_summary_leads_with_the_name():
     assert str(Catalog().datasets["River"]).startswith("FloodType(River,")
 
 
-def test_a_body_declaring_name_wins(tmp_path):
-    """Through the loader, a catalog body's own `name` survives the injected key."""
+def test_a_body_contradicting_the_key_is_rejected(tmp_path):
+    """A flood type filed under one key may not claim another."""
     path = tmp_path / "hanze_data_catalog.yaml"
     path.write_text(
         CATALOG_PATH.read_text(encoding="utf-8").replace(
-            "  River:\n", "  River:\n    name: explicit\n", 1
+            "  River:\n", "  River:\n    name: Coastal\n", 1
         ),
         encoding="utf-8",
     )
-    assert Catalog.load(path).datasets["River"].name == "explicit"
+    with pytest.raises(ValueError, match="does not match the key"):
+        Catalog.load(path)
 
 
 def test_the_key_is_injected_when_the_body_omits_it(tmp_path):

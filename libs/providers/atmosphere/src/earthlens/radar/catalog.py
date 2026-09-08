@@ -70,7 +70,14 @@ def _parse_stations(files: list[Path]) -> dict[str, Station]:
     stations: dict[str, Station] = {}
     for site_id, body in rows.items():
         try:
-            stations[site_id] = Station(**{"code": site_id, **(body or {})})
+            declared = (body or {}).get("code", site_id)
+            if declared != site_id:
+                raise ValueError(
+                    f"{path} station {site_id!r} declares code={declared!r}, "
+                    "which does not match the key it is filed under. Remove "
+                    "the field or rename the entry."
+                )
+            stations[site_id] = Station(**{**(body or {}), "code": site_id})
         except ValidationError as exc:
             raise ValueError(
                 f"{path} station {site_id!r} failed validation:\n{exc}"
