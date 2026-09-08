@@ -223,6 +223,14 @@ notebooks = [
     # repo-root .env, so `uv sync --group dev --group notebooks` has to supply it --
     # `dev` does not, and the `docs` / `notebook` groups are a different profile.
     "python-dotenv >=1.0",
+    # digitalearth's three renderer tiers beyond the matplotlib one, for the
+    # notebooks that showcase them: `interactive` (HoloViz -- pan/zoom, hover,
+    # time scrubber), `3d` (PyVista -- terrain meshes and orbit fly-throughs) and
+    # `web` (MapLibre + deck.gl -- a self-contained shareable HTML map). They live
+    # here rather than in `dev` because they are a heavy stack -- geoviews,
+    # datashader, pyvista, trame, geovista, maplibre, lonboard -- that only four
+    # notebooks need, and `dev` is synced for every test run.
+    "digitalearth[interactive,3d,web] >=0.9.0",
 ]
 docs = [
     "mkdocs >=1.5.3",
