@@ -16,7 +16,9 @@ backend is covered the moment it ships.
 
 from __future__ import annotations
 
+import ast
 import importlib
+import pathlib
 from typing import Any
 
 import pytest
@@ -24,6 +26,7 @@ import yaml
 from loguru import logger
 from pydantic import BaseModel
 
+import earthlens.base
 from earthlens._backends import discover_backends
 from earthlens.base import AbstractCatalog
 from earthlens.base.abstractdatasource import _WARNED_EMPTY_CATALOGS
@@ -491,7 +494,7 @@ def test_the_cross_backend_gates_are_not_vacuous():
         f"only {len(CATALOG_BACKENDS)} backend catalogs importable; the "
         "cross-backend gates would pass vacuously"
     )
-    assert len(SUMMARISED_LEAVES) > 10, (
+    assert len(SUMMARISED_LEAVES) > 100, (
         f"only {len(SUMMARISED_LEAVES)} summarising rows discovered; the "
         "summary gates would pass vacuously"
     )
@@ -571,3 +574,49 @@ def test_row_summaries_are_one_line(module_name: str, class_name: str):
         assert rendered.startswith(f"{type(row).__name__}("), (
             f"{module_name} row summary does not name its class: {rendered!r}"
         )
+
+
+#: Catalog container classes, which hold rows rather than being one.
+_CONTAINER_CLASSES = {"Catalog", "StationCatalog"}
+
+
+def _row_classes_still_on_basemodel() -> list[str]:
+    """Find provider catalog row classes that do not summarise themselves.
+
+    Static rather than runtime: a class only registers as a `SummarisedLeaf`
+    subclass once its module is imported, and a row that no shipped catalog
+    populates would never be instantiated at all. Reading the source catches
+    both.
+
+    Returns:
+        list[str]: `"<backend>.<ClassName>"` for each row still on
+        `BaseModel`, sorted.
+    """
+    root = pathlib.Path(earthlens.base.__file__).parents[3].parent
+    found = []
+    for path in sorted(root.glob("providers/*/src/earthlens/*/catalog.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in tree.body:
+            if not isinstance(node, ast.ClassDef):
+                continue
+            bases = [b.id for b in node.bases if isinstance(b, ast.Name)]
+            if "BaseModel" in bases and node.name not in _CONTAINER_CLASSES:
+                found.append(f"{path.parent.name}.{node.name}")
+    return sorted(found)
+
+
+def test_every_catalog_row_summarises_itself():
+    """No provider catalog row is left on `BaseModel`.
+
+    A row that does not inherit `SummarisedLeaf` answers `print(row)` with
+    pydantic's field dump, which is the inconsistency #1185 existed to close.
+    Guarding it statically stops the next backend reintroducing it one class
+    at a time.
+    """
+    stragglers = _row_classes_still_on_basemodel()
+    assert not stragglers, (
+        f"{len(stragglers)} catalog row class(es) still subclass BaseModel and "
+        f"will print pydantic's full field dump: {stragglers}. Inherit "
+        "SummarisedLeaf and declare _summary_fields, or add the class to "
+        "_CONTAINER_CLASSES if it holds rows rather than being one."
+    )
