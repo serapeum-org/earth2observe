@@ -37,7 +37,7 @@ from typing import Any, cast
 from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
-from earthlens.base.catalog_source import load_catalog
+from earthlens.base.catalog_source import load_catalog, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "hanze_data_catalog.yaml"
@@ -228,19 +228,9 @@ def _flood_type(name: str, body: Any) -> FloodType:
         FloodType: The row, with `name` set from the key.
 
     Raises:
-        ValueError: If the body declares a `name` that differs from the key,
-            which would leave the row misnaming how it is addressed.
+        ValueError: If the body declares a `name` that differs from the key.
     """
-    fields = dict(body or {})
-    declared = fields.get("name", name)
-    if declared != name:
-        raise ValueError(
-            f"flood type {name!r} declares name={declared!r}, which does not "
-            "match the key it is filed under. Remove the field or rename the "
-            "entry."
-        )
-    fields["name"] = name
-    return FloodType(**fields)
+    return FloodType(**row_fields_with_key(body, "name", name, noun="flood type"))
 
 
 def _parse_catalog(files: list[Path]) -> dict[str, Any]:

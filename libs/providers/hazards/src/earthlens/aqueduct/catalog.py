@@ -31,7 +31,7 @@ from typing import Any, cast
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
-from earthlens.base.catalog_source import catalog_cache_key
+from earthlens.base.catalog_source import catalog_cache_key, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "aqueduct_data_catalog.yaml"
@@ -154,16 +154,11 @@ def _parse_rows(
     parsed: dict[str, Any] = {}
     for name, body in rows_yaml.items():
         try:
-            fields = dict(body or {})
-            if key_field:
-                declared = fields.get(key_field, name)
-                if declared != name:
-                    raise ValueError(
-                        f"{path} {label} {name!r} declares {key_field}="
-                        f"{declared!r}, which does not match the key it is "
-                        f"filed under. Remove the field or rename the entry."
-                    )
-                fields[key_field] = name
+            fields = (
+                row_fields_with_key(body, key_field, name, noun=label)
+                if key_field is not None
+                else dict(body or {})
+            )
             parsed[name] = model(**fields)
         except ValidationError as exc:
             raise ValueError(

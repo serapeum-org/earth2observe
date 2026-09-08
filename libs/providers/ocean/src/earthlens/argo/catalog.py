@@ -23,7 +23,7 @@ from typing import Any, cast
 from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
-from earthlens.base.catalog_source import load_catalog
+from earthlens.base.catalog_source import load_catalog, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "argo_data_catalog.yaml"
@@ -102,14 +102,9 @@ def _parse_argo_catalog(files: list[Path]):
     families: dict[str, Family] = {}
     for name, body in families_yaml.items():
         try:
-            declared = dict(body or {}).get("name", name)
-            if declared != name:
-                raise ValueError(
-                    f"{catalog_path} family {name!r} declares name={declared!r}, "
-                    "which does not match the key it is filed under. Remove "
-                    "the field or rename the entry."
-                )
-            families[name] = Family(**{**dict(body or {}), "name": name})
+            families[name] = Family(
+                **row_fields_with_key(body, "name", name, noun="family")
+            )
         except ValidationError as exc:
             raise ValueError(
                 f"{catalog_path} family {name!r} failed validation:\n{exc}"

@@ -20,7 +20,7 @@ from typing import Any, cast
 from pydantic import ConfigDict, Field, ValidationError
 
 from earthlens.base import AbstractCatalog, SummarisedLeaf
-from earthlens.base.catalog_source import load_catalog
+from earthlens.base.catalog_source import load_catalog, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "radar_data_catalog.yaml"
@@ -70,14 +70,8 @@ def _parse_stations(files: list[Path]) -> dict[str, Station]:
     stations: dict[str, Station] = {}
     for site_id, body in rows.items():
         try:
-            declared = (body or {}).get("code", site_id)
-            if declared != site_id:
-                raise ValueError(
-                    f"{path} station {site_id!r} declares code={declared!r}, "
-                    "which does not match the key it is filed under. Remove "
-                    "the field or rename the entry."
-                )
-            stations[site_id] = Station(**{**(body or {}), "code": site_id})
+            fields = row_fields_with_key(body, "code", site_id, noun="station")
+            stations[site_id] = Station(**fields)
         except ValidationError as exc:
             raise ValueError(
                 f"{path} station {site_id!r} failed validation:\n{exc}"
