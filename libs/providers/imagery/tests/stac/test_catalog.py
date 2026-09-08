@@ -474,4 +474,5 @@ class TestAssetSummary:
             for asset in collection.assets.values()
             if not (asset.common_name or asset.title or asset.dtype)
         ]
-        assert bare and all(row.startswith("Asset(nodata ") for row in bare), bare
+        assert bare, "no shipped asset carries only a fill value any more"
+        assert all(row.startswith("Asset(nodata ") for row in bare), bare
