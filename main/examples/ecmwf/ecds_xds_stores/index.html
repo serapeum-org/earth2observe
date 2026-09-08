@@ -12796,6 +12796,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../showcases/el_nino_2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The 2026 Super El Nino — a climbing index and a warming ocean
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../showcases/european_heatwave_summer_2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Europe's summer of extreme heat, 2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../showcase/earthlens-satellites/" class="md-nav__link">
         
   
@@ -25122,7 +25178,7 @@ would delete the model-cycle date this dataset also needs.)</p>
     <span class="s1">'s2s-reforecasts'</span><span class="p">,</span> <span class="s1">'maximum-2m-temperature-in-the-last-6-hours'</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'request_kind :'</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">request_kind</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'NetCDF name  :'</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">nc_variable</span><span class="p">,</span> <span class="s1">'|'</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
 <span class="n">pinned</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'h'</span><span class="p">)}</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'pinned h* extras:'</span><span class="p">,</span> <span class="n">pinned</span><span class="p">,</span> <span class="s1">'&lt;- only the year'</span><span class="p">)</span>
 </pre></div>
@@ -25130,7 +25186,7 @@ would delete the model-cycle date this dataset also needs.)</p>
     's2s-reforecasts', 'maximum-2m-temperature-in-the-last-6-hours'
 )
 print('request_kind :', spec.request_kind)
-print('NetCDF name  :', spec.nc_variable, '|', spec.units)
+print(spec)
 pinned = {k: v for k, v in spec.extras.items() if k.startswith('h')}
 print('pinned h* extras:', pinned, '&lt;- only the year')</div>
 </div>
