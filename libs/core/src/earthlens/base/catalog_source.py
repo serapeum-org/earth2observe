@@ -340,6 +340,21 @@ def row_fields_with_key(
             ValueError: station 'KTLX' declares code='KOUN', which does not match the key it is filed under. Remove the field or rename the entry.
 
             ```
+        - Naming the source puts the offending file in front of the reader:
+            ```python
+            >>> from pathlib import Path
+            >>> row_fields_with_key(
+            ...     {"name": "Coastal"},
+            ...     "name",
+            ...     "River",
+            ...     noun="flood type",
+            ...     source=Path("hanze_data_catalog.yaml"),
+            ... )
+            Traceback (most recent call last):
+                ...
+            ValueError: hanze_data_catalog.yaml flood type 'River' declares name='Coastal', which does not match the key it is filed under. Remove the field or rename the entry.
+
+            ```
     """
     fields = dict(body or {})
     declared = fields.get(key_field, key)
