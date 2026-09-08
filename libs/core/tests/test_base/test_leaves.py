@@ -380,6 +380,15 @@ class TestLengthAndWhitespace:
         )
         assert "..." in rendered and not rendered.endswith("..."), rendered
 
+    def test_a_real_shipped_title_is_clipped_as_prose(self):
+        """A synthetic value cannot show the heuristic meets real catalog text."""
+        from earthlens.cmems.catalog import Catalog
+
+        row = Catalog().get_dataset("cmems_mod_glo_phy_my_0.083deg_P1D-m")
+        rendered = str(row)
+        assert "..." in rendered, rendered
+        assert rendered.startswith("Dataset(GLOBAL_MULTIYEAR_PHY_001_030, daily mean")
+
     def test_a_title_carrying_a_slash_is_still_prose(self):
         """`CFOSAT/SSMI` inside a sentence does not make the sentence an identifier."""
         title = "Antarctic Ocean Sea Ice concentration, CFOSAT/SSMI interpolated daily"

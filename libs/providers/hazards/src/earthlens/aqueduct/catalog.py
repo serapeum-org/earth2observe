@@ -158,7 +158,7 @@ def _parse_rows(
     for name, body in rows_yaml.items():
         try:
             fields = (
-                row_fields_with_key(body, key_field, name, noun=label)
+                row_fields_with_key(body, key_field, name, noun=label, source=path)
                 if key_field is not None
                 else dict(body or {})
             )

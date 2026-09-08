@@ -105,7 +105,9 @@ def _parse_argo_catalog(files: list[Path]):
     for name, body in families_yaml.items():
         try:
             families[name] = Family(
-                **row_fields_with_key(body, "name", name, noun="family")
+                **row_fields_with_key(
+                    body, "name", name, noun="family", source=catalog_path
+                )
             )
         except ValidationError as exc:
             raise ValueError(

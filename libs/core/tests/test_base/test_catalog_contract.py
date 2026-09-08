@@ -700,3 +700,60 @@ def test_every_catalog_row_summarises_itself():
         "SummarisedLeaf and declare _summary_fields, or add the class to "
         "_CONTAINER_CLASSES if it holds rows rather than being one."
     )
+
+
+def _classes_and_aliases(source: str) -> tuple[list[ast.ClassDef], set[str]]:
+    """Parse `source` and return its class definitions and its BaseModel aliases.
+
+    Args:
+        source: Python source text.
+
+    Returns:
+        tuple[list[ast.ClassDef], set[str]]: Every class in the tree, in
+        walk order, and the local names that refer to `pydantic.BaseModel`.
+    """
+    tree = ast.parse(source)
+    classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
+    return classes, _basemodel_aliases(tree)
+
+
+@pytest.mark.parametrize(
+    "declaration, imports",
+    [
+        ("class Row(BaseModel):", "from pydantic import BaseModel"),
+        ("class Row(pydantic.BaseModel):", "import pydantic"),
+        ("class Row(Model):", "from pydantic import BaseModel as Model"),
+    ],
+    ids=["bare", "dotted", "aliased"],
+)
+def test_the_gate_sees_every_basemodel_spelling(declaration: str, imports: str):
+    """A row rejoining BaseModel is caught however the base is spelled."""
+    classes, aliases = _classes_and_aliases(
+        f"{imports}\n{declaration}\n    x: str = ''\n"
+    )
+    assert _base_names(classes[0]) & aliases, (
+        f"{declaration!r} was not recognised as a BaseModel subclass"
+    )
+
+
+def test_the_gate_ignores_a_summarised_row():
+    """A row that already summarises itself is left alone."""
+    classes, aliases = _classes_and_aliases(
+        "from earthlens.base import SummarisedLeaf\n"
+        "class Row(SummarisedLeaf):\n"
+        "    x: str = ''\n"
+    )
+    assert not _base_names(classes[0]) & aliases
+
+
+def test_the_gate_sees_a_class_nested_in_a_function():
+    """The scan walks the whole tree, so a row hidden in a factory is seen."""
+    classes, aliases = _classes_and_aliases(
+        "from pydantic import BaseModel\n"
+        "def factory():\n"
+        "    class Hidden(BaseModel):\n"
+        "        x: str = ''\n"
+        "    return Hidden\n"
+    )
+    assert [node.name for node in classes] == ["Hidden"]
+    assert _base_names(classes[0]) & aliases

@@ -70,7 +70,9 @@ def _parse_stations(files: list[Path]) -> dict[str, Station]:
     stations: dict[str, Station] = {}
     for site_id, body in rows.items():
         try:
-            fields = row_fields_with_key(body, "code", site_id, noun="station")
+            fields = row_fields_with_key(
+                body, "code", site_id, noun="station", source=path
+            )
             stations[site_id] = Station(**fields)
         except ValidationError as exc:
             raise ValueError(

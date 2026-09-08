@@ -289,6 +289,7 @@ def row_fields_with_key(
     key: str,
     *,
     noun: str = "row",
+    source: Path | None = None,
 ) -> dict[str, Any]:
     """Return a row body with the catalog key set on it, rejecting a mismatch.
 
@@ -308,6 +309,9 @@ def row_fields_with_key(
         key: The mapping key the row is filed under.
         noun: What to call the row in the error message (`"station"`,
             `"family"`).
+        source: The catalog file the row came from, named in the error so the
+            offending entry can be found without searching. Omitted when the
+            caller has no path to hand.
 
     Returns:
         dict[str, Any]: The body's fields with `key_field` set to `key`.
@@ -340,10 +344,11 @@ def row_fields_with_key(
     fields = dict(body or {})
     declared = fields.get(key_field, key)
     if declared != key:
+        where = f"{source} " if source is not None else ""
         raise ValueError(
-            f"{noun} {key!r} declares {key_field}={declared!r}, which does not "
-            "match the key it is filed under. Remove the field or rename the "
-            "entry."
+            f"{where}{noun} {key!r} declares {key_field}={declared!r}, which "
+            "does not match the key it is filed under. Remove the field or "
+            "rename the entry."
         )
     fields[key_field] = key
     return fields

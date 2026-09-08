@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from earthlens.base.catalog_source import row_fields_with_key
@@ -57,6 +59,24 @@ class TestRowFieldsWithKey:
         """A caller that does not name its row kind still gets a readable error."""
         with pytest.raises(ValueError, match="row 'phy'"):
             row_fields_with_key({"name": "bgc"}, "name", "phy")
+
+    def test_the_error_names_the_catalog_file_when_one_is_given(self) -> None:
+        """Four loaders share this message; only the path says which YAML to open."""
+        with pytest.raises(ValueError) as excinfo:
+            row_fields_with_key(
+                {"code": "KOUN"},
+                "code",
+                "KTLX",
+                noun="station",
+                source=Path("radar_data_catalog.yaml"),
+            )
+        assert str(excinfo.value).startswith("radar_data_catalog.yaml station 'KTLX'")
+
+    def test_the_error_omits_the_prefix_when_no_source_is_given(self) -> None:
+        """A caller with no path in hand must not produce a 'None row' message."""
+        with pytest.raises(ValueError) as excinfo:
+            row_fields_with_key({"code": "KOUN"}, "code", "KTLX")
+        assert str(excinfo.value).startswith("row 'KTLX'")
 
     def test_a_falsy_declared_value_still_counts_as_a_mismatch(self) -> None:
         """An empty string is a declared value, not an absent one."""

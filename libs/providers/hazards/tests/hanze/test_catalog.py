@@ -222,15 +222,13 @@ class TestFloodTypeIdentity:
 
     def test_a_body_contradicting_the_key_is_rejected(self, tmp_path: Path) -> None:
         """A flood type filed under one key may not claim another."""
-        path = tmp_path / "hanze_data_catalog.yaml"
-        path.write_text(
-            CATALOG_PATH.read_text(encoding="utf-8").replace(
-                "  River:\n", "  River:\n    name: Coastal\n", 1
-            ),
-            encoding="utf-8",
+        body = _MINIMAL.replace(
+            "  River: {description: Riverine.}",
+            "  River: {name: Coastal, description: Riverine.}",
+            1,
         )
         with pytest.raises(ValueError, match="does not match the key"):
-            Catalog.load(path)
+            Catalog.load(_write(tmp_path, body))
 
     def test_the_key_is_injected_when_the_body_omits_it(self, tmp_path: Path) -> None:
         """The same loader path, with nothing in the body to override the key."""
