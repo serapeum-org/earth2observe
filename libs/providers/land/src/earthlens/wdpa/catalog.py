@@ -20,9 +20,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -89,7 +89,7 @@ def _load_catalog_data(path: Path) -> tuple[dict[str, Country], list[str]]:
     return rows, available
 
 
-class Country(BaseModel):
+class Country(SummarisedLeaf):
     """One curated WDPA country's dispatch row.
 
     The ISO3 code is the parent key in :attr:`Catalog.datasets` and is not
@@ -109,6 +109,11 @@ class Country(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "region",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -281,3 +281,89 @@ def load_catalog(
 def iter_registered_caches() -> Iterable[CatalogParseCache]:
     """Yield every registered parse cache (used by tests and tooling)."""
     return tuple(_REGISTRY)
+
+
+def row_fields_with_key(
+    body: Any,
+    key_field: str,
+    key: str,
+    *,
+    noun: str = "row",
+    source: Path | None = None,
+) -> dict[str, Any]:
+    """Return a row body with the catalog key set on it, rejecting a mismatch.
+
+    Some rows are addressed by the mapping key alone — a radar station by its
+    ICAO id, an Argo family by its short name — and carry no field holding it,
+    so a summary of the row cannot name it. The loader copies the key on, the
+    way the GEE loader injects a band id.
+
+    The key is authoritative. A body may repeat it, but a body that declares a
+    *different* value would leave the row misnaming how it is addressed, so
+    that is refused rather than silently resolved either way.
+
+    Args:
+        body: The raw row body from the catalog file, or `None` for an empty
+            row.
+        key_field: The field the key is written to.
+        key: The mapping key the row is filed under.
+        noun: What to call the row in the error message (`"station"`,
+            `"family"`).
+        source: The catalog file the row came from, named in the error so the
+            offending entry can be found without searching. Omitted when the
+            caller has no path to hand.
+
+    Returns:
+        dict[str, Any]: The body's fields with `key_field` set to `key`.
+
+    Raises:
+        ValueError: If `body` declares `key_field` with a different value.
+
+    Examples:
+        - The key is copied onto a body that does not carry it:
+            ```python
+            >>> row_fields_with_key({"name": "Norman"}, "code", "KTLX")
+            {'name': 'Norman', 'code': 'KTLX'}
+
+            ```
+        - Repeating the key is redundant but accepted:
+            ```python
+            >>> row_fields_with_key({"code": "KTLX"}, "code", "KTLX")
+            {'code': 'KTLX'}
+
+            ```
+        - Contradicting it is refused:
+            ```python
+            >>> row_fields_with_key({"code": "KOUN"}, "code", "KTLX", noun="station")
+            Traceback (most recent call last):
+                ...
+            ValueError: station 'KTLX' declares code='KOUN', which does not match the key it is filed under. Remove the field or rename the entry.
+
+            ```
+        - Naming the source puts the offending file in front of the reader:
+            ```python
+            >>> from pathlib import Path
+            >>> row_fields_with_key(
+            ...     {"name": "Coastal"},
+            ...     "name",
+            ...     "River",
+            ...     noun="flood type",
+            ...     source=Path("hanze_data_catalog.yaml"),
+            ... )
+            Traceback (most recent call last):
+                ...
+            ValueError: hanze_data_catalog.yaml flood type 'River' declares name='Coastal', which does not match the key it is filed under. Remove the field or rename the entry.
+
+            ```
+    """
+    fields = dict(body or {})
+    declared = fields.get(key_field, key)
+    if declared != key:
+        where = f"{source} " if source is not None else ""
+        raise ValueError(
+            f"{where}{noun} {key!r} declares {key_field}={declared!r}, which "
+            "does not match the key it is filed under. Remove the field or "
+            "rename the entry."
+        )
+    fields[key_field] = key
+    return fields

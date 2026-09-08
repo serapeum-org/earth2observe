@@ -107,3 +107,77 @@ class TestStation:
         """An out-of-range latitude is rejected."""
         with pytest.raises(ValidationError):
             Station(latitude=999, longitude=0)
+
+
+class TestStationIdentity:
+    """Tests for the site id the loader copies onto each station."""
+
+    def test_code_carries_the_site_id(self):
+        """The station is addressed by its ICAO id, which is not in the row body."""
+        catalog = StationCatalog()
+        for site_id, station in catalog.datasets.items():
+            assert station.code == site_id, (
+                f"{site_id} row carries code={station.code!r}"
+            )
+
+    def test_summary_leads_with_the_code(self):
+        """`Station(Aberdeen, SD)` would omit the one field a caller looks up by."""
+        station = StationCatalog().datasets["KABR"]
+        assert str(station).startswith("Station(KABR,"), str(station)
+
+    def test_a_body_contradicting_the_key_is_rejected(self, tmp_path, monkeypatch):
+        """A row filed under one id may not claim another; it would misname itself."""
+        path = tmp_path / "stations.yaml"
+        path.write_text(
+            "stations:\n"
+            "  KTLX:\n"
+            "    code: KOUN\n"
+            "    name: Norman\n"
+            "    latitude: 35.2\n"
+            "    longitude: -97.4\n"
+        )
+        monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
+        with pytest.raises(ValueError, match="does not match the key"):
+            StationCatalog()
+
+    def test_a_body_repeating_the_key_is_accepted(self, tmp_path, monkeypatch):
+        """Restating the key is redundant, not wrong."""
+        path = tmp_path / "stations.yaml"
+        path.write_text(
+            "stations:\n"
+            "  KTLX:\n"
+            "    code: KTLX\n"
+            "    name: Norman\n"
+            "    latitude: 35.2\n"
+            "    longitude: -97.4\n"
+        )
+        monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
+        assert StationCatalog().datasets["KTLX"].code == "KTLX"
+
+    def test_the_key_is_injected_when_the_body_omits_it(self, tmp_path, monkeypatch):
+        """The same loader path, with nothing in the body to override the key."""
+        path = tmp_path / "stations.yaml"
+        path.write_text(
+            "stations:\n"
+            "  KTLX:\n"
+            "    name: Norman\n"
+            "    latitude: 35.2\n"
+            "    longitude: -97.4\n"
+        )
+        monkeypatch.setattr(catalog_mod, "CATALOG_PATH", path)
+        assert StationCatalog().datasets["KTLX"].code == "KTLX"
+
+    def test_the_injected_code_stays_out_of_the_serialised_row(self):
+        """It mirrors the key, so dumping it would repeat `dataset_id` and widen the YAML."""
+        station = StationCatalog().datasets["KTLX"]
+        assert "code" not in station.model_dump()
+        assert station.code == "KTLX"
+        assert "code:" not in str(StationCatalog())
+
+    def test_the_injected_code_participates_in_equality(self):
+        """`frozen=True` makes the new field part of `__eq__`, so record it."""
+        catalogued = StationCatalog().datasets["KTLX"]
+        without_code = Station(**catalogued.model_dump())
+        assert without_code != catalogued
+        assert Station(code="KTLX", **catalogued.model_dump()) == catalogued
+        assert hash(without_code) != hash(catalogued)

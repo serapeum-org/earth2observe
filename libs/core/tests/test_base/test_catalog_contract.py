@@ -16,7 +16,9 @@ backend is covered the moment it ships.
 
 from __future__ import annotations
 
+import ast
 import importlib
+import pathlib
 from typing import Any
 
 import pytest
@@ -24,6 +26,7 @@ import yaml
 from loguru import logger
 from pydantic import BaseModel
 
+import earthlens.base
 from earthlens._backends import discover_backends
 from earthlens.base import AbstractCatalog
 from earthlens.base.abstractdatasource import _WARNED_EMPTY_CATALOGS
@@ -491,7 +494,7 @@ def test_the_cross_backend_gates_are_not_vacuous():
         f"only {len(CATALOG_BACKENDS)} backend catalogs importable; the "
         "cross-backend gates would pass vacuously"
     )
-    assert len(SUMMARISED_LEAVES) > 10, (
+    assert len(SUMMARISED_LEAVES) > 100, (
         f"only {len(SUMMARISED_LEAVES)} summarising rows discovered; the "
         "summary gates would pass vacuously"
     )
@@ -571,3 +574,234 @@ def test_row_summaries_are_one_line(module_name: str, class_name: str):
         assert rendered.startswith(f"{type(row).__name__}("), (
             f"{module_name} row summary does not name its class: {rendered!r}"
         )
+
+
+def _populated_fields(row: BaseModel) -> list[str]:
+    """Return the names of `row`'s fields that carry something.
+
+    Args:
+        row: Any pydantic row.
+
+    Returns:
+        list[str]: The field names whose value is neither `None` nor an empty
+        string or collection. `0` and `False` count as populated, matching
+        `render_fragment`.
+    """
+    empty: tuple[Any, ...] = (None, "", [], {}, (), set(), frozenset())
+    return [
+        name
+        for name in type(row).model_fields
+        if not any(
+            getattr(row, name, None) is blank or getattr(row, name, None) == blank
+            for blank in empty
+        )
+    ]
+
+
+@pytest.mark.parametrize("module_name, class_name", CATALOG_BACKENDS)
+def test_a_row_that_holds_something_summarises_to_something(
+    module_name: str, class_name: str
+):
+    """No row renders as a bare `ClassName()` while carrying real values.
+
+    `SummarisedLeaf` calls an empty summary the honest answer for an empty
+    row, and it is — but a row that *does* hold values and still renders as
+    nothing has declared the wrong fields, which is strictly worse than the
+    pydantic dump it replaced. Three backends shipped that way.
+    """
+    rows = _reachable_summarised_rows(_build(module_name, class_name))
+    if not rows:
+        pytest.skip(f"{module_name} exposes no summarising rows")
+    silent = [
+        (type(row).__name__, _populated_fields(row))
+        for row in rows
+        if str(row) == f"{type(row).__name__}()" and _populated_fields(row)
+    ]
+    assert not silent, (
+        f"{module_name} renders {len(silent)} populated row(s) as an empty "
+        f"summary, e.g. {silent[0][0]} carrying {silent[0][1]}. Declare a "
+        "field that identifies the row, or compose one in summary_parts()."
+    )
+
+
+#: Catalog container classes, which hold rows rather than being one. Kept as an
+#: escape hatch: a backend whose container genuinely subclasses `BaseModel`
+#: (rather than `AbstractCatalog`) would otherwise trip the gate below.
+_CONTAINER_CLASSES = {"Catalog", "StationCatalog"}
+
+
+def _provider_catalog_sources() -> list[tuple[pathlib.Path, str]]:
+    """Return `(path, source)` for every provider `catalog.py`.
+
+    Resolved from this test file rather than from `earthlens.base.__file__`:
+    under a non-editable wheel install the package lives in `site-packages`
+    and the source tree is not beneath it, so a package-relative glob would
+    match nothing and every check built on it would pass by scanning zero
+    files.
+
+    Returns:
+        list[tuple[pathlib.Path, str]]: One pair per provider catalog module.
+    """
+    root = pathlib.Path(__file__).resolve().parents[3] / "providers"
+    return [
+        (path, path.read_text(encoding="utf-8"))
+        for path in sorted(root.glob("*/src/earthlens/*/catalog.py"))
+    ]
+
+
+def _basemodel_aliases(tree: ast.Module) -> set[str]:
+    """Return every name in `tree` that refers to `pydantic.BaseModel`.
+
+    `from pydantic import BaseModel as Model` and a bare `import pydantic`
+    both hide the class from a plain name match, which is how a row could
+    quietly rejoin `BaseModel` without tripping the gate.
+
+    Args:
+        tree: The parsed module.
+
+    Returns:
+        set[str]: The local names bound to `BaseModel`, plus the dotted
+        spellings reachable through an imported `pydantic` module.
+    """
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module == "pydantic":
+            names |= {a.asname or a.name for a in node.names if a.name == "BaseModel"}
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "pydantic":
+                    names.add(f"{alias.asname or 'pydantic'}.BaseModel")
+    return names
+
+
+def _base_names(node: ast.ClassDef) -> set[str]:
+    """Return the spellings of `node`'s bases, plain and dotted.
+
+    Args:
+        node: A class definition.
+
+    Returns:
+        set[str]: `"BaseModel"` for a bare base, `"pydantic.BaseModel"` for an
+        attribute base, ignoring subscripted generics like
+        `AbstractCatalog[Row]`.
+    """
+    spellings = set()
+    for base in node.bases:
+        if isinstance(base, ast.Name):
+            spellings.add(base.id)
+        elif isinstance(base, ast.Attribute) and isinstance(base.value, ast.Name):
+            spellings.add(f"{base.value.id}.{base.attr}")
+    return spellings
+
+
+def _row_classes_still_on_basemodel() -> list[str]:
+    """Find provider catalog row classes that do not summarise themselves.
+
+    Static rather than runtime: a class only registers as a `SummarisedLeaf`
+    subclass once its module is imported, and a row that no shipped catalog
+    populates would never be instantiated at all. Reading the source catches
+    both.
+
+    Walks every class in the module, not only the top-level ones, and resolves
+    `BaseModel` through its import aliases, so the spellings a plain name match
+    would miss are still seen.
+
+    Returns:
+        list[str]: `"<backend>.<ClassName>"` for each row still on
+        `BaseModel`, sorted.
+    """
+    found = []
+    for path, source in _provider_catalog_sources():
+        tree = ast.parse(source)
+        aliases = _basemodel_aliases(tree)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ClassDef):
+                continue
+            if node.name in _CONTAINER_CLASSES:
+                continue
+            if _base_names(node) & aliases:
+                found.append(f"{path.parent.name}.{node.name}")
+    return sorted(found)
+
+
+def test_the_catalog_scan_actually_reads_the_sources():
+    """Guard the guard: the gate below is worthless if it scans nothing."""
+    sources = _provider_catalog_sources()
+    assert len(sources) > 40, (
+        f"only {len(sources)} provider catalog modules found; "
+        "test_every_catalog_row_summarises_itself would pass vacuously"
+    )
+
+
+def test_every_catalog_row_summarises_itself():
+    """No provider catalog row is left on `BaseModel`.
+
+    A row that does not inherit `SummarisedLeaf` answers `print(row)` with
+    pydantic's field dump, which is the inconsistency #1185 existed to close.
+    Guarding it statically stops the next backend reintroducing it one class
+    at a time.
+    """
+    stragglers = _row_classes_still_on_basemodel()
+    assert not stragglers, (
+        f"{len(stragglers)} catalog row class(es) still subclass BaseModel and "
+        f"will print pydantic's full field dump: {stragglers}. Inherit "
+        "SummarisedLeaf and declare _summary_fields, or add the class to "
+        "_CONTAINER_CLASSES if it holds rows rather than being one."
+    )
+
+
+def _classes_and_aliases(source: str) -> tuple[list[ast.ClassDef], set[str]]:
+    """Parse `source` and return its class definitions and its BaseModel aliases.
+
+    Args:
+        source: Python source text.
+
+    Returns:
+        tuple[list[ast.ClassDef], set[str]]: Every class in the tree, in
+        walk order, and the local names that refer to `pydantic.BaseModel`.
+    """
+    tree = ast.parse(source)
+    classes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
+    return classes, _basemodel_aliases(tree)
+
+
+@pytest.mark.parametrize(
+    "declaration, imports",
+    [
+        ("class Row(BaseModel):", "from pydantic import BaseModel"),
+        ("class Row(pydantic.BaseModel):", "import pydantic"),
+        ("class Row(Model):", "from pydantic import BaseModel as Model"),
+    ],
+    ids=["bare", "dotted", "aliased"],
+)
+def test_the_gate_sees_every_basemodel_spelling(declaration: str, imports: str):
+    """A row rejoining BaseModel is caught however the base is spelled."""
+    classes, aliases = _classes_and_aliases(
+        f"{imports}\n{declaration}\n    x: str = ''\n"
+    )
+    assert _base_names(classes[0]) & aliases, (
+        f"{declaration!r} was not recognised as a BaseModel subclass"
+    )
+
+
+def test_the_gate_ignores_a_summarised_row():
+    """A row that already summarises itself is left alone."""
+    classes, aliases = _classes_and_aliases(
+        "from earthlens.base import SummarisedLeaf\n"
+        "class Row(SummarisedLeaf):\n"
+        "    x: str = ''\n"
+    )
+    assert not _base_names(classes[0]) & aliases
+
+
+def test_the_gate_sees_a_class_nested_in_a_function():
+    """The scan walks the whole tree, so a row hidden in a factory is seen."""
+    classes, aliases = _classes_and_aliases(
+        "from pydantic import BaseModel\n"
+        "def factory():\n"
+        "    class Hidden(BaseModel):\n"
+        "        x: str = ''\n"
+        "    return Hidden\n"
+    )
+    assert [node.name for node in classes] == ["Hidden"]
+    assert _base_names(classes[0]) & aliases

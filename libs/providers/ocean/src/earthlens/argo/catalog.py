@@ -20,10 +20,10 @@ import difflib
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
-from earthlens.base.catalog_source import load_catalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
+from earthlens.base.catalog_source import load_catalog, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "argo_data_catalog.yaml"
@@ -39,13 +39,18 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Family(BaseModel):
+class Family(SummarisedLeaf):
     """One Argo dataset family's parameter vocabulary.
 
     The family key (`"phy"` / `"bgc"`) is the parent key in
-    :attr:`Catalog.datasets` and is not stored on the row.
+    :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`name` so a resolved family is self-describing.
 
     Attributes:
+        name: The family's catalog key, injected by the loader; the row
+            carries no other identifier. A body declaring a different value is
+            rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         description: Short note on what the family covers.
         parameters: Map from canonical Argo parameter name (`"TEMP"`,
             `"DOXY"`) to its reporting units (`"degC"`).
@@ -61,8 +66,16 @@ class Family(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "name",
+        "description",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    name: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     description: str = ""
     parameters: dict[str, str] = Field(default_factory=dict)
 
@@ -91,7 +104,11 @@ def _parse_argo_catalog(files: list[Path]):
     families: dict[str, Family] = {}
     for name, body in families_yaml.items():
         try:
-            families[name] = Family(**dict(body or {}))
+            families[name] = Family(
+                **row_fields_with_key(
+                    body, "name", name, noun="family", source=catalog_path
+                )
+            )
         except ValidationError as exc:
             raise ValueError(
                 f"{catalog_path} family {name!r} failed validation:\n{exc}"

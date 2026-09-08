@@ -20,9 +20,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -36,7 +36,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class RadklimProduct(BaseModel):
+class RadklimProduct(SummarisedLeaf):
     """One RADKLIM / RADOLAN product row (the "dataset" analog).
 
     The product key (`"radklim-yw"`) is the parent key in
@@ -76,6 +76,13 @@ class RadklimProduct(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "product",
+        "code",
+        "cadence",
+        "version",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

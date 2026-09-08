@@ -26,9 +26,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_measure
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -70,7 +70,7 @@ def _yaml_files_for(path: Path) -> list[Path]:
     return yaml_files_for(path, provider='STAC', shard_noun='per-endpoint')
 
 
-class Asset(BaseModel):
+class Asset(SummarisedLeaf):
     """Per-asset (band) metadata for one asset of a STAC collection.
 
     Frozen value object; the asset key is the parent mapping key and is not
@@ -83,6 +83,12 @@ class Asset(BaseModel):
         title: Human description of the asset, or `None`.
     """
 
+    _summary_fields = (
+        "common_name",
+        "title",
+        "dtype",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     common_name: str | None = None
@@ -90,8 +96,23 @@ class Asset(BaseModel):
     nodata: float | int | None = None
     title: str | None = None
 
+    def summary_parts(self) -> list[str]:
+        """Name the fill value, which on some assets is all the row carries.
 
-class Extent(BaseModel):
+        Declared as an override rather than a `_summary_fields` entry so the
+        number is labelled: a bare trailing `0` reads as a truncation.
+
+        Returns:
+            list[str]: The declared fragments, plus the labelled fill value
+            when the asset declares one.
+        """
+        parts = super().summary_parts()
+        if self.nodata is not None:
+            parts.append(f"nodata {self.nodata:g}")
+        return parts
+
+
+class Extent(SummarisedLeaf):
     """Spatial/temporal coverage of a STAC collection.
 
     Attributes:
@@ -100,6 +121,11 @@ class Extent(BaseModel):
         bbox: `[west, south, east, north]` in EPSG:4326, or `None` for global.
     """
 
+    _summary_fields = (
+        "start_date",
+        "end_date",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start_date: str | None = None
@@ -107,7 +133,7 @@ class Extent(BaseModel):
     bbox: tuple[float, float, float, float] | None = None
 
 
-class Endpoint(BaseModel):
+class Endpoint(SummarisedLeaf):
     """One STAC API endpoint: its URL, signer type, and optional region.
 
     Attributes:
@@ -120,6 +146,12 @@ class Endpoint(BaseModel):
         region: Optional AWS region for requester-pays / S3 endpoints.
     """
 
+    _summary_fields = (
+        "key",
+        "signer",
+        "region",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     key: str
@@ -128,7 +160,7 @@ class Endpoint(BaseModel):
     region: str | None = None
 
 
-class Collection(BaseModel):
+class Collection(SummarisedLeaf):
     """One curated STAC collection, addressed by a logical key.
 
     Attributes:
@@ -161,6 +193,28 @@ class Collection(BaseModel):
             informational only; the actual routing comes from `signer`
             (e.g. `signer: bdc-token`). Defaults to `False`.
     """
+
+    _summary_fields = (
+        "endpoint",
+        "collection_id",
+        "assets",
+    )
+
+    def summary_parts(self) -> list[str]:
+        """Append the nominal resolution with its unit.
+
+        `resolution` is a bare metre count, so rendering it as a declared field
+        put a lone number beside the other fragments with nothing saying what
+        it measured.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m"` when known.
+        """
+        parts = super().summary_parts()
+        measure = render_measure(self.resolution)
+        if measure:
+            parts.append(measure)
+        return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

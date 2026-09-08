@@ -34,10 +34,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
-from earthlens.base.catalog_source import load_catalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
+from earthlens.base.catalog_source import load_catalog, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "hanze_data_catalog.yaml"
@@ -55,7 +55,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class ZenodoRecord(BaseModel):
+class ZenodoRecord(SummarisedLeaf):
     """The pinned Zenodo version record HANZE is fetched from.
 
     Attributes:
@@ -82,6 +82,12 @@ class ZenodoRecord(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "version",
+        "record",
+        "concept_doi",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     record: int
@@ -92,7 +98,7 @@ class ZenodoRecord(BaseModel):
     attribution: str = ""
 
 
-class HanzeFile(BaseModel):
+class HanzeFile(SummarisedLeaf):
     """One downloadable Zenodo object of the pinned HANZE record.
 
     Attributes:
@@ -109,6 +115,11 @@ class HanzeFile(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -136,13 +147,18 @@ class HanzeFile(BaseModel):
         return _CONTENT_URL.format(record=record, name=self.name)
 
 
-class FloodType(BaseModel):
+class FloodType(SummarisedLeaf):
     """One entry of the HANZE flood-`Type` vocabulary.
 
     The type string (`"River"`, `"River/Coastal"`) is the parent key in
-    :attr:`Catalog.datasets` and is not stored on the row.
+    :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`name` so a resolved flood type is self-describing.
 
     Attributes:
+        name: The flood type's catalog key, injected by the loader; the
+            row carries no other identifier. A body declaring a different
+            value is rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         description: Short note on what the flood type covers.
 
     Examples:
@@ -155,12 +171,20 @@ class FloodType(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "name",
+        "description",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    name: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     description: str = ""
 
 
-class GeometryJoin(BaseModel):
+class GeometryJoin(SummarisedLeaf):
     """The region-shapefile join configuration for `with_geometry`.
 
     Attributes:
@@ -185,12 +209,34 @@ class GeometryJoin(BaseModel):
             ```
     """
 
+    _summary_fields = ("member_stem",)
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     member_stem: str
     join_field: str = "Code"
     name_field: str = "Name"
     crs: str = "EPSG:3035"
+
+
+def _flood_type(name: str, body: Any, source: Path | None = None) -> FloodType:
+    """Build one `FloodType`, taking its name from the catalog key.
+
+    Args:
+        name: The mapping key the row is filed under.
+        body: The row body from the catalog YAML.
+        source: The catalog file the row came from, named in the error raised
+            on a key mismatch.
+
+    Returns:
+        FloodType: The row, with `name` set from the key.
+
+    Raises:
+        ValueError: If the body declares a `name` that differs from the key.
+    """
+    return FloodType(
+        **row_fields_with_key(body, "name", name, noun="flood type", source=source)
+    )
 
 
 def _parse_catalog(files: list[Path]) -> dict[str, Any]:
@@ -232,7 +278,7 @@ def _parse_catalog(files: list[Path]) -> dict[str, Any]:
             name: HanzeFile(**dict(body or {})) for name, body in files_yaml.items()
         }
         flood_types = {
-            name: FloodType(**dict(body or {}))
+            name: _flood_type(name, body, catalog_path)
             for name, body in flood_types_yaml.items()
         }
         geometry = GeometryJoin(**dict(geometry_yaml))

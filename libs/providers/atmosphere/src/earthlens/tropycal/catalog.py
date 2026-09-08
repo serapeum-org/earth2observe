@@ -30,9 +30,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -107,7 +107,7 @@ def _load_basins(path: Path) -> dict[str, Basin]:
     return load_catalog(path, _CATALOG_CACHE, _parse_basins, provider="Tropycal")
 
 
-class TrackField(BaseModel):
+class TrackField(SummarisedLeaf):
     """One per-fix track field (the "Variable" analog).
 
     The field's short code is the parent key in :attr:`Basin.fields` and
@@ -128,13 +128,18 @@ class TrackField(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "long_name",
+        "units",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     units: str
     long_name: str = ""
 
 
-class Basin(BaseModel):
+class Basin(SummarisedLeaf):
     """One ocean basin's catalog row (the "Dataset" analog).
 
     The basin code is the parent key in :attr:`Catalog.datasets` and is
@@ -161,6 +166,8 @@ class Basin(BaseModel):
 
             ```
     """
+
+    _summary_fields = ("name",)
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

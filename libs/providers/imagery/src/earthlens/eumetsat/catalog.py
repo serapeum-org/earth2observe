@@ -36,14 +36,13 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 from pydantic import (
-    BaseModel,
     ConfigDict,
     Field,
     ValidationError,
     field_validator,
 )
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -197,7 +196,7 @@ def _load_catalog_data(
     return _CATALOG_CACHE[key]
 
 
-class Extent(BaseModel):
+class Extent(SummarisedLeaf):
     """Spatial coverage of an EUMETSAT collection (lat / lon bounds).
 
     Mirrors the `extent:` block in the YAML. Whole-disk geostationary
@@ -223,8 +222,24 @@ class Extent(BaseModel):
     lat: list[float] = Field(default_factory=list)
     lon: list[float] = Field(default_factory=list)
 
+    def summary_parts(self) -> list[str]:
+        """Return the bounds as one `lat / lon` fragment.
 
-class TemporalCoverage(BaseModel):
+        Both fields are lists, so declaring them would render two counts
+        (`2 lat, 2 lon`) rather than the bounds themselves.
+
+        Returns:
+            list[str]: One fragment per axis that has bounds, or none when
+            the extent is unspecified.
+        """
+        parts = []
+        for axis, bounds in (("lat", self.lat), ("lon", self.lon)):
+            if bounds:
+                parts.append(f"{axis} {bounds[0]:g}..{bounds[-1]:g}")
+        return parts
+
+
+class TemporalCoverage(SummarisedLeaf):
     """Temporal coverage of an EUMETSAT collection (start + optional end).
 
     Mirrors the `temporal:` block in the YAML. `end: null` (or a missing
@@ -245,6 +260,11 @@ class TemporalCoverage(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "start",
+        "end",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -268,7 +288,7 @@ class TemporalCoverage(BaseModel):
         return value
 
 
-class EumetsatDataset(BaseModel):
+class EumetsatDataset(SummarisedLeaf):
     """One curated EUMETSAT Data Store dataset (collection) row.
 
     Mirrors a single `datasets.<key>:` block in one of the per-group
@@ -317,6 +337,13 @@ class EumetsatDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "collection_id",
+        "mission",
+        "format",
+        "cadence",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

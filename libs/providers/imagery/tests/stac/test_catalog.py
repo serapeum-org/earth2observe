@@ -8,6 +8,7 @@ import pytest
 
 from earthlens.stac.catalog import (
     CATALOG_PATH,
+    Asset,
     Catalog,
     Collection,
     Endpoint,
@@ -443,3 +444,68 @@ class TestLoaderRules:
         )
         with pytest.raises(ValueError, match="not declared in"):
             _load_catalog_data(tmp_path)
+
+
+class TestAssetSummary:
+    """An asset that carries only a fill value still says what it holds."""
+
+    def test_the_fill_value_is_labelled(self):
+        """A bare trailing `0` would read as a truncated summary."""
+        assert str(Asset(nodata=0)) == "Asset(nodata 0)"
+
+    def test_the_fill_value_follows_the_declared_fragments(self):
+        """It is the least identifying thing the row carries, so it goes last."""
+        asset = Asset(common_name="red", title="Red band", dtype="uint16", nodata=-9999)
+        assert str(asset) == "Asset(red, Red band, uint16, nodata -9999)"
+
+    def test_an_asset_without_a_fill_value_gains_no_fragment(self):
+        """291 of 1611 shipped assets declare one; the rest must stay unchanged."""
+        assert str(Asset(common_name="nir")) == "Asset(nir)"
+
+    def test_a_float_fill_value_drops_its_trailing_zero(self):
+        """`nodata 0` beats `nodata 0.0` beside three text fragments."""
+        assert str(Asset(nodata=0.0)) == "Asset(nodata 0)"
+
+    def test_the_shipped_assets_that_carry_only_a_fill_value(self):
+        """The three rows that made the empty-summary gate fail."""
+        bare = [
+            str(asset)
+            for collection in Catalog().datasets.values()
+            for asset in collection.assets.values()
+            if not (asset.common_name or asset.title or asset.dtype)
+        ]
+        assert bare, "no shipped asset carries only a fill value any more"
+        assert all(row.startswith("Asset(nodata ") for row in bare), bare
+
+
+class TestEndpointSummary:
+    """An endpoint says which credentials it needs, not only its key."""
+
+    def test_the_signer_is_named(self):
+        """Whether a caller needs auth is the endpoint's most useful fact."""
+        assert str(Endpoint(key="cdse", url="https://x", signer="cdse-s3")) == (
+            "Endpoint(cdse, cdse-s3)"
+        )
+
+    def test_an_anonymous_endpoint_says_so(self):
+        """`anonymous` is a real answer, not an absent one — five endpoints use it."""
+        assert str(Endpoint(key="bdc", url="https://x")) == "Endpoint(bdc, anonymous)"
+
+    def test_the_region_follows_the_signer(self):
+        """Requester-pays endpoints are identified by the pair together."""
+        endpoint = Endpoint(
+            key="usgs-landsat",
+            url="https://x",
+            signer="aws-requester-pays",
+            region="us-west-2",
+        )
+        assert str(endpoint) == "Endpoint(usgs-landsat, aws-requester-pays, us-west-2)"
+
+    def test_no_shipped_endpoint_summarises_to_its_key_alone(self):
+        """The key is the mapping key; a summary repeating it says nothing new."""
+        bare = [
+            str(endpoint)
+            for endpoint in Catalog().endpoints.values()
+            if str(endpoint) == f"Endpoint({endpoint.key})"
+        ]
+        assert not bare, bare

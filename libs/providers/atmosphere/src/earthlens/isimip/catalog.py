@@ -26,7 +26,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -40,7 +40,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Variable(BaseModel):
+class Variable(SummarisedLeaf):
     """One curated ISIMIP climate variable row (the `climate_variable` leaf).
 
     A frozen value object with descriptive metadata only — ISIMIP variables carry
@@ -64,13 +64,18 @@ class Variable(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "long_name",
+        "units",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     units: str = ""
     long_name: str = ""
 
 
-class Forcing(BaseModel):
+class Forcing(SummarisedLeaf):
     """One curated ISIMIP climate-forcing (GCM / reanalysis) row.
 
     Attributes:
@@ -89,6 +94,12 @@ class Forcing(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "description",
+        "institution",
+        "round",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     institution: str = ""
@@ -96,7 +107,7 @@ class Forcing(BaseModel):
     description: str = ""
 
 
-class Scenario(BaseModel):
+class Scenario(SummarisedLeaf):
     """One curated ISIMIP climate-scenario row.
 
     Attributes:
@@ -113,13 +124,18 @@ class Scenario(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "description",
+        "round",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     round: str = ""
     description: str = ""
 
 
-class Round(BaseModel):
+class Round(SummarisedLeaf):
     """One curated ISIMIP simulation-round row.
 
     Attributes:
@@ -138,6 +154,8 @@ class Round(BaseModel):
 
             ```
     """
+
+    _summary_fields = ("description",)
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

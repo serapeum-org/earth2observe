@@ -20,9 +20,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog, OutputKind
+from earthlens.base import AbstractCatalog, OutputKind, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -82,7 +82,7 @@ def _load_catalog_data(path: Path) -> dict[str, Source]:
     return rows
 
 
-class Source(BaseModel):
+class Source(SummarisedLeaf):
     """One NSI catalog row (one of the three flood sources).
 
     The source name is the parent key in :attr:`Catalog.datasets` and is stored
@@ -129,6 +129,12 @@ class Source(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "id",
+        "long_name",
+        "output_kind",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

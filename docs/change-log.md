@@ -1,5 +1,31 @@
 # Change Log
 
+## 0.24.0 (2026-09-08)
+
+### BREAKING CHANGE
+
+- op="auto" now resolves to sum rather than mean for
+surface-solar-radiation-downwards under reanalysis-era5-single-levels,
+so an existing monthly aggregation of that variable returns different
+values. The row carried no types marker, so is_flux was False for a
+quantity ERA5 accumulates over each step. cmems Variable and nwm
+NWMVariable also gain a loader-injected name field, which changes their
+model_dump() output.
+- EumetsatAuth resolves an explicit consumer_key /
+consumer_secret ahead of EUMETSAT_CONSUMER_KEY /
+EUMETSAT_CONSUMER_SECRET. Only the case where both are supplied
+changes; supplying credentials by environment alone, by kwargs alone,
+or by file alone, is unaffected.
+
+### Feat
+
+- **examples**: add 2026 El Nino and European heatwave showcase notebooks (#1193)
+- **base,providers**: give catalog rows a one-line __str__ (#1183)
+
+### Fix
+
+- **core,imagery**: resolve credentials explicit-first, fix audit defects (#1182)
+
 ## 0.23.0 (2026-09-06)
 
 ### Fix

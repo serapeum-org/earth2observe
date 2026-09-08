@@ -64,9 +64,9 @@ from pathlib import Path
 from typing import Any, Literal
 
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog, FluxableLeaf
+from earthlens.base import AbstractCatalog, FluxableLeaf, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -142,7 +142,7 @@ class Variable(FluxableLeaf):
     # the cross-backend catalog comparison).
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One CHIRPS dataset's section in the catalog.
 
     Mirrors the shape of a single `datasets.<key>:` block in a CHC
@@ -218,6 +218,16 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "name",
+        "region",
+        "temporal_resolution",
+    )
+
+    name: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -449,6 +459,7 @@ def _build_chc_dataset(
 
     try:
         ds = Dataset(
+            name=ds_key,
             ftp_bases=ds_body["ftp_bases"],
             file_patterns=ds_body.get("file_patterns") or None,
             discrete_files=ds_body.get("discrete_files") or None,

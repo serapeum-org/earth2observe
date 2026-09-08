@@ -27,9 +27,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -58,7 +58,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Property(BaseModel):
+class Property(SummarisedLeaf):
     """One curated SoilGrids soil property (an independent WCS service).
 
     Attributes:
@@ -81,6 +81,12 @@ class Property(BaseModel):
             `mapped_units` to `unit` (e.g. `10` for pH, `100` for nitrogen).
         license_note: Attribution / licence text (CC-BY 4.0, ISRIC).
     """
+
+    _summary_fields = (
+        "id",
+        "title",
+        "unit",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

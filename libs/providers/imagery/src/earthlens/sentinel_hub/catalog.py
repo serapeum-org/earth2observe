@@ -32,9 +32,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_measure
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -70,7 +70,7 @@ def _yaml_files_for(path: Path) -> list[Path]:
     return yaml_files_for(path, provider='Sentinel Hub')
 
 
-class Extent(BaseModel):
+class Extent(SummarisedLeaf):
     """Spatial/temporal coverage of a Sentinel Hub collection.
 
     Attributes:
@@ -79,14 +79,35 @@ class Extent(BaseModel):
         bbox: `[west, south, east, north]` in EPSG:4326, or `None` for global.
     """
 
+    _summary_fields = (
+        "start_date",
+        "end_date",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start_date: str | None = None
     end_date: str | None = None
     bbox: tuple[float, float, float, float] | None = None
 
+    def summary_parts(self) -> list[str]:
+        """Fall back to the footprint when the collection pins no dates.
 
-class Band(BaseModel):
+        `bbox` is a tuple, so declaring it would render as a count rather
+        than the corners. A collection that pins neither date would otherwise
+        summarise to nothing at all.
+
+        Returns:
+            list[str]: The declared date fragments, or the bounding box when
+            there are none.
+        """
+        parts = super().summary_parts()
+        if parts or self.bbox is None:
+            return parts
+        return [f"bbox {', '.join(format(edge, 'g') for edge in self.bbox)}"]
+
+
+class Band(SummarisedLeaf):
     """Per-band metadata for one band of a Sentinel Hub collection.
 
     Frozen value object; the band name is the parent mapping key and is not
@@ -101,6 +122,16 @@ class Band(BaseModel):
         center_wavelength: Central wavelength in micrometres (optical), or `None`.
     """
 
+    _summary_fields = (
+        "id",
+        "common_name",
+        "units",
+    )
+
+    id: str = Field(
+        default="", exclude=True
+    )  # mirrors the band key; not part of the row's data
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     common_name: str | None = None
@@ -110,7 +141,7 @@ class Band(BaseModel):
     center_wavelength: float | None = None
 
 
-class Collection(BaseModel):
+class Collection(SummarisedLeaf):
     """One curated Sentinel Hub data collection, addressed by a logical key.
 
     Attributes:
@@ -125,6 +156,27 @@ class Collection(BaseModel):
         extent: Spatial/temporal coverage, or `None`.
         description: One-line human summary, or `None`.
     """
+
+    _summary_fields = (
+        "sh_collection",
+        "cadence",
+    )
+
+    def summary_parts(self) -> list[str]:
+        """Append the nominal resolution with its unit.
+
+        `resolution` is a bare metre count, so rendering it as a declared field
+        put a lone number beside the other fragments with nothing saying what
+        it measured.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m"` when known.
+        """
+        parts = super().summary_parts()
+        measure = render_measure(self.resolution)
+        if measure:
+            parts.append(measure)
+        return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -142,7 +194,7 @@ class Collection(BaseModel):
         return list(self.default_bands or list(self.bands))
 
 
-class EvalscriptRecipe(BaseModel):
+class EvalscriptRecipe(SummarisedLeaf):
     """One curated evalscript recipe fixing a base collection + a `.js` file.
 
     Attributes:
@@ -157,6 +209,12 @@ class EvalscriptRecipe(BaseModel):
             for the Statistical API).
         description: One-line human summary, or `None`.
     """
+
+    _summary_fields = (
+        "description",
+        "kind",
+        "output_bands",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -188,7 +246,7 @@ class EvalscriptRecipe(BaseModel):
         return value
 
 
-class ResolvedRequest(BaseModel):
+class ResolvedRequest(SummarisedLeaf):
     """The uniform shape a resolved collection-or-recipe key takes.
 
     Both a plain collection and a recipe resolve to this so the backend's
@@ -206,6 +264,12 @@ class ResolvedRequest(BaseModel):
         kind: `"render"` or `"stats"` (recipes only; `"render"` for a plain
             collection).
     """
+
+    _summary_fields = (
+        "key",
+        "kind",
+        "sh_collection",
+    )
 
     model_config = ConfigDict(frozen=True)
 
@@ -304,7 +368,7 @@ def _load_catalog_data(
         bands_yaml = dict(body.pop("bands", {}) or {})
         try:
             bands = {
-                name: Band(**dict(band_body or {}))
+                name: Band(**{"id": name, **dict(band_body or {})})
                 for name, band_body in bands_yaml.items()
             }
             extent = Extent(**dict(extent_body)) if extent_body else None
