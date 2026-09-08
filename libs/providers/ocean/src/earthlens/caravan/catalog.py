@@ -410,7 +410,7 @@ class Extension(SummarisedLeaf):
     _summary_fields = (
         "key",
         "title",
-        "license",
+        "default_version",
     )
 
     model_config = ConfigDict(frozen=True, extra="forbid")

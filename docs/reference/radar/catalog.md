@@ -18,7 +18,8 @@ from earthlens.radar import StationCatalog
 
 cat = StationCatalog()
 len(cat.datasets)                       # 210
-cat.get_station("KTLX")                 # Station(name='Oklahoma City', ...)
+cat.get_station("KTLX")                 # Station(code='KTLX', name='Oklahoma City', ...)
+print(cat.get_station("KTLX"))          # Station(KTLX, Oklahoma City, OK)
 cat.in_bbox(-100, 33, -95, 37)          # ['KFDR', 'KINX', 'KTLX', 'KVNX', ...]
 ```
 
