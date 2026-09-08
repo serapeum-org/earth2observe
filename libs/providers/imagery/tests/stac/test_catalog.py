@@ -476,3 +476,36 @@ class TestAssetSummary:
         ]
         assert bare, "no shipped asset carries only a fill value any more"
         assert all(row.startswith("Asset(nodata ") for row in bare), bare
+
+
+class TestEndpointSummary:
+    """An endpoint says which credentials it needs, not only its key."""
+
+    def test_the_signer_is_named(self):
+        """Whether a caller needs auth is the endpoint's most useful fact."""
+        assert str(Endpoint(key="cdse", url="https://x", signer="cdse-s3")) == (
+            "Endpoint(cdse, cdse-s3)"
+        )
+
+    def test_an_anonymous_endpoint_says_so(self):
+        """`anonymous` is a real answer, not an absent one — five endpoints use it."""
+        assert str(Endpoint(key="bdc", url="https://x")) == "Endpoint(bdc, anonymous)"
+
+    def test_the_region_follows_the_signer(self):
+        """Requester-pays endpoints are identified by the pair together."""
+        endpoint = Endpoint(
+            key="usgs-landsat",
+            url="https://x",
+            signer="aws-requester-pays",
+            region="us-west-2",
+        )
+        assert str(endpoint) == "Endpoint(usgs-landsat, aws-requester-pays, us-west-2)"
+
+    def test_no_shipped_endpoint_summarises_to_its_key_alone(self):
+        """The key is the mapping key; a summary repeating it says nothing new."""
+        bare = [
+            str(endpoint)
+            for endpoint in Catalog().endpoints.values()
+            if str(endpoint) == f"Endpoint({endpoint.key})"
+        ]
+        assert not bare, bare

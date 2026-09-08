@@ -148,6 +148,7 @@ class Endpoint(SummarisedLeaf):
 
     _summary_fields = (
         "key",
+        "signer",
         "region",
     )
 
