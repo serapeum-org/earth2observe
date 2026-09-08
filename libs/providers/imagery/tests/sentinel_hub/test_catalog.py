@@ -10,7 +10,7 @@ from earthlens.sentinel_hub import (
     EvalscriptRecipe,
     read_evalscript,
 )
-from earthlens.sentinel_hub.catalog import clear_catalog_cache
+from earthlens.sentinel_hub.catalog import Extent, clear_catalog_cache
 
 pytestmark = pytest.mark.sentinel_hub
 
@@ -100,3 +100,30 @@ class TestModels:
         """Unknown recipe fields are forbidden."""
         with pytest.raises(ValueError):
             EvalscriptRecipe(base_collection="X", evalscript="x.js", bogus=1)
+
+
+class TestExtentSummary:
+    """A collection pinning no dates falls back to its footprint."""
+
+    def test_dates_are_preferred_when_present(self):
+        """The bbox is a fallback, not an addition — it would double the line."""
+        extent = Extent(start_date="2015-06-23", end_date="2024-01-01")
+        assert str(extent) == "Extent(2015-06-23, 2024-01-01)"
+
+    def test_the_bbox_is_used_when_no_date_is_pinned(self):
+        """Two `None` dates would otherwise summarise to `Extent()`."""
+        extent = Extent(bbox=(-180.0, -90.0, 180.0, 90.0))
+        assert str(extent) == "Extent(bbox -180, -90, 180, 90)"
+
+    def test_a_row_with_neither_stays_honestly_empty(self):
+        """An empty row has nothing to say, and the summary should not invent it."""
+        assert str(Extent()) == "Extent()"
+
+    def test_no_shipped_extent_summarises_to_nothing(self):
+        """One of the nine shipped collections pins only its footprint."""
+        empty = [
+            key
+            for key, collection in Catalog().datasets.items()
+            if collection.extent is not None and str(collection.extent) == "Extent()"
+        ]
+        assert not empty, f"{empty} summarise to nothing"

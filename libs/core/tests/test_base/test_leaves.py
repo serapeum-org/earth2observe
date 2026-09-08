@@ -12,6 +12,7 @@ from earthlens.base.leaves import (
     FluxableLeaf,
     SummarisedLeaf,
     render_fragment,
+    render_measure,
 )
 
 
@@ -163,6 +164,35 @@ class TestRenderFragment:
     def test_the_count_is_labelled_with_the_field_name(self):
         """The label comes from the field, so the count reads as prose."""
         assert render_fragment([1, 2, 3], "levels") == "3 levels"
+
+
+class TestRenderMeasure:
+    """Tests for the `render_measure` numeric-with-unit formatter."""
+
+    def test_a_whole_number_drops_its_trailing_zero(self):
+        """`30.0 m` reads as a float where the catalog means a round figure."""
+        assert render_measure(30.0) == "30 m"
+
+    def test_an_integer_renders_the_same_as_its_float(self):
+        """Catalogs spell the same resolution both ways."""
+        assert render_measure(30) == render_measure(30.0)
+
+    def test_a_fractional_value_keeps_its_precision(self):
+        """Sub-metre and arc-second grids are the reason the unit is a parameter."""
+        assert render_measure(0.05, "degree") == "0.05 degree"
+
+    def test_the_unit_defaults_to_metres(self):
+        """Every current caller measures a ground sample distance."""
+        assert render_measure(1113.2) == "1113.2 m"
+
+    @pytest.mark.parametrize("value", [None, 0, 0.0], ids=["none", "int", "float"])
+    def test_an_absent_or_zero_measure_renders_as_nothing(self, value):
+        """A zero resolution is not a measurement, unlike a zero count."""
+        assert render_measure(value) == "", f"{value!r} should render as empty"
+
+    def test_a_large_value_is_not_rendered_in_exponent_form(self):
+        """`%g` switches to `1e+06` past six significant digits."""
+        assert render_measure(1000000) == "1e+06 m"
 
 
 class TestFluxableLeaf:

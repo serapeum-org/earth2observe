@@ -8,6 +8,7 @@ import pytest
 
 from earthlens.stac.catalog import (
     CATALOG_PATH,
+    Asset,
     Catalog,
     Collection,
     Endpoint,
@@ -443,3 +444,34 @@ class TestLoaderRules:
         )
         with pytest.raises(ValueError, match="not declared in"):
             _load_catalog_data(tmp_path)
+
+
+class TestAssetSummary:
+    """An asset that carries only a fill value still says what it holds."""
+
+    def test_the_fill_value_is_labelled(self):
+        """A bare trailing `0` would read as a truncated summary."""
+        assert str(Asset(nodata=0)) == "Asset(nodata 0)"
+
+    def test_the_fill_value_follows_the_declared_fragments(self):
+        """It is the least identifying thing the row carries, so it goes last."""
+        asset = Asset(common_name="red", title="Red band", dtype="uint16", nodata=-9999)
+        assert str(asset) == "Asset(red, Red band, uint16, nodata -9999)"
+
+    def test_an_asset_without_a_fill_value_gains_no_fragment(self):
+        """291 of 1611 shipped assets declare one; the rest must stay unchanged."""
+        assert str(Asset(common_name="nir")) == "Asset(nir)"
+
+    def test_a_float_fill_value_drops_its_trailing_zero(self):
+        """`nodata 0` beats `nodata 0.0` beside three text fragments."""
+        assert str(Asset(nodata=0.0)) == "Asset(nodata 0)"
+
+    def test_the_shipped_assets_that_carry_only_a_fill_value(self):
+        """The three rows that made the empty-summary gate fail."""
+        bare = [
+            str(asset)
+            for collection in Catalog().datasets.values()
+            for asset in collection.assets.values()
+            if not (asset.common_name or asset.title or asset.dtype)
+        ]
+        assert bare and all(row.startswith("Asset(nodata ") for row in bare), bare
