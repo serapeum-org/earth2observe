@@ -33,9 +33,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -55,7 +55,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class ZenodoRecord(BaseModel):
+class ZenodoRecord(SummarisedLeaf):
     """The pinned Zenodo record FLODIS is fetched from.
 
     Attributes:
@@ -80,6 +80,12 @@ class ZenodoRecord(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "version",
+        "record",
+        "concept_doi",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     record: int
@@ -90,7 +96,7 @@ class ZenodoRecord(BaseModel):
     attribution: str = ""
 
 
-class FlodisDataset(BaseModel):
+class FlodisDataset(SummarisedLeaf):
     """One selectable FLODIS table (a row of the catalog's dict surface).
 
     The `dataset` string (`"damages"`, `"displacement"`) is the parent key in
@@ -117,6 +123,11 @@ class FlodisDataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "file",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -26,9 +26,9 @@ import warnings
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -72,7 +72,7 @@ def _years_set(spec: str) -> set[int]:
     return {int(text)}
 
 
-class SubAlias(BaseModel):
+class SubAlias(SummarisedLeaf):
     """One concrete WorldPop variant under a product alias.
 
     Maps the selector tuple `(constrained, unadjusted, resolution, scope,
@@ -104,6 +104,12 @@ class SubAlias(BaseModel):
         years: The years this sub-alias offers, as a single year
             (`"2020"`) or an inclusive range (`"2000-2020"`).
     """
+
+    _summary_fields = (
+        "id",
+        "resolution",
+        "scope",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -137,7 +143,7 @@ class SubAlias(BaseModel):
         )
 
 
-class Product(BaseModel):
+class Product(SummarisedLeaf):
     """One curated WorldPop product family (a top-level REST alias).
 
     Attributes:
@@ -160,6 +166,12 @@ class Product(BaseModel):
             title), shown in docs / `describe`.
         subaliases: The concrete variants this product offers.
     """
+
+    _summary_fields = (
+        "alias",
+        "kind",
+        "unit",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

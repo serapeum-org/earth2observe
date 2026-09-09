@@ -36,9 +36,9 @@ import datetime as _dt
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import ConfigDict, Field, ValidationError, field_validator
 
-from earthlens.base import AbstractCatalog, FluxableLeaf
+from earthlens.base import AbstractCatalog, FluxableLeaf, SummarisedLeaf
 from earthlens.base.catalog_source import (
     catalog_cache_key,
     yaml_files_for,
@@ -262,7 +262,7 @@ class Variable(FluxableLeaf):
     long_name: str = ""
 
 
-class TemporalCoverage(BaseModel):
+class TemporalCoverage(SummarisedLeaf):
     """Temporal coverage of a CMEMS dataset (start + optional end).
 
     Mirrors the `temporal:` block in the YAML. `end: null` (or a
@@ -293,12 +293,38 @@ class TemporalCoverage(BaseModel):
             True
 
             ```
+        - The summary reads as a range, and says so when neither date is
+          pinned:
+
+            ```python
+            >>> from earthlens.cmems.catalog import TemporalCoverage
+            >>> print(TemporalCoverage(start="2007-01-01"))
+            TemporalCoverage(2007-01-01 to present)
+            >>> print(TemporalCoverage())
+            TemporalCoverage(dates unknown)
+
+            ```
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start: str | None = None
     end: str | None = None
+
+    def summary_parts(self) -> list[str]:
+        """Render the coverage as one date range rather than two bare dates.
+
+        Both fields are unset on about half the shipped rows, which as two
+        independent fragments would summarise to nothing at all. A range says
+        what the row means: an open end is the rolling NRT case, and no dates
+        at all is a catalogue that never pinned them.
+
+        Returns:
+            list[str]: A single fragment naming the range.
+        """
+        if self.start is None and self.end is None:
+            return ["dates unknown"]
+        return [f"{self.start or 'start unknown'} to {self.end or 'present'}"]
 
     @field_validator("start", "end", mode="before")
     @classmethod
@@ -317,7 +343,7 @@ class TemporalCoverage(BaseModel):
         return value
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One curated CMEMS dataset row.
 
     Mirrors a single `datasets.<dataset_id>:` block in one of the
@@ -359,6 +385,12 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "product",
+        "title",
+        "cadence",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

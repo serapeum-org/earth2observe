@@ -17,10 +17,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
-from earthlens.base.catalog_source import load_catalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
+from earthlens.base.catalog_source import load_catalog, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "radar_data_catalog.yaml"
@@ -70,7 +70,10 @@ def _parse_stations(files: list[Path]) -> dict[str, Station]:
     stations: dict[str, Station] = {}
     for site_id, body in rows.items():
         try:
-            stations[site_id] = Station(**(body or {}))
+            fields = row_fields_with_key(
+                body, "code", site_id, noun="station", source=path
+            )
+            stations[site_id] = Station(**fields)
         except ValidationError as exc:
             raise ValueError(
                 f"{path} station {site_id!r} failed validation:\n{exc}"
@@ -78,21 +81,36 @@ def _parse_stations(files: list[Path]) -> dict[str, Station]:
     return stations
 
 
-class Station(BaseModel):
+class Station(SummarisedLeaf):
     """One WSR-88D radar site.
 
     The site id (e.g. `"KTLX"`) is the parent key in
-    :attr:`Catalog.datasets` and is not stored on the row.
+    :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`code` so a resolved station is self-describing.
 
     Attributes:
+        code: The station's catalog key (its ICAO id, e.g. `"KABR"`),
+            injected by the loader; it is how a station is addressed.
+            A body declaring a different value is
+            rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         name: Human-readable site name / location.
         latitude: Site latitude in degrees (south negative).
         longitude: Site longitude in degrees (west negative).
         state: Two-letter US state / territory code.
     """
 
+    _summary_fields = (
+        "code",
+        "name",
+        "state",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    code: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     name: str = ""
     latitude: float = Field(ge=-90.0, le=90.0)
     longitude: float = Field(ge=-180.0, le=180.0)

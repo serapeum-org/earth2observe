@@ -29,7 +29,7 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -43,7 +43,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Cmip6Variable(BaseModel):
+class Cmip6Variable(SummarisedLeaf):
     """One curated CMIP6 variable row (the `variable_id` leaf).
 
     A frozen value object with descriptive metadata only — CMIP6 variables carry
@@ -69,6 +69,12 @@ class Cmip6Variable(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "long_name",
+        "units",
+        "realm",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     units: str = ""
@@ -76,7 +82,7 @@ class Cmip6Variable(BaseModel):
     realm: str = ""
 
 
-class Experiment(BaseModel):
+class Experiment(SummarisedLeaf):
     """One curated CMIP6 experiment (scenario / diagnostic) row.
 
     Attributes:
@@ -94,13 +100,18 @@ class Experiment(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "activity_id",
+        "description",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     activity_id: str = ""
     description: str = ""
 
 
-class Table(BaseModel):
+class Table(SummarisedLeaf):
     """One curated CMIP6 MIP-table row (a realm x cadence bundle).
 
     Attributes:
@@ -119,6 +130,12 @@ class Table(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "description",
+        "cadence",
+        "realm",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     realm: str = ""
@@ -126,7 +143,7 @@ class Table(BaseModel):
     description: str = ""
 
 
-class Source(BaseModel):
+class Source(SummarisedLeaf):
     """One curated CMIP6 source-model (GCM) row.
 
     Attributes:
@@ -144,6 +161,11 @@ class Source(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "institution_id",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

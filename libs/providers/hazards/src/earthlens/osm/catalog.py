@@ -35,9 +35,9 @@ from difflib import get_close_matches
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -71,7 +71,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One OSM named query's dispatch row.
 
     The `<protocol>:<name>` query id is the parent key in
@@ -125,6 +125,11 @@ class Dataset(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "protocol",
+        "description",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

@@ -68,6 +68,7 @@ from earthlens.base.leaves import (
     FluxableLeaf,
     SummarisedLeaf,
     render_fragment,
+    render_measure,
 )
 from earthlens.base.naming import safe_filename
 from earthlens.base.providers import Provider, clear_providers_cache, load_providers
@@ -158,6 +159,7 @@ __all__ = [
     "prefer_ipv4",
     "redact_url",
     "render_fragment",
+    "render_measure",
     "region_affinity",
     "resolve_aoi",
     "resolve_cadence",

@@ -31,9 +31,9 @@ import datetime as dt
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf, render_measure
 from earthlens.base.catalog_source import load_catalog
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -50,7 +50,7 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class SensorColumn(BaseModel):
+class SensorColumn(SummarisedLeaf):
     """One FIRMS CSV column's metadata (the "variable" analog).
 
     A frozen value object describing a single column a sensor emits in
@@ -74,13 +74,18 @@ class SensorColumn(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "long_name",
+        "units",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     units: str = ""
     long_name: str = ""
 
 
-class Temporal(BaseModel):
+class Temporal(SummarisedLeaf):
     """A sensor's coverage window and quality tier.
 
     Attributes:
@@ -104,6 +109,11 @@ class Temporal(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "start",
+        "end",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     start: dt.date | None = None
@@ -111,7 +121,7 @@ class Temporal(BaseModel):
     quality: Literal["NRT", "SP"] = "NRT"
 
 
-class Sensor(BaseModel):
+class Sensor(SummarisedLeaf):
     """One FIRMS sensor's dispatch row (the "dataset" analog).
 
     The FIRMS source code is the parent key in :attr:`Catalog.datasets`
@@ -147,6 +157,27 @@ class Sensor(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "code",
+        "name",
+    )
+
+    def summary_parts(self) -> list[str]:
+        """Append the nominal resolution with its unit.
+
+        `resolution_m` is a bare metre count, so rendering it as a declared field
+        put a lone number beside the other fragments with nothing saying what
+        it measured.
+
+        Returns:
+            list[str]: The declared fragments, then `"<n> m"` when known.
+        """
+        parts = super().summary_parts()
+        measure = render_measure(self.resolution_m)
+        if measure:
+            parts.append(measure)
+        return parts
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

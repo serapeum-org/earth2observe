@@ -47,7 +47,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
 if TYPE_CHECKING:
     # `TaskInfo` is only referenced in type annotations on the
@@ -242,7 +242,7 @@ def clear_catalog_cache() -> None:
     _clear_providers_cache_base()
 
 
-class Cadence(BaseModel):
+class Cadence(SummarisedLeaf):
     """Native temporal step of an Earth Engine collection.
 
     A frozen value object derived from the STAC `gee:interval` field
@@ -273,6 +273,11 @@ class Cadence(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "unit",
+        "interval",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

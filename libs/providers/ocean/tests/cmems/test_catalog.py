@@ -216,3 +216,55 @@ class TestVariableProperties:
         """Explicit `types='flux'` flips `is_flux` to True."""
         v = Variable(units="kg m-2 s-1", types="flux")
         assert v.is_flux is True, "Variable(types='flux') should report is_flux == True"
+
+
+@pytest.mark.cmems
+class TestTemporalCoverageSummary:
+    """`TemporalCoverage` summarises as one range, never as nothing."""
+
+    def test_a_bounded_range_reads_as_a_range(self):
+        """Two dates are one fragment, not two independent ones."""
+        coverage = TemporalCoverage(start="1993-01-01", end="2023-12-31")
+        assert str(coverage) == "TemporalCoverage(1993-01-01 to 2023-12-31)"
+
+    def test_an_open_end_reads_as_present(self):
+        """A missing `end` is the rolling NRT case, not a missing value."""
+        assert str(TemporalCoverage(start="2007-01-01")) == (
+            "TemporalCoverage(2007-01-01 to present)"
+        )
+
+    def test_an_open_start_still_names_the_end(self):
+        """A row pinned only at the end keeps the date it does have."""
+        assert str(TemporalCoverage(end="2023-12-31")) == (
+            "TemporalCoverage(start unknown to 2023-12-31)"
+        )
+
+    def test_no_dates_at_all_says_so(self):
+        """Half the shipped rows pin neither date; an empty summary hides that."""
+        assert str(TemporalCoverage()) == "TemporalCoverage(dates unknown)"
+
+    def test_no_shipped_coverage_summarises_to_nothing(self):
+        """The reason for the override: `TemporalCoverage()` on 560 real rows."""
+        empty = [
+            dataset_id
+            for dataset_id, dataset in Catalog().datasets.items()
+            if str(dataset.temporal) == "TemporalCoverage()"
+        ]
+        assert not empty, f"{len(empty)} rows still summarise to nothing: {empty[:5]}"
+
+
+@pytest.mark.cmems
+class TestShippedVariableUnits:
+    """The shipped `units` values are units, not stringified `None`."""
+
+    def test_no_variable_carries_the_string_none_as_its_unit(self):
+        """`units: None` is unquoted YAML, so it parses as the text `'None'`."""
+        offenders = [
+            f"{dataset_id}.{name}"
+            for dataset_id, dataset in Catalog().datasets.items()
+            for name, variable in dataset.variables.items()
+            if variable.units == "None"
+        ]
+        assert not offenders, (
+            f"{len(offenders)} variables print a literal None unit: {offenders}"
+        )

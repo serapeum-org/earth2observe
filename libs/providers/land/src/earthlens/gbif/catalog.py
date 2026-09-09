@@ -22,9 +22,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -123,7 +123,7 @@ def _name_backbone_key(name: str) -> int:
     return int(key)
 
 
-class Taxon(BaseModel):
+class Taxon(SummarisedLeaf):
     """One friendly GBIF taxon's dispatch row.
 
     The user-facing name is the parent key in :attr:`Catalog.datasets`
@@ -146,6 +146,12 @@ class Taxon(BaseModel):
 
             ```
     """
+
+    _summary_fields = (
+        "taxon_key",
+        "title",
+        "rank",
+    )
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

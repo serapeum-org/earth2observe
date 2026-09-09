@@ -30,8 +30,8 @@ from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from earthlens.base import AbstractCatalog
-from earthlens.base.catalog_source import catalog_cache_key
+from earthlens.base import AbstractCatalog, SummarisedLeaf
+from earthlens.base.catalog_source import catalog_cache_key, row_fields_with_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
 CATALOG_PATH: Path = Path(__file__).parent / "aqueduct_data_catalog.yaml"
@@ -47,13 +47,19 @@ def clear_catalog_cache() -> None:
     _CATALOG_CACHE.clear()
 
 
-class AdminLevel(BaseModel):
+class AdminLevel(SummarisedLeaf):
     """One admin level's download + shapefile spec.
 
     The admin-level name (`"country"` / `"state"` / `"basin"`) is the parent key
-    in :attr:`Catalog.datasets`, not stored on the row.
+    in :attr:`Catalog.datasets`; the loader copies it onto the row as
+    :attr:`level` so a resolved level is self-describing.
 
     Attributes:
+        level: The admin-level name, taken from the catalog key. Empty only
+            for a row built directly rather than through the loader.
+            A body declaring a different value is
+            rejected at load time, and the field is excluded from
+            `model_dump()` so it does not repeat the row's own key.
         zip: The zip file name the shapefile lives in — a direct download under
             `base_url` when :attr:`container_zip` is `None`, otherwise the entry
             to extract from that outer bundle first.
@@ -77,14 +83,22 @@ class AdminLevel(BaseModel):
             ```
     """
 
+    _summary_fields = (
+        "level",
+        "shapefile_stem",
+    )
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    level: str = Field(
+        default="", exclude=True
+    )  # mirrors the catalog key; not part of the row's data
     zip: str
     shapefile_stem: str
     container_zip: str | None = None
 
 
-class Scenario(BaseModel):
+class Scenario(SummarisedLeaf):
     """One climate × socio-economic scenario's code and valid years.
 
     Attributes:
@@ -105,6 +119,8 @@ class Scenario(BaseModel):
             ```
     """
 
+    _summary_fields = ("code",)
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     code: str
@@ -112,7 +128,12 @@ class Scenario(BaseModel):
 
 
 def _parse_rows(
-    rows_yaml: dict[str, Any], model: type[BaseModel], path: Path, label: str
+    rows_yaml: dict[str, Any],
+    model: type[BaseModel],
+    path: Path,
+    label: str,
+    *,
+    key_field: str | None = None,
 ) -> dict[str, Any]:
     """Validate a `name -> body` mapping into `model` instances.
 
@@ -121,6 +142,11 @@ def _parse_rows(
         model: The pydantic model each body is validated against.
         path: The catalog path (for the error message).
         label: The row kind, named in a validation error (`"admin level"`).
+        key_field: When given, the mapping key is copied onto each row under
+            this field name, so a row that is addressed by its key can name
+            itself. The key is authoritative: a body may repeat it, but a body
+            that declares a different value is rejected rather than allowed to
+            misname the row.
 
     Returns:
         dict[str, Any]: One validated `model` instance per key.
@@ -131,7 +157,12 @@ def _parse_rows(
     parsed: dict[str, Any] = {}
     for name, body in rows_yaml.items():
         try:
-            parsed[name] = model(**dict(body or {}))
+            fields = (
+                row_fields_with_key(body, key_field, name, noun=label, source=path)
+                if key_field is not None
+                else dict(body or {})
+            )
+            parsed[name] = model(**fields)
         except ValidationError as exc:
             raise ValueError(
                 f"{path} {label} {name!r} failed validation:\n{exc}"
@@ -168,7 +199,9 @@ def _load_catalog_data(path: Path) -> dict[str, Any]:
             f"{path} is missing or has an empty 'admin_levels:' block. "
             "The Aqueduct catalog must list at least one admin level."
         )
-    levels = _parse_rows(levels_yaml, AdminLevel, path, "admin level")
+    levels = _parse_rows(
+        levels_yaml, AdminLevel, path, "admin level", key_field="level"
+    )
     scenarios = _parse_rows(data.get("scenarios") or {}, Scenario, path, "scenario")
 
     value: dict[str, Any] = {

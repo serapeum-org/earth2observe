@@ -49,38 +49,72 @@ def _singular(field: str, count: int) -> str:
     return field[:-1] if field.endswith("s") else field
 
 
-#: Longest single fragment. The longest value any shipped row declares is a
-#: 174-character mswep description, and asset ids reach 95 characters; past
-#: this width a fragment stops informing and starts hiding the ones after it.
+#: Longest single fragment. The longest value a shipped row declares is a
+#: 335-character description, and asset ids reach 100; past this width a
+#: fragment stops informing and starts crowding out the ones after it.
 MAX_FRAGMENT = 60
 
-#: Longest joined summary, so a six-fragment row cannot reach 296 characters
-#: (the longest before this cap) and stop being one readable line.
+#: Longest joined summary, so a row with many fragments still reads as one
+#: line. The longest shipped summary sits at 189 characters — this cap plus
+#: the class name and brackets.
 MAX_SUMMARY = 180
+
+
+#: Fraction of a clipped prose fragment kept as the head. Prose front-loads its
+#: meaning, so a title reads better with most of its opening intact — but a
+#: tail still has to survive, or two long titles sharing an opening collapse
+#: onto the same summary.
+_PROSE_HEAD_SHARE = 0.75
+
+
+def _reads_as_prose(text: str) -> bool:
+    """Whether `text` is a sentence rather than an identifier.
+
+    Args:
+        text: The fragment being clipped.
+
+    Returns:
+        bool: `True` when the text contains a space. Catalog ids and paths
+        never do, and a title that happens to carry `/` or `:` is still a
+        title — `"Antarctic Ocean - Sea Ice, CFOSAT/SSMI interpolated"` reads
+        as prose despite the slash.
+    """
+    return " " in text
 
 
 def _clip(text: str, limit: int) -> str:
     """Shorten `text` to `limit` characters, marking that it was cut.
 
-    Cuts the middle rather than the tail. Catalog identifiers are long
-    because they are paths, and what distinguishes two of them is usually
-    the last segment — `.../weathernext_2_0_0` from
-    `.../weathernext_2_0_0_mean`. Keeping only the head would render those
-    two rows identically, which is worse than not clipping at all.
+    Always keeps both ends, because what distinguishes two long values is
+    often only their tail — `.../weathernext_2_0_0` from
+    `..._mean`, or two dataset titles differing in a trailing qualifier.
+    Dropping the tail outright collapses such rows onto one summary, which is
+    worse than clipping them at all.
+
+    How much of each end survives depends on what the text is. An
+    **identifier** is split evenly: a path carries as much meaning at its end
+    as its start. **Prose** keeps `_PROSE_HEAD_SHARE` of the budget as head,
+    since a title front-loads its meaning and reads as a truncation rather
+    than as damage — while still retaining enough tail to tell two similar
+    titles apart.
 
     Args:
         text: The text to shorten.
         limit: Maximum length of the result, including the ellipsis.
 
     Returns:
-        str: `text` unchanged when it fits, else its head and tail joined
-        by `...`.
+        str: `text` unchanged when it fits, else its head and tail joined by
+        `...`.
     """
     if len(text) <= limit:
         return text
     keep = limit - 3
-    head = (keep + 1) // 2
-    return text[:head].rstrip() + "..." + text[len(text) - (keep - head) :].lstrip()
+    share = _PROSE_HEAD_SHARE if _reads_as_prose(text) else 0.5
+    head = max(1, round(keep * share))
+    tail = keep - head
+    if tail <= 0:
+        return text[:keep].rstrip() + "..."
+    return text[:head].rstrip() + "..." + text[len(text) - tail :].lstrip()
 
 
 def render_fragment(value: Any, field: str) -> str:
@@ -130,6 +164,10 @@ def render_fragment(value: Any, field: str) -> str:
     """
     if value is None:
         return ""
+    if isinstance(value, bool):
+        # A flag reads as its own name when set; when clear it has nothing to
+        # say, and `False` beside four other fragments only takes up room.
+        return field if value else ""
     if isinstance(value, _SIZED):
         if not value:
             return ""
@@ -139,6 +177,45 @@ def render_fragment(value: Any, field: str) -> str:
     # summary across lines; no shipped row does this today, but the summary
     # promises to be one line and nothing else enforces it.
     return _clip(" ".join(str(value).split()), MAX_FRAGMENT)
+
+
+def render_measure(value: float | int | None, unit: str = "m") -> str:
+    """Render a bare numeric measure with its unit, or `""` when unknown.
+
+    A nominal resolution stored as a plain number renders as a lone figure
+    with nothing saying what it measured. Five row classes needed the same
+    two lines to fix that, so it lives here once.
+
+    Args:
+        value: The measure, or `None` / `0` when the row does not carry one.
+        unit: The unit to append. Defaults to metres.
+
+    Returns:
+        str: `"<n> <unit>"` with a trailing zero trimmed, or `""`.
+
+    Examples:
+        - A whole number drops its trailing zero:
+            ```python
+            >>> render_measure(30.0)
+            '30 m'
+
+            ```
+        - A fractional value keeps its precision, and the unit is free:
+            ```python
+            >>> render_measure(1113.2), render_measure(3.75, "arc-second")
+            ('1113.2 m', '3.75 arc-second')
+
+            ```
+        - An absent measure contributes nothing:
+            ```python
+            >>> render_measure(None)
+            ''
+
+            ```
+    """
+    if not value:
+        return ""
+    return f"{value:g} {unit}"
 
 
 class SummarisedLeaf(BaseModel):
@@ -201,7 +278,9 @@ class SummarisedLeaf(BaseModel):
 
     #: Field names to include in `__str__`, in order. Empty means no summary
     #: beyond the class name, which is the honest answer for a row that has
-    #: not declared one.
+    #: not declared one. A subclass declaration **replaces** its parent's
+    #: rather than extending it — to keep a parent's fragments, override
+    #: :meth:`summary_parts` and call `super()`, as `FluxableLeaf` does.
     _summary_fields: ClassVar[tuple[str, ...]] = ()
 
     @classmethod
@@ -321,7 +400,20 @@ class SummarisedLeaf(BaseModel):
 
                 ```
         """
-        body = _clip(", ".join(self.summary_parts()), MAX_SUMMARY)
+        parts = self.summary_parts()
+        kept: list[str] = []
+        used = 0
+        for part in parts:
+            extra = len(part) + (2 if kept else 0)
+            if used + extra > MAX_SUMMARY:
+                break
+            kept.append(part)
+            used += extra
+        body = ", ".join(kept)
+        if len(kept) < len(parts):
+            # Cut on a fragment boundary rather than mid-word: splicing a
+            # comma-separated list is what makes a clipped summary unreadable.
+            body = f"{body}, ..." if body else "..."
         return f"{type(self).__name__}({body})"
 
 

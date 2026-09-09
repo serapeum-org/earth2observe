@@ -24,9 +24,9 @@ import fnmatch
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 
-from earthlens.base import AbstractCatalog
+from earthlens.base import AbstractCatalog, SummarisedLeaf
 from earthlens.base.catalog_source import catalog_cache_key
 from earthlens.base.yaml_loader import CatalogParseCache, load_yaml_strict
 
@@ -118,7 +118,7 @@ def _load_catalog_data(
     return value
 
 
-class Dataset(BaseModel):
+class Dataset(SummarisedLeaf):
     """One EM-DAT catalog row.
 
     The dataset id is the parent key in :attr:`Catalog.datasets` and is also
@@ -179,6 +179,12 @@ class Dataset(BaseModel):
         terms_url: URL of the terms of use, when the data carries them.
         citation: The attribution string to surface to the user.
     """
+
+    _summary_fields = (
+        "id",
+        "long_name",
+        "output_kind",
+    )
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
