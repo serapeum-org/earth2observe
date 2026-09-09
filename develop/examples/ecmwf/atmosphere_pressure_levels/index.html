@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -25131,17 +25131,17 @@ top of the temperature field — the canonical synoptic chart shape.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">AGG</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"temperature_*_1D_*.tif"</span><span class="p">)))</span>
-<span class="n">u_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">AGG</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"u_component_of_wind_*_1D_*.tif"</span><span class="p">)))</span>
-<span class="n">v_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">AGG</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"v_component_of_wind_*_1D_*.tif"</span><span class="p">)))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">t_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">AGG</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"temperature_1D_*.tif"</span><span class="p">)))</span>
+<span class="n">u_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">AGG</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"u_component_of_wind_1D_*.tif"</span><span class="p">)))</span>
+<span class="n">v_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">AGG</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"v_component_of_wind_1D_*.tif"</span><span class="p">)))</span>
 
 <span class="n">t_air</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">t_path</span><span class="p">)</span><span class="o">.</span><span class="n">read_array</span><span class="p">()</span>
 <span class="n">u_wind</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">u_path</span><span class="p">)</span><span class="o">.</span><span class="n">read_array</span><span class="p">()</span>
 <span class="n">v_wind</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">v_path</span><span class="p">)</span><span class="o">.</span><span class="n">read_array</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">t_path = str(min(AGG.glob("temperature_*_1D_*.tif")))
-u_path = str(min(AGG.glob("u_component_of_wind_*_1D_*.tif")))
-v_path = str(min(AGG.glob("v_component_of_wind_*_1D_*.tif")))
+<div class="clipboard-copy-txt" id="cell-7">t_path = str(min(AGG.glob("temperature_1D_*.tif")))
+u_path = str(min(AGG.glob("u_component_of_wind_1D_*.tif")))
+v_path = str(min(AGG.glob("v_component_of_wind_1D_*.tif")))
 
 t_air = Dataset.read_file(t_path).read_array()
 u_wind = Dataset.read_file(u_path).read_array()
