@@ -24700,7 +24700,8 @@ is curated on each store before downloading anything.</p>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.netcdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCDF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColorBar</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLens</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.ecmwf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
@@ -24716,7 +24717,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
+from pyramids.netcdf import NetCDF
+from pyramids.plot import ColorBar
 
 from earthlens.core import EarthLens
 from earthlens.ecmwf import Catalog
@@ -24920,21 +24922,29 @@ it does not regrid. If you need a regular grid, regrid downstream.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">tigge</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'dims :'</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">sizes</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'vars :'</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">nc</span> <span class="o">=</span> <span class="n">NetCDF</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">tigge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'variables :'</span><span class="p">,</span> <span class="n">nc</span><span class="o">.</span><span class="n">variable_names</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'dimensions:'</span><span class="p">,</span> <span class="n">nc</span><span class="o">.</span><span class="n">dimension_sizes</span><span class="p">)</span>
 
-<span class="n">t2m</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s1">'t2m'</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'units:'</span><span class="p">,</span> <span class="n">t2m</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'units'</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'range: </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">t2m</span><span class="o">.</span><span class="n">min</span><span class="p">())</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> .. </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">t2m</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> K'</span><span class="p">)</span>
+<span class="c1"># TIGGE is on an unstructured grid -- a single `values` dimension, no lat/lon -- so</span>
+<span class="c1"># pyramids hands back the underlying array rather than a raster Variable, and</span>
+<span class="c1"># `stats()` / `plot()` do not apply (serapeum-org/pyramids#1126).</span>
+<span class="n">t2m</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'t2m'</span><span class="p">)</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t2m</span><span class="o">.</span><span class="n">ReadAsArray</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'units:'</span><span class="p">,</span> <span class="n">t2m</span><span class="o">.</span><span class="n">GetUnit</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'range: </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> .. </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> K'</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">ds = xr.open_dataset(tigge[0])
-print('dims :', dict(ds.sizes))
-print('vars :', list(ds.data_vars))
+<div class="clipboard-copy-txt" id="cell-5">nc = NetCDF.read_file(tigge[0], read_only=True)
+print('variables :', nc.variable_names)
+print('dimensions:', nc.dimension_sizes)
 
-t2m = ds['t2m']
-print('units:', t2m.attrs.get('units'))
-print(f'range: {float(t2m.min()):.1f} .. {float(t2m.max()):.1f} K')</div>
+# TIGGE is on an unstructured grid -- a single `values` dimension, no lat/lon -- so
+# pyramids hands back the underlying array rather than a raster Variable, and
+# `stats()` / `plot()` do not apply (serapeum-org/pyramids#1126).
+t2m = nc.get_variable('t2m')
+values = np.asarray(t2m.ReadAsArray())
+print('units:', t2m.GetUnit())
+print(f'range: {values.min():.1f} .. {values.max():.1f} K')</div>
 </div>
 </div>
 </div>
@@ -24959,7 +24969,7 @@ print(f'range: {float(t2m.min()):.1f} .. {float(t2m.max()):.1f} K')</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s1">'t2m'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">nc</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="mf">273.15</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">'o'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'-'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'#c1440e'</span><span class="p">)</span>
@@ -24969,9 +24979,8 @@ print(f'range: {float(t2m.min()):.1f} .. {float(t2m.max()):.1f} K')</div>
 <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">values = np.asarray(ds['t2m'].values).ravel()
+<div class="clipboard-copy-txt" id="cell-6">nc.close()
 
 fig, ax = plt.subplots(figsize=(7, 3.5))
 ax.plot(values - 273.15, marker='o', linestyle='-', color='#c1440e')
@@ -24980,8 +24989,7 @@ ax.set_ylabel('2 m temperature (°C)')
 ax.set_title('TIGGE ECMWF control forecast, +24 h — 2024-01-01')
 ax.grid(alpha=0.3)
 plt.tight_layout()
-plt.show()
-ds.close()</div>
+plt.show()</div>
 </div>
 </div>
 </div>
@@ -25071,19 +25079,19 @@ fuel</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">fuel</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'dims :'</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fds</span><span class="o">.</span><span class="n">sizes</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'vars :'</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">fds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fnc</span> <span class="o">=</span> <span class="n">NetCDF</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">fuel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'variables :'</span><span class="p">,</span> <span class="n">fnc</span><span class="o">.</span><span class="n">variable_names</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'dimensions:'</span><span class="p">,</span> <span class="n">fnc</span><span class="o">.</span><span class="n">dimension_sizes</span><span class="p">)</span>
 
-<span class="n">lfmc</span> <span class="o">=</span> <span class="n">fds</span><span class="p">[</span><span class="s1">'LFMC'</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'units:'</span><span class="p">,</span> <span class="n">lfmc</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'units'</span><span class="p">))</span>
+<span class="n">lfmc</span> <span class="o">=</span> <span class="n">fnc</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'LFMC'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'grid </span><span class="si">{</span><span class="n">lfmc</span><span class="o">.</span><span class="n">rows</span><span class="si">}</span><span class="s1"> x </span><span class="si">{</span><span class="n">lfmc</span><span class="o">.</span><span class="n">columns</span><span class="si">}</span><span class="s1">, epsg </span><span class="si">{</span><span class="n">lfmc</span><span class="o">.</span><span class="n">epsg</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">fds = xr.open_dataset(fuel[0])
-print('dims :', dict(fds.sizes))
-print('vars :', list(fds.data_vars))
+<div class="clipboard-copy-txt" id="cell-8">fnc = NetCDF.read_file(fuel[0], read_only=True)
+print('variables :', fnc.variable_names)
+print('dimensions:', fnc.dimension_sizes)
 
-lfmc = fds['LFMC']
-print('units:', lfmc.attrs.get('units'))</div>
+lfmc = fnc.get_variable('LFMC')
+print(f'grid {lfmc.rows} x {lfmc.columns}, epsg {lfmc.epsg}')</div>
 </div>
 </div>
 </div>
@@ -25108,29 +25116,19 @@ print('units:', lfmc.attrs.get('units'))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">field</span> <span class="o">=</span> <span class="n">lfmc</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">fds</span><span class="p">[</span><span class="s1">'lon'</span><span class="p">],</span> <span class="n">fds</span><span class="p">[</span><span class="s1">'lat'</span><span class="p">],</span> <span class="n">field</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'YlGn'</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'live fuel moisture content (%)'</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'longitude'</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude'</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'LFMC — January 2000'</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">fds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">lfmc</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s1">'YlGn'</span><span class="p">,</span>
+    <span class="n">colorbar</span><span class="o">=</span><span class="n">ColorBar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">'live fuel moisture content (%)'</span><span class="p">),</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'LFMC — January 2000'</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fnc</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9">field = lfmc.isel(time=0)
-
-fig, ax = plt.subplots(figsize=(6, 5))
-mesh = ax.pcolormesh(fds['lon'], fds['lat'], field, cmap='YlGn', shading='auto')
-fig.colorbar(mesh, ax=ax, label='live fuel moisture content (%)')
-ax.set_xlabel('longitude')
-ax.set_ylabel('latitude')
-ax.set_title('LFMC — January 2000')
-plt.tight_layout()
-plt.show()
-fds.close()</div>
+<div class="clipboard-copy-txt" id="cell-9">lfmc.plot(
+    cmap='YlGn',
+    colorbar=ColorBar(label='live fuel moisture content (%)'),
+    title='LFMC — January 2000',
+)
+fnc.close()</div>
 </div>
 </div>
 </div>

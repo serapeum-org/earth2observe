@@ -24654,7 +24654,7 @@ and the CMEMS <code>Catalog</code>.</p>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.netcdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCDF</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">earthlens.cmems</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span>
@@ -24668,7 +24668,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
+import pandas as pd
 from pyramids.netcdf import NetCDF
 
 from earthlens.cmems import Catalog
@@ -24884,7 +24884,7 @@ print(paths)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="box-averaged-sla-adt-time-series">Box-averaged SLA + ADT time-series<a class="anchor-link" href="#box-averaged-sla-adt-time-series">¶</a></h2><p>Read the downloaded cube with pyramids' <code>NetCDF</code>, then hand it to <code>xarray</code>
+<h2 id="box-averaged-sla-adt-time-series">Box-averaged SLA + ADT time-series<a class="anchor-link" href="#box-averaged-sla-adt-time-series">¶</a></h2><p>Read the downloaded cube with pyramids' <code>NetCDF</code>, then hand it to <code>pyramids</code>
 (via <code>decode_cf</code>) for labelled <code>(time, latitude, longitude)</code> access.</p>
 </div>
 </div>
@@ -24909,12 +24909,12 @@ print(paths)</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">nc</span> <span class="o">=</span> <span class="n">NetCDF</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">decode_cf</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">())</span>  <span class="c1"># labelled (time, latitude, longitude)</span>
-<span class="n">nc</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'variables :'</span><span class="p">,</span> <span class="n">nc</span><span class="o">.</span><span class="n">variable_names</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'dimensions:'</span><span class="p">,</span> <span class="n">nc</span><span class="o">.</span><span class="n">dimension_sizes</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-6">nc = NetCDF.read_file(paths[0], read_only=True)
-ds = xr.decode_cf(nc.to_xarray())  # labelled (time, latitude, longitude)
-nc.close()</div>
+print('variables :', nc.variable_names)
+print('dimensions:', nc.dimension_sizes)</div>
 </div>
 </div>
 </div>
@@ -24952,15 +24952,43 @@ strong interannual signal.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">box</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">[</span><span class="s1">'latitude'</span><span class="p">,</span> <span class="s1">'longitude'</span><span class="p">])</span>
-<span class="n">dates</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="s1">'time'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-<span class="n">series</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">box</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">VARIABLES</span><span class="p">}</span>
-<span class="n">sla_smoothed</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="s1">'sla'</span><span class="p">]</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># sla / adt are stored packed (int32 with a scale_factor); apply the packing before</span>
+<span class="c1"># averaging -- pyramids returns the raw store (serapeum-org/pyramids#1124).</span>
+<span class="n">dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_time_variable</span><span class="p">())</span>
+<span class="n">series</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">VARIABLES</span><span class="p">:</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">scale</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">scale</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">cube</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'float64'</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="n">offset</span>
+    <span class="n">series</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+<span class="n">sla_smoothed</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">series</span><span class="p">[</span><span class="s1">'sla'</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="n">nc</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span><span class="si">}</span><span class="s1"> daily values, </span><span class="si">{</span><span class="n">dates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s1">%Y-%m-%d</span><span class="si">}</span><span class="s1"> .. </span><span class="si">{</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s1">%Y-%m-%d</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SLA range: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">series</span><span class="p">[</span><span class="s1">'sla'</span><span class="p">])</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> .. </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">series</span><span class="p">[</span><span class="s1">'sla'</span><span class="p">])</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> m"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">box = ds.mean(dim=['latitude', 'longitude'])
-dates = box['time'].values
-series = {v: box[v].values for v in VARIABLES}
-sla_smoothed = box['sla'].rolling(time=30, center=True, min_periods=1).mean().values</div>
+<div class="clipboard-copy-txt" id="cell-7"># sla / adt are stored packed (int32 with a scale_factor); apply the packing before
+# averaging -- pyramids returns the raw store (serapeum-org/pyramids#1124).
+dates = pd.to_datetime(nc.get_time_variable())
+series = {}
+for name in VARIABLES:
+    var = nc.get_variable(name)
+    scale, offset = float(np.asarray(var.scale)[0]), float(np.asarray(var.offset)[0])
+    cube = var.read_array(masked=True).astype('float64') * scale + offset
+    series[name] = cube.reshape(cube.shape[0], -1).mean(axis=1).filled(np.nan)
+sla_smoothed = (
+    pd.Series(series['sla'], index=dates)
+    .rolling(30, center=True, min_periods=1)
+    .mean()
+    .to_numpy()
+)
+nc.close()
+print(f'{len(dates)} daily values, {dates[0]:%Y-%m-%d} .. {dates[-1]:%Y-%m-%d}')
+print(f"SLA range: {np.nanmin(series['sla']):.3f} .. {np.nanmax(series['sla']):.3f} m")</div>
 </div>
 </div>
 </div>
