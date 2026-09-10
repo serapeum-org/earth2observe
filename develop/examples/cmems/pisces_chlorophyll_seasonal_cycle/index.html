@@ -100,7 +100,7 @@
   
 
   <meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -24711,14 +24711,12 @@ a coastal box off Iberia, and create the output directory.</p>
 
 <span class="n">DATASET_ID</span> <span class="o">=</span> <span class="s1">'cmems_mod_glo_bgc_my_0.25deg_P1D-m'</span>
 <span class="n">VARIABLES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'chl'</span><span class="p">,</span> <span class="s1">'o2'</span><span class="p">]</span>
-<span class="n">BBOX</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lat_lim</span><span class="o">=</span><span class="p">[</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">44.0</span><span class="p">],</span> <span class="n">lon_lim</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">8.0</span><span class="p">])</span>  <span class="c1"># Iberian upwelling box</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">OUT_DIR = Path('data/cmems-pisces')
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 DATASET_ID = 'cmems_mod_glo_bgc_my_0.25deg_P1D-m'
-VARIABLES = ['chl', 'o2']
-BBOX = dict(lat_lim=[40.0, 44.0], lon_lim=[-12.0, -8.0])  # Iberian upwelling box</div>
+VARIABLES = ['chl', 'o2']</div>
 </div>
 </div>
 </div>
@@ -24810,7 +24808,7 @@ We build the <code>EarthLens</code> request first — variables are 4-D
     <span class="n">cadence</span><span class="o">=</span><span class="s1">'daily'</span><span class="p">,</span>
     <span class="n">dataset</span><span class="o">=</span><span class="n">DATASET_ID</span><span class="p">,</span>
     <span class="n">variables</span><span class="o">=</span><span class="n">VARIABLES</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">BBOX</span><span class="p">,</span>
+    <span class="n">aoi</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">8.0</span><span class="p">,</span> <span class="mf">44.0</span><span class="p">],</span>  <span class="c1"># Iberian upwelling box (W, S, E, N)</span>
     <span class="n">path</span><span class="o">=</span><span class="n">OUT_DIR</span><span class="p">,</span>
     <span class="n">minimum_depth</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="n">maximum_depth</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
@@ -24825,7 +24823,7 @@ We build the <code>EarthLens</code> request first — variables are 4-D
     cadence='daily',
     dataset=DATASET_ID,
     variables=VARIABLES,
-    **BBOX,
+    aoi=[-12.0, 40.0, -8.0, 44.0],  # Iberian upwelling box (W, S, E, N)
     path=OUT_DIR,
     minimum_depth=0.0,
     maximum_depth=10.0,
