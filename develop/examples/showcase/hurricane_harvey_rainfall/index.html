@@ -24797,8 +24797,11 @@ else:
 <span class="k">if</span> <span class="n">paths</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">granule</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
         <span class="n">nc</span> <span class="o">=</span> <span class="n">NetCDF</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">granule</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="c1"># IMERG keeps its fields under one HDF5 group.</span>
-        <span class="n">field</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="s2">"Grid"</span><span class="p">)</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"precipitation"</span><span class="p">)</span>
+        <span class="c1"># The daily V07 granules are flat NetCDF-4: `precipitation` sits at the</span>
+        <span class="c1"># root, and `nc.group_names` is empty. (The *monthly* IMERG product is</span>
+        <span class="c1"># HDF5 with everything under a `Grid` group -- a different file layout,</span>
+        <span class="c1"># not a different variable name.)</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"precipitation"</span><span class="p">)</span>
         <span class="n">clipped</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="n">BOX</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="mi">4326</span><span class="p">)</span>
         <span class="n">values</span> <span class="o">=</span> <span class="n">clipped</span><span class="o">.</span><span class="n">read_array</span><span class="p">(</span><span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float64"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -24818,8 +24821,11 @@ geo_ref = None
 if paths:
     for granule in sorted(paths):
         nc = NetCDF.read_file(granule, read_only=True)
-        # IMERG keeps its fields under one HDF5 group.
-        field = nc.get_group("Grid").get_variable("precipitation")
+        # The daily V07 granules are flat NetCDF-4: `precipitation` sits at the
+        # root, and `nc.group_names` is empty. (The *monthly* IMERG product is
+        # HDF5 with everything under a `Grid` group -- a different file layout,
+        # not a different variable name.)
+        field = nc.get_variable("precipitation")
         clipped = field.crop(bbox=BOX, epsg=4326)
         values = clipped.read_array(masked=True).astype("float64")
         if values.ndim == 3:
@@ -24843,7 +24849,8 @@ if paths:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="3-map-the-storm-total">3 · Map the storm total<a class="anchor-link" href="#3-map-the-storm-total">¶</a></h2><p>The bullseye of &gt;1 m sits over the Houston–Beaumont corridor, where Harvey's rainbands stalled for days.</p>
+<h2 id="3-map-the-storm-total">3 · Map the storm total<a class="anchor-link" href="#3-map-the-storm-total">¶</a></h2><p>The heaviest accumulation sits over the Houston–Beaumont corridor, where Harvey's rainbands stalled for days.</p>
+<p>Note the scale. IMERG's 0.1° cells peak near <strong>860 mm</strong> over this box, while the figure usually quoted for Harvey — over 1.5 m — is a <em>point</em> total from rain gauges. A ~11 km grid cell averages that extreme away, so the two numbers are measuring different things rather than disagreeing.</p>
 </div>
 </div>
 </div>

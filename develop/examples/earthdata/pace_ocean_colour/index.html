@@ -24471,9 +24471,9 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="pace-ocean-colour-chlorophyll-nasa-earthdata">PACE ocean-colour chlorophyll (NASA Earthdata)<a class="anchor-link" href="#pace-ocean-colour-chlorophyll-nasa-earthdata">¶</a></h1><p>Download a daily PACE OCI Level-3 mapped chlorophyll-a granule from the OB.DAAC and map it on a log scale. This is a gridded <strong>raster</strong> product, fetched through one Earthdata Login.</p>
+<h1 id="pace-ocean-colour-chlorophyll-nasa-earthdata">PACE ocean-colour chlorophyll (NASA Earthdata)<a class="anchor-link" href="#pace-ocean-colour-chlorophyll-nasa-earthdata">¶</a></h1><p>Download a daily PACE OCI Level-3 mapped chlorophyll-a field from the OB.DAAC and map it on a log scale. This is a gridded <strong>raster</strong> product, fetched through one Earthdata Login.</p>
 <blockquote>
-<p>Live query — needs the <code>[earthdata]</code> extra and EDL credentials. Each fetch and plot step is wrapped in a <code>try</code>/<code>except</code> so the notebook degrades gracefully (nbval-lax safe) when run offline or without credentials.</p>
+<p>Live query — needs the <code>[earthdata]</code> extra and EDL credentials.</p>
 </blockquote>
 </div>
 </div>
@@ -24533,7 +24533,8 @@ OUT_DIR.mkdir(exist_ok=True)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1-download-the-chlorophyll-granule">1 · Download the chlorophyll granule<a class="anchor-link" href="#1-download-the-chlorophyll-granule">¶</a></h2><p>Earthdata is a <strong>raster</strong> backend, so <code>download()</code> writes the granule(s) to disk and returns the list of written paths. We build the request first — the PACE OCI Level-3 mapped chlorophyll dataset, the <code>chlor_a</code> variable, a single day, and a global-ish bounding box.</p>
+<h2 id="1-download-the-chlorophyll-granule">1 · Download the chlorophyll granule<a class="anchor-link" href="#1-download-the-chlorophyll-granule">¶</a></h2><p>Earthdata is a <strong>raster</strong> backend, so <code>download()</code> writes the granule(s) to disk and returns the list of written paths. We build the request first — the dataset, the <code>chlor_a</code> variable, a single day, and a global-ish bounding box.</p>
+<p>Chlorophyll ships inside PACE's Level-3 mapped <strong>biogeochemistry</strong> collection, <code>PACE_OCI_L3M_BGC</code>, alongside <code>poc</code>, <code>pic</code> and <code>carbon_phyto</code> — there is no standalone chlorophyll collection to ask for.</p>
 </div>
 </div>
 </div>
@@ -24558,7 +24559,7 @@ OUT_DIR.mkdir(exist_ok=True)</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">ocean</span> <span class="o">=</span> <span class="n">EarthLens</span><span class="p">(</span>
     <span class="n">data_source</span><span class="o">=</span><span class="s1">'earthdata'</span><span class="p">,</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="s1">'PACE_OCI_L3M_CHL_31'</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="s1">'PACE_OCI_L3M_BGC'</span><span class="p">,</span>
     <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'chlor_a'</span><span class="p">],</span>
     <span class="n">start</span><span class="o">=</span><span class="s1">'2024-06-01'</span><span class="p">,</span>
     <span class="n">end</span><span class="o">=</span><span class="s1">'2024-06-01'</span><span class="p">,</span>
@@ -24568,7 +24569,7 @@ OUT_DIR.mkdir(exist_ok=True)</div>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">ocean = EarthLens(
     data_source='earthdata',
-    dataset='PACE_OCI_L3M_CHL_31',
+    dataset='PACE_OCI_L3M_BGC',
     variables=['chlor_a'],
     start='2024-06-01',
     end='2024-06-01',
@@ -24587,7 +24588,7 @@ OUT_DIR.mkdir(exist_ok=True)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>The download is run in its own step, wrapped in a <code>try</code>/<code>except</code> so the notebook keeps going (printing a skip message) when EDL credentials or the <code>[earthdata]</code> extra are unavailable.</p>
+<p>One date does not mean one file: an L3M collection publishes several aggregations of the same day — daily, 8-day and monthly — each at both 0.1° and 4 km. The request therefore returns six granules, so we pick the one we actually want by name instead of trusting the order of the list.</p>
 </div>
 </div>
 </div>
@@ -24611,10 +24612,20 @@ OUT_DIR.mkdir(exist_ok=True)</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">paths</span> <span class="o">=</span> <span class="n">ocean</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">),</span> <span class="s1">'granule(s):'</span><span class="p">,</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">),</span> <span class="s1">'granule(s):'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'   '</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">granule</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="s1">'.DAY.'</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span> <span class="s1">'0p1deg'</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">using:'</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">granule</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">paths = ocean.download(progress_bar=False)
-print(len(paths), 'granule(s):', [Path(p).name for p in paths])</div>
+print(len(paths), 'granule(s):')
+for p in paths:
+    print('   ', Path(p).name)
+
+granule = next(p for p in paths if '.DAY.' in Path(p).name and '0p1deg' in Path(p).name)
+print('\nusing:', Path(granule).name)</div>
 </div>
 </div>
 </div>
@@ -24627,7 +24638,7 @@ print(len(paths), 'granule(s):', [Path(p).name for p in paths])</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2-map-the-chlorophyll-field">2 · Map the chlorophyll field<a class="anchor-link" href="#2-map-the-chlorophyll-field">¶</a></h2><p>Open the granule with <code>pyramids</code> and plot <code>chlor_a</code> on a logarithmic colour scale — chlorophyll spans several orders of magnitude, so <code>LogNorm</code> keeps both clear open-ocean water and productive coastal blooms legible. The plot is guarded by <code>if paths:</code> and its own <code>try</code>/<code>except</code> so it is skipped cleanly when the download did not run.</p>
+<h2 id="2-map-the-chlorophyll-field">2 · Map the chlorophyll field<a class="anchor-link" href="#2-map-the-chlorophyll-field">¶</a></h2><p>Open the granule with <code>pyramids</code> and plot <code>chlor_a</code> on a logarithmic colour scale — chlorophyll spans several orders of magnitude, so a log scale keeps both clear open-ocean water and productive coastal blooms legible.</p>
 </div>
 </div>
 </div>
@@ -24653,10 +24664,12 @@ print(len(paths), 'granule(s):', [Path(p).name for p in paths])</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.netcdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetCDF</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyramids.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColorBar</span><span class="p">,</span> <span class="n">ColorScaling</span>
 
-<span class="n">nc</span> <span class="o">=</span> <span class="n">NetCDF</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">nc</span> <span class="o">=</span> <span class="n">NetCDF</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">granule</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'variables:'</span><span class="p">,</span> <span class="n">nc</span><span class="o">.</span><span class="n">variable_names</span><span class="p">)</span>
+
 <span class="n">chl</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'chlor_a'</span><span class="p">)</span>
 <span class="n">stats</span> <span class="o">=</span> <span class="n">chl</span><span class="o">.</span><span class="n">stats</span><span class="p">(</span><span class="n">approx_ok</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'grid </span><span class="si">{</span><span class="n">chl</span><span class="o">.</span><span class="n">rows</span><span class="si">}</span><span class="s1"> x </span><span class="si">{</span><span class="n">chl</span><span class="o">.</span><span class="n">columns</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'grid </span><span class="si">{</span><span class="n">chl</span><span class="o">.</span><span class="n">rows</span><span class="si">}</span><span class="s1"> x </span><span class="si">{</span><span class="n">chl</span><span class="o">.</span><span class="n">columns</span><span class="si">}</span><span class="s1">, epsg </span><span class="si">{</span><span class="n">chl</span><span class="o">.</span><span class="n">epsg</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
     <span class="sa">f</span><span class="s1">'chlor_a min/max: </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s2">"min"</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> / </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s2">"max"</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> mg m-3'</span>
 <span class="p">)</span>
@@ -24673,10 +24686,12 @@ print(len(paths), 'granule(s):', [Path(p).name for p in paths])</div>
 <div class="clipboard-copy-txt" id="cell-4">from pyramids.netcdf import NetCDF
 from pyramids.plot import ColorBar, ColorScaling
 
-nc = NetCDF.read_file(paths[0], read_only=True)
+nc = NetCDF.read_file(granule, read_only=True)
+print('variables:', nc.variable_names)
+
 chl = nc.get_variable('chlor_a')
 stats = chl.stats(approx_ok=False)
-print(f'grid {chl.rows} x {chl.columns}')
+print(f'grid {chl.rows} x {chl.columns}, epsg {chl.epsg}')
 print(
     f'chlor_a min/max: {float(stats["min"].iloc[0]):.3f} / {float(stats["max"].iloc[0]):.3f} mg m-3'
 )
